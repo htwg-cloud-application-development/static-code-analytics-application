@@ -1,0 +1,10 @@
+server:
+  port: ${PORT:8761}
+
+ # Teilt der Instanz mit, sich nicht "bei sich selber" zu registrieren
+eureka:
+  client:
+    registerWithEureka: false
+    fetchRegistry: false
+    server:
+      waitTimeInMsWhenSyncEmpty: 0   
