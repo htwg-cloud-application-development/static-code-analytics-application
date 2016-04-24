@@ -1,6 +1,11 @@
 # dynamic port
+#server:
+#  port: 0
+
+# for development
 server:
-  port: 0
+  port: 1234
+
 
 eureka:
   instance:

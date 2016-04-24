@@ -8,9 +8,14 @@ import org.springframework.web.bind.annotation.RestController;
 // to create a RESTful Controller (add Controller and ResponseBody)
 @RestController
 public class MoodleService {
-    
+
     @RequestMapping("/moodle/hello")
-    public String getProduct(@PathVariable int productId) {
+    public String hello() {
         return "Hello Moodle";
+    }
+
+    @RequestMapping("/info")
+    public String info() {
+        return "Helloooooooo :-)";
     }
 }
