@@ -34,7 +34,17 @@
 			<artifactId>spring-boot-starter-test</artifactId>
 			<scope>test</scope>
 		</dependency>
+
+		<!-- hystrix -->
+		<dependency>
+			<groupId>org.springframework.cloud</groupId>
+			<artifactId>spring-cloud-starter-hystrix</artifactId>
+			<version>1.0.6.RELEASE</version>
+		</dependency>
+
 	</dependencies>
+
+
 	
 	<dependencyManagement>
 		<dependencies>
