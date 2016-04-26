@@ -1,0 +1,19 @@
+spring:
+  application:
+    name: edgeserver
+
+server:
+  port: 1111
+
+zuul:
+  routes:
+    mailbox-service:
+      path: /moodle/**
+
+eureka:
+  instance:
+    leaseRenewalIntervalInSeconds: 10
+    metadataMap:
+      instanceId: ${vcap.application.instance_id:${spring.application.name}:${spring.application.instance_id:${random.value}}}
+  client:
+    registryFetchIntervalSeconds: 5
