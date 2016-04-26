@@ -1,3 +1,7 @@
+spring:
+  application:
+    name: moodle-service
+	
 # dynamic port
 #server:
 #  port: 0
