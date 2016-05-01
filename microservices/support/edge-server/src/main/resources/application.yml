@@ -1,15 +1,14 @@
 spring:
   application:
-    name: moodle-service
+    name: edgeserver
 
-# dynamic port
-#server:
-#  port: 0
-
-# for development
 server:
-  port: 1234
+  port: 1111
 
+zuul:
+  routes:
+    mailbox-service:
+      path: /moodle/**
 
 eureka:
   instance:
