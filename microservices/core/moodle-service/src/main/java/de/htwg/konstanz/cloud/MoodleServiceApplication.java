@@ -6,7 +6,7 @@ import org.springframework.cloud.client.discovery.EnableDiscoveryClient;
 
 @SpringBootApplication
 // To auto register microservice with Eureka
-@EnableDiscoveryClient
+//@EnableDiscoveryClient
 public class MoodleServiceApplication {
 
     public static void main(String[] args) {
