@@ -12,6 +12,12 @@ import org.springframework.web.client.RestTemplate;
 public class MoodleService {
 
 
+	@RequestMapping("/info")
+	public String info() {
+        return "Moode-Service";
+     }
+
+
     @RequestMapping(value = "/update", method = RequestMethod.POST)
     public ResponseEntity<?> getCourses(@RequestBody MoodleCredentials input) {
 
