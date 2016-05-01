@@ -1,21 +1,28 @@
 package de.htwg.konstanz.cloud.service;
 
-import org.springframework.web.bind.annotation.PathVariable;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RestController;
+import de.htwg.konstanz.cloud.models.MoodleCredentials;
+import org.springframework.http.HttpStatus;
+import org.springframework.http.ResponseEntity;
+import org.springframework.web.bind.annotation.*;
+import org.springframework.web.client.RestTemplate;
 
 
 // to create a RESTful Controller (add Controller and ResponseBody)
 @RestController
 public class MoodleService {
 
-    @RequestMapping("/moodle/hello")
-    public String hello() {
-        return "Hello Moodle";
+
+    @RequestMapping(value = "/upate", method = RequestMethod.POST)
+    public ResponseEntity<?> getCourses(@RequestBody MoodleCredentials input) {
+
+
+        // make a request to moodle in order to obtain the token
+        RestTemplate req = new RestTemplate();
+        //req.postForObject("moodle", )
+
+
+        return new ResponseEntity<Object>("", HttpStatus.OK);
+
     }
 
-    @RequestMapping("/info")
-    public String info() {
-        return "Helloooooooo :-)";
-    }
 }
