@@ -7,6 +7,6 @@ import lombok.Data;
 public class MoodleCredentials {
 
     @JsonProperty("password")
-    private String passwort;
+    private String password;
     private String mail;
 }
