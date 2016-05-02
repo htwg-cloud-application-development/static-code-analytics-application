@@ -1,12 +1,14 @@
 package de.htwg.konstanz.cloud.models;
 
-import com.fasterxml.jackson.annotation.JsonProperty;
 import lombok.Data;
+
+import javax.validation.constraints.NotNull;
 
 @Data
 public class MoodleCredentials {
 
-    @JsonProperty("password")
+    @NotNull
     private String password;
+    @NotNull
     private String mail;
 }
