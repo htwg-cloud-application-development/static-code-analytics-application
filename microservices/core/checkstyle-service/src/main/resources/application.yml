@@ -1,3 +1,7 @@
+spring:
+  application:
+    name: checkstyle-service
+
 # dynamic port
 #server:
 #  port: 0
