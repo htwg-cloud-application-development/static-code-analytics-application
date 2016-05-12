@@ -1,9 +1,6 @@
 package de.htwg.konstanz.cloud.service;
 
-import org.springframework.web.bind.annotation.RequestBody;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RequestMethod;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.bind.annotation.*;
 
 @RestController
 public class ValidatorService {
@@ -14,8 +11,14 @@ public class ValidatorService {
     }
 
 
-    @RequestMapping(value = "/validate/{groupId}", method = RequestMethod.POST)
-    public String validateGroup(@RequestBody String data) {
+    @RequestMapping(value = "/courses/{courseId}/validate", method = RequestMethod.POST, consumes = "application/json")
+    public String validateCourse(@RequestBody String data, @PathVariable String courseId) {
+        return null;
+    }
+
+
+    @RequestMapping(value = "/courses/{courseId}/groups/{groupId}/validate", method = RequestMethod.POST, consumes = "application/json")
+    public String validateGroup(@RequestBody String data, @PathVariable String courseId, @PathVariable String groupId) {
         return null;
     }
 }
