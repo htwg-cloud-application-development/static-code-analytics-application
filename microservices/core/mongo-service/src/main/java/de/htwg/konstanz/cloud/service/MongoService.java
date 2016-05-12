@@ -1,6 +1,8 @@
 package de.htwg.konstanz.cloud.service;
 
+import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RequestMethod;
 import org.springframework.web.bind.annotation.RestController;
 
 import de.htwg.konstanz.cloud.model.UserRep;
@@ -20,14 +22,11 @@ public class MongoService{
 	@Autowired
 	UserRepRepositoryImpl repo;
 	
-	@RequestMapping("/mongoservice")
-	public String test(){
+	@RequestMapping(value = "/addEntry", method = RequestMethod.POST)
+	public void addEntryToDb(@RequestBody String jsonString){
 	
-		mongo.dropCollection(UserRep.class);
+		//mongo.dropCollection(UserRep.class);
 		
-		String jsonString = "{\"name\": \"Arscg\",\"groupId\": \"1\",\"repositoryName\": \"Name\",\"files\":[{\"filepath\": \"pfad\",\"errors\":[{\"line\": \"5\",\"column\": \"5\",\"severity\": \"Hoch\",\"message\": \"Nachricht\",\"source\": \"quelle\"}]}]}";
-
-		System.out.println("Trying to persist jsonString");
 		repo.persistJson(jsonString);
 		
 		
@@ -37,8 +36,6 @@ public class MongoService{
 		for(UserRep student: studentList){
 			System.out.println(student.toString());
 		}
-		
-		return "Hi!!!";
 
 	}
 }
