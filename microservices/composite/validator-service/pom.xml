@@ -41,6 +41,11 @@
 			<artifactId>spring-cloud-starter-hystrix</artifactId>
 			<version>1.0.6.RELEASE</version>
 		</dependency>
+		<dependency>
+			<groupId>org.hibernate</groupId>
+			<artifactId>hibernate-validator</artifactId>
+			<version>5.2.4.Final</version>
+		</dependency>
 	</dependencies>
 
 
