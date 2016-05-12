@@ -8,7 +8,7 @@ spring:
 
 # for development
 server:
-  port: 1234
+  port: 4321
 
 
 eureka:
