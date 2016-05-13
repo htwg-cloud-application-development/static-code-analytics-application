@@ -14,143 +14,131 @@ import org.eclipse.jgit.api.errors.TransportException;
 import org.json.JSONObject;
 import org.json.XML;
 
-public class CheckGitRep 
-{
-	String gitName = "morph0815";
-	String gitRepo = "SOTE1";
-	
-	public void startIt()
-	{
-		List<List<String>> lRepoList = downloadRepoAndGetPath(gitName, gitRepo);
-		checkStyle(lRepoList);
-	}
 
-	public List<List<String>> downloadRepoAndGetPath(String gitName, String gitRepo) 
-	{
-		List<List<String>> list = new ArrayList<List<String>>();
-		String localDirectory = gitName + "-" + gitRepo + "/";
-		
-		
-			try {
-				Git git = Git.cloneRepository()
-						.setURI("https://github.com/" + gitName + "/" + gitRepo)
-						.setDirectory(new File(localDirectory)).call();
-			} catch (InvalidRemoteException e) {
-				// TODO Auto-generated catch block
-				e.printStackTrace();
-			} catch (TransportException e) {
-				// TODO Auto-generated catch block
-				e.printStackTrace();
-			} catch (GitAPIException e) {
-				// TODO Auto-generated catch block
-				e.printStackTrace();
-			}
-		
-		File mainDir = new File(localDirectory + "/src");
-		
-		if (mainDir.exists())
-		{
-			File[] files = mainDir.listFiles();
-			
-			for (int i = 0; i < files.length; ++i) 
-			{
-			
-				File[] filesSub = new File(files[i].getPath()).listFiles();
-				List<String> pathsSub =  new ArrayList<String>();
-				
-				for (int j = 0 ; j < filesSub.length; ++j)
-				{
-					if(filesSub[j].getPath().endsWith(".java"))
-					{
-						pathsSub.add(filesSub[j].getPath());
-					}
-				}
-				
-				list.add(pathsSub);
-			}
-		}
+/**
+ * TODO catch bloecke sinnvoll verarbeiten - Fehlerloggin (console o. Datei)
+ */
+public class CheckGitRep {
+    String gitName = "morph0815";
+    String gitRepo = "SOTE1";
 
-		return list;
-	}
-	
-	public void checkStyle(List<List<String>> lRepoList)
-	{
-		final String sCheckStylePath = "checkstyle-6.17-all.jar";
-		final String sRuleSetPath = "/sun_checks.xml";
-		
-		for(int i = 0; i < lRepoList.size(); i++)
-		{
-			for(int j = 0; j < lRepoList.get(i).size(); j++)
-			{
-				String sJSON = "";
-				String sFileName = lRepoList.get(i).get(j);
+    public String startIt() {
+        List<List<String>> lRepoList = downloadRepoAndGetPath(gitName, gitRepo);
+        return checkStyle(lRepoList);
+    }
 
-				if (sFileName.endsWith(".java")) 
-				{
-					sFileName = sFileName.substring(0, sFileName.length() - 5);
-				}
-			
-				String sCheckStyleCommand = "java -jar " + sCheckStylePath + " -c " + sRuleSetPath + " " + sFileName + ".java -f xml -o " + sFileName + ".xml";
-			    	
-				try
-				{
-					Runtime runtime = Runtime.getRuntime();
-					Process proc = runtime.exec(sCheckStyleCommand);
-					
-					try 
-					{ 
-						proc.waitFor(); 
-					} 
-					catch (InterruptedException e) { }
-				}
-				catch (IOException ex) { }
-				
-				
-				sJSON = xmlToJson(sFileName + ".xml");				
-				//JSON an Database weitersenden
-			}
-		}
-	}
+    public List<List<String>> downloadRepoAndGetPath(String gitName, String gitRepo) {
+        List<List<String>> list = new ArrayList<List<String>>();
+        // TODO + Timestamp in Ordnernamen
+        String localDirectory = gitName + "-" + gitRepo + "/";
 
-	public String xmlToJson(String sXmlFilePath)
-    {
-		String sJSON = "";
-		String sXML = "";
-		
-        try
-        {
-        	File oFile = new File(sXmlFilePath);
 
-            if(oFile.exists())
-            {
-            	InputStream oInputStream = new FileInputStream(oFile);
-                StringBuilder oBuilder =  new StringBuilder();
-                int nStringPos = 0;
-                
-                while ((nStringPos = oInputStream.read()) != -1 )
-                {
-                    oBuilder.append((char) nStringPos);
-                }
-                
-                oInputStream.close();
-
-                sXML  = oBuilder.toString();
-                JSONObject jsonObj = XML.toJSONObject(sXML);
-                sJSON = jsonObj.toString();
-                
-                System.out.println(sJSON);
-            }
-            else
-            {
-            	System.out.println("Error: Pfad: " + oFile.getAbsolutePath());
-            }
-            
-        }
-        catch(Exception e)
-        {
+        // TODO ueberprüfen ob Repo vorhanden bzw. Giturl okay
+        try {
+            Git git = Git.cloneRepository()
+                    .setURI("https://github.com/" + gitName + "/" + gitRepo)
+                    .setDirectory(new File(localDirectory)).call();
+        } catch (InvalidRemoteException e) {
+            // TODO Auto-generated catch block
+            e.printStackTrace();
+        } catch (TransportException e) {
+            // TODO Auto-generated catch block
+            e.printStackTrace();
+        } catch (GitAPIException e) {
+            // TODO Auto-generated catch block
             e.printStackTrace();
         }
-        
+
+        File mainDir = new File(localDirectory + "/src");
+
+        if (mainDir.exists()) {
+            File[] files = mainDir.listFiles();
+
+            for (int i = 0; i < files.length; ++i) {
+
+                File[] filesSub = new File(files[i].getPath()).listFiles();
+                List<String> pathsSub = new ArrayList<String>();
+
+                for (int j = 0; j < filesSub.length; ++j) {
+                    if (filesSub[j].getPath().endsWith(".java")) {
+                        pathsSub.add(filesSub[j].getPath());
+                    }
+                }
+
+                list.add(pathsSub);
+            }
+        }
+
+        return list;
+    }
+
+    public String checkStyle(List<List<String>> lRepoList) {
+        final String sCheckStylePath = "checkstyle-6.17-all.jar";
+        final String sRuleSetPath = "/sun_checks.xml";
+
+        for (int i = 0; i < lRepoList.size(); i++) {
+            for (int j = 0; j < lRepoList.get(i).size(); j++) {
+                String sJSON = "";
+                String sFileName = lRepoList.get(i).get(j);
+
+                if (sFileName.endsWith(".java")) {
+                    sFileName = sFileName.substring(0, sFileName.length() - 5);
+                }
+
+                String sCheckStyleCommand = "java -jar " + sCheckStylePath + " -c " + sRuleSetPath + " " + sFileName + ".java -f xml -o " + sFileName + ".xml";
+
+                try {
+                    Runtime runtime = Runtime.getRuntime();
+                    Process proc = runtime.exec(sCheckStyleCommand);
+
+                    try {
+                        proc.waitFor();
+                    } catch (InterruptedException e) {
+                    }
+                } catch (IOException ex) {
+                }
+
+
+                // TODO Ein grosses JSON Object zurück liefern - das hier ist nur eine tmp Lösung zu testen
+                // (liefert nur 1 Ergebnis zurück)
+                return xmlToJson(sFileName + ".xml");
+                //JSON an Database weitersenden
+            }
+        }
+        return null;
+    }
+
+    public String xmlToJson(String sXmlFilePath) {
+        String sJSON = "";
+        String sXML = "";
+
+        try {
+            File oFile = new File(sXmlFilePath);
+
+            if (oFile.exists()) {
+                InputStream oInputStream = new FileInputStream(oFile);
+                StringBuilder oBuilder = new StringBuilder();
+                int nStringPos = 0;
+
+                while ((nStringPos = oInputStream.read()) != -1) {
+                    oBuilder.append((char) nStringPos);
+                }
+
+                oInputStream.close();
+
+                sXML = oBuilder.toString();
+                JSONObject jsonObj = XML.toJSONObject(sXML);
+                sJSON = jsonObj.toString();
+
+                System.out.println(sJSON);
+            } else {
+                System.out.println("Error: Pfad: " + oFile.getAbsolutePath());
+            }
+
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+
         return sJSON;
     }
 }
