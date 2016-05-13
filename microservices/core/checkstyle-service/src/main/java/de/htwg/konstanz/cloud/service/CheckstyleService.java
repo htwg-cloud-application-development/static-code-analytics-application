@@ -16,7 +16,10 @@ public class CheckstyleService {
         try {
             JSONObject jsonObj = new JSONObject(data);
             String repositoryUrl = jsonObj.getString("repositoryUrl");
+            // TODO übergeben der repository Url an Methode oder im Konstruktor zur Validierung - bsp url https://github.com/T1m1/de.htwg.se.monopoly
             CheckGitRep oCheckGitRep = new CheckGitRep();
+            // TODO Die Methode "oCheckGitRep" muss einen Fehler zurückliefern, damit dieser auch verarbeitet werden kann
+            // TODO Wenn Methode schief läuft "InternalServerError" zurückliefern
             String json = oCheckGitRep.startIt();
             return ResponseEntity.ok(json);
         } catch (Exception e) {
