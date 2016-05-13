@@ -1,15 +1,42 @@
+# profile for development
 spring:
-  application:
-    name: validator-service
+  profiles: development
 
-# dynamic port
-#server:
-#  port: 0
-
-# for development
 server:
-  port: 4321
+  port: 1234
 
+eureka:
+  instance:
+    hostname: localhost
+  client:
+    registerWithEureka: false
+    fetchRegistry: false
+    serviceUrl:
+      defaultZone: http://${eureka.instance.hostname}:${server.port}/eureka/
+
+---
+# for local deployment of all services
+spring:
+  profiles: local
+
+server:
+  port: 0
+
+eureka:
+  instance:
+    leaseRenewalIntervalInSeconds: 10
+    metadataMap:
+      instanceId: ${vcap.application.instance_id:${spring.application.name}:${spring.application.instance_id:${random.value}}}
+  client:
+    registryFetchIntervalSeconds: 5
+
+---
+# for use in aws
+spring:
+  profiles: aws
+
+server:
+  port: 0
 
 eureka:
   instance:
