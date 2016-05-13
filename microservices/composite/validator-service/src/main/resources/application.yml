@@ -1,3 +1,10 @@
+spring:
+  application:
+    name: validator-service
+  profiles:
+    active: development
+
+---
 # profile for development
 spring:
   profiles: development
