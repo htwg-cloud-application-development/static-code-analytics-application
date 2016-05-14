@@ -61,7 +61,7 @@ public class ValidatorService {
             json.put("repositoryUrl", data.getRepositoryUrl());
         } catch (JSONException e) {
             e.printStackTrace();
-            return createResponse(e.toString(), HttpStatus.INTERNAL_SERVER_ERROR);
+            return createErrorResponse(e.toString(), HttpStatus.INTERNAL_SERVER_ERROR);
         }
 
         // get checkstyle service instance
@@ -74,7 +74,7 @@ public class ValidatorService {
             return entity;
         }
 
-        return createResponse("no services available", HttpStatus.SERVICE_UNAVAILABLE);
+        return createErrorResponse("no services available", HttpStatus.SERVICE_UNAVAILABLE);
 
     }
 
@@ -82,5 +82,10 @@ public class ValidatorService {
         return new ResponseEntity<>(body, httpStatus);
     }
 
-
+    private  ResponseEntity<String> createErrorResponse(String errorMessage, HttpStatus status) {
+        HashMap<String, String> errorResponse = new HashMap<String, String>();
+        errorResponse.put("error", errorMessage);
+        JSONObject errorResponseObject = new JSONObject(errorResponse);
+        return createResponse(errorResponseObject.toString(), status);
+    }
 }
