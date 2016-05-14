@@ -55,11 +55,9 @@ public class ValidatorService {
 
     @RequestMapping(value = "/validate", method = RequestMethod.POST, consumes = "application/json", produces = "application/json")
     public ResponseEntity<String> validateGroup(@RequestBody ValidationData data) {
-        JSONObject json = new JSONObject();
         try {
-            // build json object for request object
-            json.put("repositoryUrl", data.getRepositoryUrl());
-            Future<String> repo = validateRepositoryService.validateRepository(json.toString());
+            // Call validation asynchronous
+            Future<String> repo = validateRepositoryService.validateRepository(data.toString());
 
             // Wait until they are done
             while (!(repo.isDone())) {
