@@ -8,12 +8,16 @@ import io.swagger.annotations.ApiResponse;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.cloud.client.ServiceInstance;
 import org.springframework.cloud.client.loadbalancer.LoadBalancerClient;
+import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
+import org.springframework.web.client.HttpStatusCodeException;
 import org.springframework.web.client.RestTemplate;
 
 import javax.annotation.PostConstruct;
 import java.net.URI;
+import java.util.HashMap;
+import java.util.Map;
 
 @RestController
 public class ValidatorService {
@@ -48,7 +52,7 @@ public class ValidatorService {
 
     // TODO call service asynchronously - hystrix
     // TODO error handling e.g. loadBalancer
-    @RequestMapping(value = "/validate", method = RequestMethod.POST, consumes = "application/json")
+    @RequestMapping(value = "/validate", method = RequestMethod.POST, consumes = "application/json", produces = "application/json")
     public ResponseEntity<String> validateGroup(@RequestBody ValidationData data) {
         String VALIDATE_ROUTE = "/validate";
         JSONObject json = new JSONObject();
@@ -57,14 +61,26 @@ public class ValidatorService {
             json.put("repositoryUrl", data.getRepositoryUrl());
         } catch (JSONException e) {
             e.printStackTrace();
+            return createResponse(e.toString(), HttpStatus.INTERNAL_SERVER_ERROR);
         }
 
         // get checkstyle service instance
         ServiceInstance instance = loadBalancer.choose("checkstyle-service");
-        // build request url
-        String requestUrl = instance.getUri() + VALIDATE_ROUTE;
-        // POST to request url and get String (JSON)
-        ResponseEntity<String> entity = restTemplate.postForEntity(requestUrl, json.toString(), String.class);
-        return entity;
+        if (null != instance) {
+            // build request url
+            String requestUrl = instance.getUri() + VALIDATE_ROUTE;
+            // POST to request url and get String (JSON)
+            ResponseEntity<String> entity = restTemplate.postForEntity(requestUrl, json.toString(), String.class);
+            return entity;
+        }
+
+        return createResponse("no services available", HttpStatus.SERVICE_UNAVAILABLE);
+
     }
+
+    protected <T> ResponseEntity<T> createResponse(T body, HttpStatus httpStatus) {
+        return new ResponseEntity<>(body, httpStatus);
+    }
+
+
 }
