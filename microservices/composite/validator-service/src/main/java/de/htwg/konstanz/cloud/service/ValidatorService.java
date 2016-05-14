@@ -75,20 +75,16 @@ public class ValidatorService {
         try {
             // build json object for request object
             json.put("repositoryUrl", data.getRepositoryUrl());
-        } catch (JSONException e) {
-            return createErrorResponse(e.toString(), HttpStatus.INTERNAL_SERVER_ERROR);
-        }
 
-
-        try {
             Future<String> repo = validateRepositoryService.validateRepository(json.toString());
 
             // Wait until they are done
             while (!(repo.isDone())) {
                 Thread.sleep(10); //10-millisecond pause between each check
             }
-
             return createResponse(repo.get(), HttpStatus.OK);
+        } catch (JSONException e) {
+            return createErrorResponse(e.getMessage(), HttpStatus.INTERNAL_SERVER_ERROR);
         } catch (InterruptedException e) {
             return createErrorResponse(e.getMessage(), HttpStatus.INTERNAL_SERVER_ERROR);
         } catch (ExecutionException e) {
