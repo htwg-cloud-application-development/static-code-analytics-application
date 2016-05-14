@@ -34,7 +34,7 @@ public class ValidateRepositoryService {
     }
 
     @Async
-    public Future<String> validateRepository(String repositoryUrl) throws InterruptedException {
+    public Future<String> validateRepository(String repositoryUrl) throws InterruptedException, InstantiationException {
         String VALIDATE_ROUTE = "/validate";
         System.out.println("Validate " + repositoryUrl);
 
@@ -50,24 +50,7 @@ public class ValidateRepositoryService {
             ResponseEntity<String> entity = restTemplate.postForEntity(requestUrl, repositoryUrl, String.class, headers);
             return new AsyncResult<String>(entity.getBody());
         }
-
-        // TODO error handling return
-        return new AsyncResult<String>(null);
+        throw new InstantiationException("service is not available");
     }
-
-
-    protected <T> ResponseEntity<T> createResponse(T body, HttpStatus httpStatus) {
-        return new ResponseEntity<>(body, httpStatus);
-    }
-
-    private ResponseEntity<String> createErrorResponse(String errorMessage, HttpStatus status) {
-        LOG.error(errorMessage);
-        HashMap<String, String> errorResponse = new HashMap<String, String>();
-        errorResponse.put("error", errorMessage);
-        JSONObject errorResponseObject = new JSONObject(errorResponse);
-        return createResponse(errorResponseObject.toString(), status);
-    }
-
-
 
 }
