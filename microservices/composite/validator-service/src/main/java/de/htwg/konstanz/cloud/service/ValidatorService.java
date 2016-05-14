@@ -5,6 +5,7 @@ import com.amazonaws.util.json.JSONObject;
 import de.htwg.konstanz.cloud.model.ValidationData;
 import io.swagger.annotations.ApiOperation;
 import io.swagger.annotations.ApiResponse;
+import org.apache.commons.lang3.Validate;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -13,6 +14,7 @@ import org.springframework.cloud.client.ServiceInstance;
 import org.springframework.cloud.client.loadbalancer.LoadBalancerClient;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.scheduling.annotation.EnableAsync;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.client.HttpStatusCodeException;
 import org.springframework.web.client.RestTemplate;
@@ -22,14 +24,20 @@ import java.net.URI;
 import java.util.Date;
 import java.util.HashMap;
 import java.util.Map;
+import java.util.concurrent.ExecutionException;
+import java.util.concurrent.Future;
 
 @RestController
+@EnableAsync
 public class ValidatorService {
 
     private static final Logger LOG = LoggerFactory.getLogger(ValidatorService.class);
 
     @Autowired
     private LoadBalancerClient loadBalancer;
+
+    @Autowired
+    ValidateRepositoryService validateRepositoryService;
 
     @Value("${spring.application.name}")
     private String serviceName;
@@ -71,15 +79,22 @@ public class ValidatorService {
             return createErrorResponse(e.toString(), HttpStatus.INTERNAL_SERVER_ERROR);
         }
 
-        // get checkstyle service instance
-        ServiceInstance instance = loadBalancer.choose("checkstyle-service");
-        if (null != instance) {
-            // build request url
-            String requestUrl = instance.getUri() + VALIDATE_ROUTE;
-            LOG.debug(requestUrl);
-            // POST to request url and get String (JSON)
-            ResponseEntity<String> entity = restTemplate.postForEntity(requestUrl, json.toString(), String.class);
-            return entity;
+
+        try {
+            Future<String> repo = validateRepositoryService.validateRepository(json.toString());
+
+            // Wait until they are done
+            while (!(repo.isDone())) {
+                Thread.sleep(10); //10-millisecond pause between each check
+            }
+
+            return createResponse(repo.get(), HttpStatus.OK);
+        } catch (InterruptedException e) {
+            return createErrorResponse(e.getMessage(), HttpStatus.INTERNAL_SERVER_ERROR);
+        } catch (ExecutionException e) {
+            return createErrorResponse(e.getMessage(), HttpStatus.INTERNAL_SERVER_ERROR);
+        } catch (Exception e) {
+            System.out.println(e);
         }
 
         return createErrorResponse("no services available", HttpStatus.SERVICE_UNAVAILABLE);
