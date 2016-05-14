@@ -21,6 +21,7 @@ import java.util.concurrent.Future;
 
 @Service
 public class ValidateRepositoryService {
+    private static final Logger LOG = LoggerFactory.getLogger(ValidateRepositoryService.class);
 
     RestTemplate restTemplate;
 
@@ -44,7 +45,8 @@ public class ValidateRepositoryService {
             String requestUrl = instance.getUri() + VALIDATE_ROUTE;
             // POST to request url and get String (JSON)
             System.out.println(repositoryUrl);
-
+            ResponseEntity<String> entity = restTemplate.postForEntity(requestUrl, repositoryUrl, String.class, headers);
+            return new AsyncResult<String>(entity.getBody());
         }
 
         // TODO error handling return
@@ -52,7 +54,17 @@ public class ValidateRepositoryService {
     }
 
 
+    protected <T> ResponseEntity<T> createResponse(T body, HttpStatus httpStatus) {
+        return new ResponseEntity<>(body, httpStatus);
+    }
 
+    private ResponseEntity<String> createErrorResponse(String errorMessage, HttpStatus status) {
+        LOG.error(errorMessage);
+        HashMap<String, String> errorResponse = new HashMap<String, String>();
+        errorResponse.put("error", errorMessage);
+        JSONObject errorResponseObject = new JSONObject(errorResponse);
+        return createResponse(errorResponseObject.toString(), status);
+    }
 
 
 
