@@ -5,6 +5,8 @@ import com.amazonaws.util.json.JSONObject;
 import de.htwg.konstanz.cloud.model.ValidationData;
 import io.swagger.annotations.ApiOperation;
 import io.swagger.annotations.ApiResponse;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.cloud.client.ServiceInstance;
 import org.springframework.cloud.client.loadbalancer.LoadBalancerClient;
@@ -21,6 +23,8 @@ import java.util.Map;
 
 @RestController
 public class ValidatorService {
+
+    private static final Logger LOG = LoggerFactory.getLogger(ValidatorService.class);
 
     @Autowired
     private LoadBalancerClient loadBalancer;
@@ -59,7 +63,6 @@ public class ValidatorService {
             // build json object for request object
             json.put("repositoryUrl", data.getRepositoryUrl());
         } catch (JSONException e) {
-            e.printStackTrace();
             return createErrorResponse(e.toString(), HttpStatus.INTERNAL_SERVER_ERROR);
         }
 
@@ -68,6 +71,7 @@ public class ValidatorService {
         if (null != instance) {
             // build request url
             String requestUrl = instance.getUri() + VALIDATE_ROUTE;
+            LOG.debug(requestUrl);
             // POST to request url and get String (JSON)
             ResponseEntity<String> entity = restTemplate.postForEntity(requestUrl, json.toString(), String.class);
             return entity;
@@ -82,6 +86,7 @@ public class ValidatorService {
     }
 
     private  ResponseEntity<String> createErrorResponse(String errorMessage, HttpStatus status) {
+        LOG.error(errorMessage);
         HashMap<String, String> errorResponse = new HashMap<String, String>();
         errorResponse.put("error", errorMessage);
         JSONObject errorResponseObject = new JSONObject(errorResponse);
