@@ -43,34 +43,25 @@ public class ValidatorService {
         return null;
     }
 
+    // TODO call service asynchronously - hystrix
+    // TODO error handling e.g. loadBalancer
     @RequestMapping(value = "/validate", method = RequestMethod.POST, consumes = "application/json")
     public ResponseEntity<String> validateGroup(@RequestBody ValidationData data) {
+        String VALIDATE_ROUTE = "/validate";
         JSONObject json = new JSONObject();
         try {
-            json.put("repositoryUrl", "https://github.com/T1m1/de.htwg.se.monopoly");
+            // build json object for request object
+            json.put("repositoryUrl", data.getRepositoryUrl());
         } catch (JSONException e) {
             e.printStackTrace();
         }
 
-        ResponseEntity<String> entity = restTemplate.postForEntity(getRequestUrl("checkstyle-service", "/validate"), json.toString(), String.class);
-
-        // TODO search for checkstyle services - eureka
-        // TODO select random instance - ribbon
-        // TODO call service asynchronously - hystrix
-
+        // get checkstyle service instance
+        ServiceInstance instance = loadBalancer.choose("checkstyle-service");
+        // build request url
+        String requestUrl = instance.getUri() + VALIDATE_ROUTE;
+        // POST to request url and get String (JSON)
+        ResponseEntity<String> entity = restTemplate.postForEntity(requestUrl, json.toString(), String.class);
         return entity;
-    }
-
-    protected <T> T getRequestObject(String serviceId, String requestURI, Class<T> type) {
-        String getUserURL = getRequestUrl(serviceId, requestURI);
-        return restTemplate.getForObject(getUserURL, type);
-    }
-
-    protected String getRequestUrl(String serviceId, String requestURI) {
-        // get service URL for message-service
-        // TODO kann schief gehen - kein loadbalancer vorhanden - return error
-        ServiceInstance instance = loadBalancer.choose(serviceId);
-        // build request URL
-        return instance.getUri() + requestURI;
     }
 }
