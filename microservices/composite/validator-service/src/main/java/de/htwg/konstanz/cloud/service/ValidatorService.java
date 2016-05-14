@@ -43,6 +43,12 @@ public class ValidatorService {
 
     @RequestMapping(value = "/courses/{courseId}/validate", method = RequestMethod.POST)
     public String validateCourse(@PathVariable String courseId) {
+        // [ ] get course data from database
+        // [ ] for each repo:
+        // [ ] - call validateRepositoryService async
+        // [ ] - save result in database
+        // [ ] build result JSON for course (all repos)
+        // [ ] return result
         return null;
     }
 
@@ -50,6 +56,10 @@ public class ValidatorService {
     @RequestMapping(value = "/courses/{courseId}/groups/{groupId}/validate", method = RequestMethod.POST)
     @ApiResponse(code = 200, message = "Success", response = String.class)
     public String validateGroup(@PathVariable String courseId, @PathVariable String groupId) {
+        // [ ] get repository of course or get it from reqeustBody
+        // [ ] execute validation
+        // [ ] save into database
+        // [ ] return result
         return null;
     }
 
