@@ -51,7 +51,6 @@ public class ValidatorService {
     }
 
     // TODO call service asynchronously - hystrix
-    // TODO error handling e.g. loadBalancer
     @RequestMapping(value = "/validate", method = RequestMethod.POST, consumes = "application/json", produces = "application/json")
     public ResponseEntity<String> validateGroup(@RequestBody ValidationData data) {
         String VALIDATE_ROUTE = "/validate";
