@@ -3,6 +3,8 @@ package de.htwg.konstanz.cloud.service;
 import com.amazonaws.util.json.JSONException;
 import com.amazonaws.util.json.JSONObject;
 import de.htwg.konstanz.cloud.model.ValidationData;
+import io.swagger.annotations.ApiOperation;
+import io.swagger.annotations.ApiResponse;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.cloud.client.ServiceInstance;
 import org.springframework.cloud.client.loadbalancer.LoadBalancerClient;
@@ -37,8 +39,9 @@ public class ValidatorService {
         return null;
     }
 
-
+    @ApiOperation(value = "validate", nickname = "validate")
     @RequestMapping(value = "/courses/{courseId}/groups/{groupId}/validate", method = RequestMethod.POST)
+    @ApiResponse(code = 200, message = "Success", response = String.class)
     public String validateGroup(@PathVariable String courseId, @PathVariable String groupId) {
         return null;
     }
