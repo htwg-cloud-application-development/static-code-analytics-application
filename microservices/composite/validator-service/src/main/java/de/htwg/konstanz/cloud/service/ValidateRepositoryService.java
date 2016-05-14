@@ -45,6 +45,8 @@ public class ValidateRepositoryService {
             String requestUrl = instance.getUri() + VALIDATE_ROUTE;
             // POST to request url and get String (JSON)
             System.out.println(repositoryUrl);
+            HttpHeaders headers = new HttpHeaders();
+            headers.setContentType(MediaType.APPLICATION_JSON);
             ResponseEntity<String> entity = restTemplate.postForEntity(requestUrl, repositoryUrl, String.class, headers);
             return new AsyncResult<String>(entity.getBody());
         }
