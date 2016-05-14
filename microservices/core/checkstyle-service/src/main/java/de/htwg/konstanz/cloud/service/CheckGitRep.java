@@ -30,6 +30,7 @@ public class CheckGitRep {
     public List<List<String>> downloadRepoAndGetPath(String gitName, String gitRepo) {
         List<List<String>> list = new ArrayList<List<String>>();
         // TODO + Timestamp in Ordnernamen
+        // TODO alle Repos in einen Ordner namens "repositories" auschecken (damit dieser in die gitignore aufgenommen werden kann)
         String localDirectory = gitName + "-" + gitRepo + "/";
 
 
