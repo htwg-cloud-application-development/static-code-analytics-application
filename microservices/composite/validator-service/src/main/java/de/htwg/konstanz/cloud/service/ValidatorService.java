@@ -1,6 +1,5 @@
 package de.htwg.konstanz.cloud.service;
 
-import com.amazonaws.util.json.JSONException;
 import com.amazonaws.util.json.JSONObject;
 import de.htwg.konstanz.cloud.model.ValidationData;
 import io.swagger.annotations.ApiOperation;
@@ -14,12 +13,8 @@ import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.scheduling.annotation.EnableAsync;
 import org.springframework.web.bind.annotation.*;
-import org.springframework.web.client.RestTemplate;
 
-import javax.annotation.PostConstruct;
 import java.util.Date;
-import java.util.HashMap;
-import java.util.concurrent.ExecutionException;
 import java.util.concurrent.Future;
 
 @RestController
@@ -39,13 +34,6 @@ public class ValidatorService {
 
     @Value("${spring.application.name}")
     private String serviceName;
-
-    private RestTemplate restTemplate;
-
-    @PostConstruct
-    private void init() {
-        this.restTemplate = new RestTemplate();
-    }
 
     @RequestMapping(value = "/info", method = RequestMethod.GET, produces = "application/json")
     public String info() {
@@ -67,7 +55,6 @@ public class ValidatorService {
 
     @RequestMapping(value = "/validate", method = RequestMethod.POST, consumes = "application/json", produces = "application/json")
     public ResponseEntity<String> validateGroup(@RequestBody ValidationData data) {
-        String VALIDATE_ROUTE = "/validate";
         JSONObject json = new JSONObject();
         try {
             // build json object for request object
@@ -87,8 +74,5 @@ public class ValidatorService {
             LOG.error(e.getMessage());
             return util.createErrorResponse(e.getMessage(), HttpStatus.INTERNAL_SERVER_ERROR);
         }
-
-
     }
-
 }
