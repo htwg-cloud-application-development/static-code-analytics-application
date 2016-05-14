@@ -8,6 +8,7 @@ import io.swagger.annotations.ApiResponse;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.cloud.client.ServiceInstance;
 import org.springframework.cloud.client.loadbalancer.LoadBalancerClient;
 import org.springframework.http.HttpStatus;
@@ -18,6 +19,7 @@ import org.springframework.web.client.RestTemplate;
 
 import javax.annotation.PostConstruct;
 import java.net.URI;
+import java.util.Date;
 import java.util.HashMap;
 import java.util.Map;
 
@@ -29,6 +31,9 @@ public class ValidatorService {
     @Autowired
     private LoadBalancerClient loadBalancer;
 
+    @Value("${spring.application.name}")
+    private String serviceName;
+
     private RestTemplate restTemplate;
 
     @PostConstruct
@@ -36,9 +41,9 @@ public class ValidatorService {
         this.restTemplate = new RestTemplate();
     }
 
-    @RequestMapping("/info")
+    @RequestMapping(value = "/info", method = RequestMethod.GET, produces = "application/json")
     public String info() {
-        return "Validator-Service";
+        return "{\"timestamp\":\"" + new Date() + "\",\"serviceId\":\"" + serviceName + "\"}";
     }
 
 
@@ -85,7 +90,7 @@ public class ValidatorService {
         return new ResponseEntity<>(body, httpStatus);
     }
 
-    private  ResponseEntity<String> createErrorResponse(String errorMessage, HttpStatus status) {
+    private ResponseEntity<String> createErrorResponse(String errorMessage, HttpStatus status) {
         LOG.error(errorMessage);
         HashMap<String, String> errorResponse = new HashMap<String, String>();
         errorResponse.put("error", errorMessage);
