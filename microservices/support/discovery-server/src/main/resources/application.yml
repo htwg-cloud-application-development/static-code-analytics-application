@@ -1,5 +1,16 @@
+spring:
+  application:
+    name: eureka
+  profiles:
+    active: local
+
 server:
   port: ${PORT:8761}
+
+---
+# for local deployment of all services
+spring:
+  profiles: local
 
  # Teilt der Instanz mit, sich nicht "bei sich selber" zu registrieren
 eureka:
@@ -7,4 +18,19 @@ eureka:
     registerWithEureka: false
     fetchRegistry: false
     server:
-      waitTimeInMsWhenSyncEmpty: 0   
+      waitTimeInMsWhenSyncEmpty: 0
+
+---
+# for use in aws
+spring:
+  profiles: aws
+
+ # Teilt der Instanz mit, sich nicht "bei sich selber" zu registrieren
+eureka:
+  client:
+    registerWithEureka: false
+    fetchRegistry: false
+    server:
+      waitTimeInMsWhenSyncEmpty: 0
+  datacenter: cloud
+  region: eu-central-1
