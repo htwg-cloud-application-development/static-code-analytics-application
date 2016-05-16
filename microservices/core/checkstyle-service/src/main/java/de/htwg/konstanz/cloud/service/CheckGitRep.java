@@ -12,6 +12,7 @@ import org.eclipse.jgit.api.Git;
 import org.eclipse.jgit.api.errors.GitAPIException;
 import org.eclipse.jgit.api.errors.InvalidRemoteException;
 import org.eclipse.jgit.api.errors.TransportException;
+import org.json.JSONArray;
 import org.json.JSONObject;
 import org.json.XML;
 import org.w3c.dom.Document;
@@ -33,14 +34,14 @@ public class CheckGitRep {
 	String sGitRepo = "SOTE1";
 
     public String startIt() {
-		String oJsonResult = null;
+		JSONObject oJsonResult = null;
 
 		if(checkLocalCheckstyle() == true)
 		{
 			List<List<String>> lRepoList = downloadRepoAndGetPath(sGitName, sGitRepo);
 			oJsonResult = checkStyle(lRepoList);
 		}
-        return oJsonResult;
+        return oJsonResult.toString();
     }
 
     public List<List<String>> downloadRepoAndGetPath(String gitName, String gitRepo) {
