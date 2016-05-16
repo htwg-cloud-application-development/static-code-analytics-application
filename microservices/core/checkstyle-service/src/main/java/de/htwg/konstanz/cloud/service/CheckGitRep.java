@@ -32,6 +32,7 @@ public class CheckGitRep {
 			List<List<String>> lRepoList = downloadRepoAndGetPath(sGitName, sGitRepo);
 			oJsonResult = checkStyle(lRepoList);
 		}
+		
         return oJsonResult;
     }
 
@@ -148,6 +149,7 @@ public class CheckGitRep {
 	{
         final String sCheckStylePath = "checkstyle-6.17-all.jar";
 		final String sRuleSetPath = "/sun_checks.xml";
+		JSONObject oJson = null;
 
 		/* Listeninhalt kuerzen, um JSON vorbereiten */
 		formatList(lRepoList);
@@ -178,7 +180,7 @@ public class CheckGitRep {
 		
 		if(lFormattedClassList != null)	{
 			/* Schoene einheitliche JSON erstellen */
-			JSONObject oJson = buildJSON(sGitName, sGitRepo, 0);	
+			oJson = buildJSON(sGitName, sGitRepo, 0);	
 		}
 		
         return oJson;
