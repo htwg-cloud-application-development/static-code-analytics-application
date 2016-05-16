@@ -152,10 +152,11 @@ public class CheckGitRep {
 		return bSuccess;
 	}
 	
-    public String checkStyle(List<List<String>> lRepoList) 
+    public JSONObject checkStyle(List<List<String>> lRepoList) 
 	{
         final String sCheckStylePath = "checkstyle-6.17-all.jar";
 		final String sRuleSetPath = "/sun_checks.xml";
+		JSONObject oJson = null;
 
 		/* Listeninhalt kuerzen, um JSON vorbereiten */
 		formatList(lRepoList);
@@ -186,12 +187,10 @@ public class CheckGitRep {
 		
 		if(lFormattedClassList != null)	{
 			/* Schoene einheitliche JSON erstellen */
-			JSONObject oJson = buildJSON(sGitName, sGitRepo, 0);	
-			/* JSON an Database weitersenden */
-			
+			oJson = buildJSON(sGitName, sGitRepo, 0);
 		}
 		
-        return null;
+        return oJson;
     }
 
     public void storeCheckstyleInformation(String sXmlPath, int nClassPos)
