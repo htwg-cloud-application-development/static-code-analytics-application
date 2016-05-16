@@ -1,9 +1,10 @@
 package de.htwg.konstanz.cloud.service;
 
-import java.io.File;
-import java.io.FileInputStream;
-import java.io.IOException;
-import java.io.InputStream;
+import java.io.*;
+import java.net.MalformedURLException;
+import java.net.URL;
+import java.nio.channels.Channels;
+import java.nio.channels.ReadableByteChannel;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -13,6 +14,13 @@ import org.eclipse.jgit.api.errors.InvalidRemoteException;
 import org.eclipse.jgit.api.errors.TransportException;
 import org.json.JSONObject;
 import org.json.XML;
+import org.w3c.dom.Document;
+import org.w3c.dom.Element;
+import org.w3c.dom.Node;
+import org.w3c.dom.NodeList;
+
+import javax.xml.parsers.DocumentBuilder;
+import javax.xml.parsers.DocumentBuilderFactory;
 
 
 /**
@@ -25,8 +33,8 @@ public class CheckGitRep {
 	String sGitRepo = "SOTE1";
 
     public String startIt() {
-		JSONObject oJsonResult = null
-		
+		String oJsonResult = null;
+
 		if(checkLocalCheckstyle() == true)
 		{
 			List<List<String>> lRepoList = downloadRepoAndGetPath(sGitName, sGitRepo);
@@ -144,7 +152,7 @@ public class CheckGitRep {
 		return bSuccess;
 	}
 	
-    public JSONObject checkStyle(List<List<String>> lRepoList) 
+    public String checkStyle(List<List<String>> lRepoList) 
 	{
         final String sCheckStylePath = "checkstyle-6.17-all.jar";
 		final String sRuleSetPath = "/sun_checks.xml";
@@ -179,9 +187,11 @@ public class CheckGitRep {
 		if(lFormattedClassList != null)	{
 			/* Schoene einheitliche JSON erstellen */
 			JSONObject oJson = buildJSON(sGitName, sGitRepo, 0);	
+			/* JSON an Database weitersenden */
+			
 		}
 		
-        return oJson;
+        return null;
     }
 
     public void storeCheckstyleInformation(String sXmlPath, int nClassPos)
