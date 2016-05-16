@@ -19,11 +19,17 @@ import org.json.XML;
  * TODO catch bloecke sinnvoll verarbeiten - Fehlerloggin (console o. Datei)
  */
 public class CheckGitRep {
-    String gitName = "morph0815";
-    String gitRepo = "SOTE1";
+    
+	List<Class> lFormattedClassList = new ArrayList<Class>();
+	String sGitName = "morph0815";
+	String sGitRepo = "SOTE1";
 
     public String startIt() {
-        List<List<String>> lRepoList = downloadRepoAndGetPath(gitName, gitRepo);
+		if(checkLocalCheckstyle() == true)
+		{
+			List<List<String>> lRepoList = downloadRepoAndGetPath(sGitName, sGitRepo);
+			checkStyle(lRepoList);
+		}
         return checkStyle(lRepoList);
     }
 
@@ -71,73 +77,246 @@ public class CheckGitRep {
         return list;
     }
 
-    public String checkStyle(List<List<String>> lRepoList) {
+		public boolean checkLocalCheckstyle()
+	{
+		boolean bSuccess = false;
+		final String sCheckstyleJar = "checkstyle-6.17-all.jar";
+		final String sDownloadCheckStyleJar = "http://downloads.sourceforge.net/project/checkstyle/checkstyle/6.17/checkstyle-6.17-all.jar?r=https%3A%2F%2Fsourceforge.net%2Fp%2Fcheckstyle%2Factivity%2F%3Fpage%3D0%26limit%3D100&ts=1463416596&use_mirror=vorboss";
+		
+		File oFile = new File(sCheckstyleJar);
+		ReadableByteChannel oReadableByteChannel = null;
+		FileOutputStream oFileOutput = null;
+		URL oURL = null;
+		
+		if(oFile.exists()) 
+		{ 
+		    System.out.println("Checkstyle .jar already exists!");
+		    bSuccess = true;
+		}
+		else
+		{
+			System.out.println("Checkstyle .jar doesnt exists, Starting download");
+			
+				try
+				{
+					oURL = new URL(sDownloadCheckStyleJar);
+				} 
+				catch (MalformedURLException e)
+				{
+					// Debug Msg einfügen
+					e.printStackTrace();
+				}
+
+				try
+				{
+					oReadableByteChannel = Channels.newChannel(oURL.openStream());
+				} 
+				catch (IOException e)
+				{
+					// Debug Msg einfügen
+					e.printStackTrace();
+				}
+
+				try
+				{
+					oFileOutput = new FileOutputStream(sCheckstyleJar);
+				} 
+				catch (FileNotFoundException e)
+				{
+					// Debug Msg einfügen
+					e.printStackTrace();
+				}
+				
+				try
+				{
+					oFileOutput.getChannel().transferFrom(oReadableByteChannel, 0, Long.MAX_VALUE);
+					bSuccess = true;
+				} 
+				catch (IOException e)
+				{
+					// Debug Msg einfügen
+					e.printStackTrace();
+				}
+		}
+		
+		return bSuccess;
+	}
+	
+    public String checkStyle(List<List<String>> lRepoList) 
+	{
         final String sCheckStylePath = "checkstyle-6.17-all.jar";
-        final String sRuleSetPath = "/sun_checks.xml";
+		final String sRuleSetPath = "/sun_checks.xml";
 
-        for (int i = 0; i < lRepoList.size(); i++) {
-            for (int j = 0; j < lRepoList.get(i).size(); j++) {
-                String sJSON = "";
-                String sFileName = lRepoList.get(i).get(j);
+		/* Listeninhalt kuerzen, um JSON vorbereiten */
+		formatList(lRepoList);
 
-                if (sFileName.endsWith(".java")) {
-                    sFileName = sFileName.substring(0, sFileName.length() - 5);
-                }
+		for(int nClassPos = 0; nClassPos < lFormattedClassList.size(); nClassPos++) {
+				String sFullPath = lFormattedClassList.get(nClassPos).sFullPath;
+			
+				if (sFullPath.endsWith(".java")) {
+					sFullPath = sFullPath.substring(0, sFullPath.length() - 5);
+				}
+			
+				String sCheckStyleCommand = "java -jar " + sCheckStylePath + " -c " + sRuleSetPath + " " + sFullPath + ".java -f xml -o " + sFullPath + ".xml";
 
-                String sCheckStyleCommand = "java -jar " + sCheckStylePath + " -c " + sRuleSetPath + " " + sFileName + ".java -f xml -o " + sFileName + ".xml";
-
-                try {
-                    Runtime runtime = Runtime.getRuntime();
-                    Process proc = runtime.exec(sCheckStyleCommand);
-
-                    try {
-                        proc.waitFor();
-                    } catch (InterruptedException e) {
-                    }
-                } catch (IOException ex) {
-                }
-
-
-                // TODO Ein grosses JSON Object zurück liefern - das hier ist nur eine tmp Lösung zu testen
-                // (liefert nur 1 Ergebnis zurück)
-                return xmlToJson(sFileName + ".xml");
-                //JSON an Database weitersenden
-            }
-        }
+				try {
+					Runtime runtime = Runtime.getRuntime();
+					Process proc = runtime.exec(sCheckStyleCommand);
+					
+					try { 
+						proc.waitFor(); 
+					} 
+					catch (InterruptedException e) { }
+				}
+				catch (IOException ex) { }
+		
+				/* Checkstyle Informationen eintragen */
+				storeCheckstyleInformation(sFullPath + ".xml", nClassPos);
+			}
+		
+		if(lFormattedClassList != null)	{
+			/* Schoene einheitliche JSON erstellen */
+			JSONObject oJson = buildJSON(sGitName, sGitRepo, 0);	
+			/* JSON an Database weitersenden */
+			
+		}
+		
         return null;
     }
 
-    public String xmlToJson(String sXmlFilePath) {
-        String sJSON = "";
-        String sXML = "";
+    public void storeCheckstyleInformation(String sXmlPath, int nClassPos)
+	{
+		try 
+		{
+			File oFileXML = new File(sXmlPath);
+			DocumentBuilderFactory dbFactory = DocumentBuilderFactory.newInstance();
+			DocumentBuilder dBuilder = dbFactory.newDocumentBuilder();
+			Document doc = dBuilder.parse(oFileXML);
+			doc.getDocumentElement().normalize();
+					
+			NodeList nList = doc.getElementsByTagName("error");
 
-        try {
-            File oFile = new File(sXmlFilePath);
+			for (int nNodePos = 0; nNodePos < nList.getLength(); nNodePos++) 
+			{
 
-            if (oFile.exists()) {
-                InputStream oInputStream = new FileInputStream(oFile);
-                StringBuilder oBuilder = new StringBuilder();
-                int nStringPos = 0;
+				Node nNode = nList.item(nNodePos);
+						 
+				if (nNode.getNodeType() == Node.ELEMENT_NODE) 
+				{
+					Element eElement = (Element) nNode;
+					
+					/* Default Values */
+					int nLine = 0;
+					int nColumn = 0;
+					String sSeverity = "";
+					String sMessage = "";
+					String sSource = "";
 
-                while ((nStringPos = oInputStream.read()) != -1) {
-                    oBuilder.append((char) nStringPos);
-                }
+					if(isParsable(eElement.getAttribute("line")))
+					{
+						nLine = Integer.parseInt(eElement.getAttribute("line"));
+					}
+					if(isParsable(eElement.getAttribute("column")))
+					{
+						nColumn = Integer.parseInt(eElement.getAttribute("column"));
+					}	
+					if(!eElement.getAttribute("severity").isEmpty())
+					{
+						sSeverity = eElement.getAttribute("severity");
+					}	
+					if(!eElement.getAttribute("message").isEmpty())
+					{
+						sMessage = eElement.getAttribute("message");
+					}
+					if(!eElement.getAttribute("source").isEmpty())
+					{
+						sSource = eElement.getAttribute("source");
+					}
+					
+					Error oError = new Error(nLine, nColumn, sSeverity, sMessage, sSource);
+					
+					lFormattedClassList.get(nClassPos).getErrorList().add(oError);
+				}
+			}
+		} 
+		catch (Exception e) 
+		{
+			e.printStackTrace(); 
+		}
+	}
 
-                oInputStream.close();
-
-                sXML = oBuilder.toString();
-                JSONObject jsonObj = XML.toJSONObject(sXML);
-                sJSON = jsonObj.toString();
-
-                System.out.println(sJSON);
-            } else {
-                System.out.println("Error: Pfad: " + oFile.getAbsolutePath());
-            }
-
-        } catch (Exception e) {
-            e.printStackTrace();
-        }
-
-        return sJSON;
-    }
+	public boolean isParsable(String input)
+	{
+	    boolean bParsable = true;
+	    
+	    try
+	    {
+	        Integer.parseInt(input);
+	    }
+	    catch(NumberFormatException e)
+	    {
+	        bParsable = false;
+	    }
+	    
+	    return bParsable;
+	}
+	
+	public void formatList(List<List<String>> lRepoList)
+	{
+		for(int nExcercisePos = 0; nExcercisePos < lRepoList.size(); nExcercisePos++)
+		{
+			Class oClass = null;
+			
+			for(int x = 0; x < lRepoList.get(nExcercisePos).size(); x++)
+			{
+				String[] need = lRepoList.get(nExcercisePos).get(x).split("\\\\");
+				String sFullPath = lRepoList.get(nExcercisePos).get(x);
+				
+				oClass = new Class(need[need.length-1].toString(), sFullPath);
+				lFormattedClassList.add(oClass);
+			}
+		}
+	}
+	
+	public JSONObject buildJSON(String sName, String sRepo, int nGroupID)
+	{
+		List<Error> lTmpErrorList = new ArrayList<Error>();
+		JSONObject oJsonRoot = new JSONObject();
+		JSONArray lJsonClasses = new JSONArray();
+		
+		/* add general information to the JSON object */
+		oJsonRoot.put("RepositoryName", sRepo);
+		oJsonRoot.put("GroupID", nGroupID);
+		oJsonRoot.put("Name", sName);
+		
+		/* all Classes */
+		for(int nClassPos = 0; nClassPos < lFormattedClassList.size(); nClassPos++)
+		{
+			lTmpErrorList = lFormattedClassList.get(nClassPos).getErrorList();	
+			JSONArray lJsonErrors = new JSONArray();
+			JSONObject oJsonClass = new JSONObject();
+				
+			/* all Errors */
+			for(int nErrorPos = 0; nErrorPos < lTmpErrorList.size(); nErrorPos++)
+			{
+				JSONObject oJsonError = new JSONObject();
+				
+				oJsonError.put("Line", Integer.toString(lTmpErrorList.get(nErrorPos).nErrorAtLine));
+				oJsonError.put("Column", Integer.toString(lTmpErrorList.get(nErrorPos).nColumn));
+				oJsonError.put("Severity", lTmpErrorList.get(nErrorPos).sSeverity);
+				oJsonError.put("Message", lTmpErrorList.get(nErrorPos).sMessage);
+				oJsonError.put("Source", lTmpErrorList.get(nErrorPos).sSource);
+				
+				lJsonErrors.put(oJsonError);
+			}
+			
+			oJsonClass.put("Filepath", lFormattedClassList.get(nClassPos).sFullPath);
+			oJsonClass.put("Errors", lJsonErrors);
+			lJsonClasses.put(oJsonClass);
+		}
+		
+		oJsonRoot.put("Files", lJsonClasses);
+		
+		return oJsonRoot;
+	}
 }
