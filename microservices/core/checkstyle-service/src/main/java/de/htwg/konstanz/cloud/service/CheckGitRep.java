@@ -25,12 +25,14 @@ public class CheckGitRep {
 	String sGitRepo = "SOTE1";
 
     public String startIt() {
+		JSONObject oJsonResult = null
+		
 		if(checkLocalCheckstyle() == true)
 		{
 			List<List<String>> lRepoList = downloadRepoAndGetPath(sGitName, sGitRepo);
-			checkStyle(lRepoList);
+			oJsonResult = checkStyle(lRepoList);
 		}
-        return checkStyle(lRepoList);
+        return oJsonResult;
     }
 
     public List<List<String>> downloadRepoAndGetPath(String gitName, String gitRepo) {
@@ -142,7 +144,7 @@ public class CheckGitRep {
 		return bSuccess;
 	}
 	
-    public String checkStyle(List<List<String>> lRepoList) 
+    public JSONObject checkStyle(List<List<String>> lRepoList) 
 	{
         final String sCheckStylePath = "checkstyle-6.17-all.jar";
 		final String sRuleSetPath = "/sun_checks.xml";
@@ -177,11 +179,9 @@ public class CheckGitRep {
 		if(lFormattedClassList != null)	{
 			/* Schoene einheitliche JSON erstellen */
 			JSONObject oJson = buildJSON(sGitName, sGitRepo, 0);	
-			/* JSON an Database weitersenden */
-			
 		}
 		
-        return null;
+        return oJson;
     }
 
     public void storeCheckstyleInformation(String sXmlPath, int nClassPos)
