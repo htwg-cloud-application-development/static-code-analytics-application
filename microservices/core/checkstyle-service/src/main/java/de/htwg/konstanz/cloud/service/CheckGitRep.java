@@ -30,29 +30,28 @@ import javax.xml.parsers.DocumentBuilderFactory;
 public class CheckGitRep {
     
 	List<Class> lFormattedClassList = new ArrayList<Class>();
-	String sGitName = "morph0815";
-	String sGitRepo = "SOTE1";
 
-    public String startIt() {
+    public String startIt(String gitRepository) {
 		JSONObject oJsonResult = null;
 
 		if(checkLocalCheckstyle() == true)
 		{
-			List<List<String>> lRepoList = downloadRepoAndGetPath(sGitName, sGitRepo);
-			oJsonResult = checkStyle(lRepoList);
+				List<List<String>> lRepoList = downloadRepoAndGetPath(gitRepository);
+			oJsonResult = checkStyle(lRepoList, gitRepository);
 		}
         return oJsonResult.toString();
     }
 
-    public List<List<String>> downloadRepoAndGetPath(String gitName, String gitRepo) {
+    public List<List<String>> downloadRepoAndGetPath(String gitRepo) {
         List<List<String>> list = new ArrayList<List<String>>();
-        String localDirectory = "repositories/" + gitName + "-" + gitRepo + "_" + System.currentTimeMillis() +"/";
+		String directoryName = gitRepo.substring(gitRepo.lastIndexOf("/"), gitRepo.length()-1).replace(".","_");
+        String localDirectory = "repositories/"  + directoryName + "_" + System.currentTimeMillis() +"/";
 
 
         // TODO ueberprüfen ob Repo vorhanden bzw. Giturl okay
         try {
             Git git = Git.cloneRepository()
-                    .setURI("https://github.com/" + gitName + "/" + gitRepo)
+                    .setURI(gitRepo)
                     .setDirectory(new File(localDirectory)).call();
         } catch (InvalidRemoteException e) {
             // TODO Auto-generated catch block
@@ -153,7 +152,7 @@ public class CheckGitRep {
 		return bSuccess;
 	}
 	
-    public JSONObject checkStyle(List<List<String>> lRepoList) 
+    public JSONObject checkStyle(List<List<String>> lRepoList, String gitRepository)
 	{
         final String sCheckStylePath = "checkstyle-6.17-all.jar";
 		final String sRuleSetPath = "/sun_checks.xml";
@@ -188,7 +187,7 @@ public class CheckGitRep {
 		
 		if(lFormattedClassList != null)	{
 			/* Schoene einheitliche JSON erstellen */
-			oJson = buildJSON(sGitName, sGitRepo, 0);
+			oJson = buildJSON(gitRepository);
 		}
 		
         return oJson;
@@ -288,16 +287,16 @@ public class CheckGitRep {
 		}
 	}
 	
-	public JSONObject buildJSON(String sName, String sRepo, int nGroupID)
+	public JSONObject buildJSON(String sRepo)
 	{
 		List<Error> lTmpErrorList = new ArrayList<Error>();
 		JSONObject oJsonRoot = new JSONObject();
 		JSONArray lJsonClasses = new JSONArray();
 		
 		/* add general information to the JSON object */
-		oJsonRoot.put("RepositoryName", sRepo);
-		oJsonRoot.put("GroupID", nGroupID);
-		oJsonRoot.put("Name", sName);
+		oJsonRoot.put("repositoryUrl", sRepo);
+		//oJsonRoot.put("GroupID", nGroupID);
+		//oJsonRoot.put("Name", sName);
 		
 		/* all Classes */
 		for(int nClassPos = 0; nClassPos < lFormattedClassList.size(); nClassPos++)

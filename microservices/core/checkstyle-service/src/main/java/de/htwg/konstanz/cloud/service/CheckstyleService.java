@@ -20,7 +20,7 @@ public class CheckstyleService {
             CheckGitRep oCheckGitRep = new CheckGitRep();
             // TODO Die Methode "oCheckGitRep" muss einen Fehler zurückliefern, damit dieser auch verarbeitet werden kann
             // TODO Wenn Methode schief läuft "InternalServerError" zurückliefern
-            String json = oCheckGitRep.startIt();
+            String json = oCheckGitRep.startIt(repositoryUrl);
             return ResponseEntity.ok(json);
         } catch (Exception e) {
             e.printStackTrace();
