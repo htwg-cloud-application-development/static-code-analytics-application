@@ -49,6 +49,7 @@ public class CheckGitRep {
 
 
         // TODO ueberprüfen ob Repo vorhanden bzw. Giturl okay
+		// TODO Fehler bei bereits vorhandenem GIT Repo beheben
         try {
             Git git = Git.cloneRepository()
                     .setURI(gitRepo)
@@ -113,8 +114,7 @@ public class CheckGitRep {
 				} 
 				catch (MalformedURLException e)
 				{
-					// Debug Msg einfügen
-					e.printStackTrace();
+					System.out.println("Invalid URL");
 				}
 
 				try
@@ -123,8 +123,7 @@ public class CheckGitRep {
 				} 
 				catch (IOException e)
 				{
-					// Debug Msg einfügen
-					e.printStackTrace();
+					System.out.println("Can't open URL");
 				}
 
 				try
@@ -133,8 +132,7 @@ public class CheckGitRep {
 				} 
 				catch (FileNotFoundException e)
 				{
-					// Debug Msg einfügen
-					e.printStackTrace();
+					System.out.println("Did not find an output file");
 				}
 				
 				try
@@ -144,8 +142,7 @@ public class CheckGitRep {
 				} 
 				catch (IOException e)
 				{
-					// Debug Msg einfügen
-					e.printStackTrace();
+					System.out.println("Error while transferring bytes into the output file");
 				}
 		}
 		
