@@ -34,3 +34,5 @@ eureka:
       waitTimeInMsWhenSyncEmpty: 0
   datacenter: cloud
   region: eu-central-1
+  server:
+    enable-self-preservation: false
