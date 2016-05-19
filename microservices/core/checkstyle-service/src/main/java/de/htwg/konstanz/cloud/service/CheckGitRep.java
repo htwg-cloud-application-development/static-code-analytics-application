@@ -49,6 +49,7 @@ public class CheckGitRep {
 
 
         // TODO ueberprüfen ob Repo vorhanden bzw. Giturl okay
+		// TODO Fehler bei bereits vorhandenem GIT Repo beheben
         try {
             Git git = Git.cloneRepository()
                     .setURI(gitRepo)
@@ -113,8 +114,7 @@ public class CheckGitRep {
 				} 
 				catch (MalformedURLException e)
 				{
-					// Debug Msg einfügen
-					e.printStackTrace();
+					System.out.println("Invalid URL");
 				}
 
 				try
@@ -123,8 +123,7 @@ public class CheckGitRep {
 				} 
 				catch (IOException e)
 				{
-					// Debug Msg einfügen
-					e.printStackTrace();
+					System.out.println("Can't open URL");
 				}
 
 				try
@@ -133,8 +132,7 @@ public class CheckGitRep {
 				} 
 				catch (FileNotFoundException e)
 				{
-					// Debug Msg einfügen
-					e.printStackTrace();
+					System.out.println("Did not find an output file");
 				}
 				
 				try
@@ -144,8 +142,7 @@ public class CheckGitRep {
 				} 
 				catch (IOException e)
 				{
-					// Debug Msg einfügen
-					e.printStackTrace();
+					System.out.println("Error while transferring bytes into the output file");
 				}
 		}
 		
@@ -295,8 +292,8 @@ public class CheckGitRep {
 		
 		/* add general information to the JSON object */
 		oJsonRoot.put("repositoryUrl", sRepo);
-		//oJsonRoot.put("GroupID", nGroupID);
-		//oJsonRoot.put("Name", sName);
+		//oJsonRoot.put("groupID", nGroupID);
+		//oJsonRoot.put("name", sName);
 		
 		/* all Classes */
 		for(int nClassPos = 0; nClassPos < lFormattedClassList.size(); nClassPos++)
@@ -310,17 +307,17 @@ public class CheckGitRep {
 			{
 				JSONObject oJsonError = new JSONObject();
 				
-				oJsonError.put("Line", Integer.toString(lTmpErrorList.get(nErrorPos).nErrorAtLine));
-				oJsonError.put("Column", Integer.toString(lTmpErrorList.get(nErrorPos).nColumn));
-				oJsonError.put("Severity", lTmpErrorList.get(nErrorPos).sSeverity);
-				oJsonError.put("Message", lTmpErrorList.get(nErrorPos).sMessage);
-				oJsonError.put("Source", lTmpErrorList.get(nErrorPos).sSource);
+				oJsonError.put("line", Integer.toString(lTmpErrorList.get(nErrorPos).nErrorAtLine));
+				oJsonError.put("column", Integer.toString(lTmpErrorList.get(nErrorPos).nColumn));
+				oJsonError.put("severity", lTmpErrorList.get(nErrorPos).sSeverity);
+				oJsonError.put("message", lTmpErrorList.get(nErrorPos).sMessage);
+				oJsonError.put("source", lTmpErrorList.get(nErrorPos).sSource);
 				
 				lJsonErrors.put(oJsonError);
 			}
 			
-			oJsonClass.put("Filepath", lFormattedClassList.get(nClassPos).sFullPath);
-			oJsonClass.put("Errors", lJsonErrors);
+			oJsonClass.put("filepath", lFormattedClassList.get(nClassPos).sFullPath);
+			oJsonClass.put("errors", lJsonErrors);
 			lJsonClasses.put(oJsonClass);
 		}
 		
