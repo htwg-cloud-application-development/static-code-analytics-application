@@ -7,13 +7,18 @@ server:
 
 zuul:
   routes:
-    mailbox-service:
-      path: /moodle/**
+    validator-service:
+      path: /validator-service/**
 
 eureka:
   instance:
+    hostname: ec2-52-58-161-190.eu-central-1.compute.amazonaws.com
     leaseRenewalIntervalInSeconds: 10
     metadataMap:
-      instanceId: ${vcap.application.instance_id:${spring.application.name}:${spring.application.instance_id:${random.value}}}
+      instanceId: ${eureka.instance.hostname:${spring.application.name}:${spring.application.instance_id:${server.port}}}
   client:
     registryFetchIntervalSeconds: 5
+    registerWithEureka: true
+    fetchRegistry: true
+    serviceUrl:
+      defaultZone: http://ec2-52-29-21-217.eu-central-1.compute.amazonaws.com:8761/eureka/
