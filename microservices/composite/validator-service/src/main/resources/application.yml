@@ -49,13 +49,12 @@ server:
 
 eureka:
   instance:
-    hostname: ec2-52-29-226-107.eu-central-1.compute.amazonaws.com
     leaseRenewalIntervalInSeconds: 10
     metadataMap:
-      instanceId: ${vcap.application.instance_id:${spring.application.name}:${spring.application.instance_id:${random.value}}}
+      instanceId: ${vcap.application.instance_id:${spring.application.name}:${spring.application.instance_id:${server.port}}}
   client:
     registryFetchIntervalSeconds: 5
     registerWithEureka: true
     fetchRegistry: true
     serviceUrl:
-      defaultZone: http://${eureka.instance.hostname}:8761/eureka/
+        defaultZone: http://ec2-52-29-21-217.eu-central-1.compute.amazonaws.com:8761/eureka/
