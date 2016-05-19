@@ -9,6 +9,8 @@ zuul:
   routes:
     validator-service:
       path: /validator-service/**
+  host:
+    socket-timeout-millis: 960000
 
 eureka:
   instance:
@@ -22,3 +24,17 @@ eureka:
     fetchRegistry: true
     serviceUrl:
       defaultZone: http://ec2-52-29-21-217.eu-central-1.compute.amazonaws.com:8761/eureka/
+
+hystrix:
+  command:
+    default:
+      execution:
+        timeout:
+          enabled: false
+        isolation:
+          strategy: THREAD
+          thread:
+            timeoutInMilliseconds: 90000
+
+ribbon:
+  ReadTimeout: 90000
