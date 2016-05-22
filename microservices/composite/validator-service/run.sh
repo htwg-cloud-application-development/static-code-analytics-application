@@ -22,11 +22,11 @@ while true;
 do
 	case "$1" in
 		'-l')
-			mvn spring-boot:run -Drun.profiles=local
+			mvn spring-boot:run -Dspring.profiles.active=local
 			argument=1
 			break;;
 		'-a')
-			mvn spring-boot:run -Drun.profiles=aws
+			mvn spring-boot:run -Dspring.profiles.active=aws
 			argument=1
 			break;;
 		'-h')
@@ -40,5 +40,5 @@ done
 
 if [ $argument -eq 0 ]
 then
-	mvn spring-boot:run -Drun.profiles=development
+	mvn spring-boot:run -Dspring.profiles.active=development
 fi
