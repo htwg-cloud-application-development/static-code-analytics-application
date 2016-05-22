@@ -14,6 +14,7 @@ public class UserRep {
 	
 	private String name;
 	private String groupId;
+	private String courseId;
 	private String repositoryName;
 	private Collection<File>  files = new LinkedHashSet<File>();
 	
