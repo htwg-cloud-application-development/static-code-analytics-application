@@ -1,17 +1,38 @@
-# dynamic port
-#server:
-#  port: 0
+spring:
+  application:
+    name: mongo-service
+  profiles:
+    active: development
+
+---
+# for development
+server:
+  port: 1234
 
 spring:
+  profiles: development
+  data:
+    mongodb:
+      host: localhost
+      port: 27017
+eureka:
+  instance:
+    hostname: localhost
+  client:
+    registerWithEureka: false
+    fetchRegistry: false
+  
+---
+
+spring:
+  profiles: local
   data:
     mongodb:
       host: localhost
       port: 27017
 
-# for development
 server:
-  port: 1234
-
+  port: 0
 
 eureka:
   instance:
