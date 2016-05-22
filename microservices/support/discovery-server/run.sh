@@ -21,7 +21,7 @@ while true;
 do
 	case "$1" in
 		'-a')
-			mvn spring-boot:run -Drun.profiles=aws
+			mvn spring-boot:run -Dspring.profiles.active=aws
 			argument=1
 			break;;
 		'-h')
