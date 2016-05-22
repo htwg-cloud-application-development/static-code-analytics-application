@@ -321,7 +321,7 @@ public class CheckGitRep {
 			lJsonClasses.put(oJsonClass);
 		}
 		
-		oJsonRoot.put("Files", lJsonClasses);
+		oJsonRoot.put("files", lJsonClasses);
 		
 		return oJsonRoot;
 	}
