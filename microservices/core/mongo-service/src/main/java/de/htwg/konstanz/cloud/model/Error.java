@@ -1,13 +1,12 @@
-package de.htwg.konstanz.cloud.service;
+package de.htwg.konstanz.cloud.model;
 
 public class Error {
 	
-
-	private String severity;
 	private String line;
 	private String column;
-	private String source;
+	private String severity;
 	private String message;
+	private String source;
 	
 	public String getSeverity() {
 		return severity;
@@ -39,6 +38,8 @@ public class Error {
 	public void setMessage(String message) {
 		this.message = message;
 	}
+	
+	
 	
 	
 	

@@ -1,7 +1,11 @@
 package de.htwg.konstanz.cloud.service;
 
+import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RequestMethod;
 import org.springframework.web.bind.annotation.RestController;
+
+import de.htwg.konstanz.cloud.model.UserRep;
 
 import java.util.ArrayList;
 
@@ -16,28 +20,22 @@ public class MongoService{
 	MongoOperations mongo;
 
 	@Autowired
-	UserRepositoryImpl repo;
+	UserRepRepositoryImpl repo;
 	
-	@RequestMapping("/mongoservice")
-	public String test(){
+	@RequestMapping(value = "/addEntry", method = RequestMethod.POST)
+	public void addEntryToDb(@RequestBody String jsonString){
 	
-		mongo.dropCollection(User.class);
+		//mongo.dropCollection(UserRep.class);
 		
-		
-		String jsonString = "{\"user\": \"Morph0815\",\"repositoryName\": \"SOTE1\",\"className\": \"irendeineJava.class\",\"errors\" : [{\"severity\": \"MONSTER\",\"line\": \"5\",\"column\": \"12\",\"source\": \"a source\",\"message\": \"ajlksdj\"},{ \"severity\": \"ULTRA\",\"line\": \"123\",\"column\": \"12\",\"source\": \"a source\",\"message\": \"ajlksdj\"}]}";
-		
-		System.out.println("Trying to persist jsonString");
 		repo.persistJson(jsonString);
 		
 		
-		ArrayList<User> studentList;
-		studentList = (ArrayList<User>) mongo.findAll(User.class);
+		ArrayList<UserRep> studentList;
+		studentList = (ArrayList<UserRep>) mongo.findAll(UserRep.class);
 		
-		for(User student: studentList){
+		for(UserRep student: studentList){
 			System.out.println(student.toString());
 		}
-		
-		return "Hi!!!";
 
 	}
 }

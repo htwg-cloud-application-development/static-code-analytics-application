@@ -1,9 +1,10 @@
 package de.htwg.konstanz.cloud.service;
 
-import java.io.File;
-import java.io.FileInputStream;
-import java.io.IOException;
-import java.io.InputStream;
+import java.io.*;
+import java.net.MalformedURLException;
+import java.net.URL;
+import java.nio.channels.Channels;
+import java.nio.channels.ReadableByteChannel;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -11,146 +12,317 @@ import org.eclipse.jgit.api.Git;
 import org.eclipse.jgit.api.errors.GitAPIException;
 import org.eclipse.jgit.api.errors.InvalidRemoteException;
 import org.eclipse.jgit.api.errors.TransportException;
+import org.json.JSONArray;
 import org.json.JSONObject;
 import org.json.XML;
+import org.w3c.dom.Document;
+import org.w3c.dom.Element;
+import org.w3c.dom.Node;
+import org.w3c.dom.NodeList;
 
-public class CheckGitRep 
-{
-	String gitName = "morph0815";
-	String gitRepo = "SOTE1";
-	
-	public void startIt()
-	{
-		List<List<String>> lRepoList = downloadRepoAndGetPath(gitName, gitRepo);
-		checkStyle(lRepoList);
-	}
+import javax.xml.parsers.DocumentBuilder;
+import javax.xml.parsers.DocumentBuilderFactory;
 
-	public List<List<String>> downloadRepoAndGetPath(String gitName, String gitRepo) 
-	{
-		List<List<String>> list = new ArrayList<List<String>>();
-		String localDirectory = gitName + "-" + gitRepo + "/";
-		
-		
-			try {
-				Git git = Git.cloneRepository()
-						.setURI("https://github.com/" + gitName + "/" + gitRepo)
-						.setDirectory(new File(localDirectory)).call();
-			} catch (InvalidRemoteException e) {
-				// TODO Auto-generated catch block
-				e.printStackTrace();
-			} catch (TransportException e) {
-				// TODO Auto-generated catch block
-				e.printStackTrace();
-			} catch (GitAPIException e) {
-				// TODO Auto-generated catch block
-				e.printStackTrace();
-			}
-		
-		File mainDir = new File(localDirectory + "/src");
-		
-		if (mainDir.exists())
+
+/**
+ * TODO catch bloecke sinnvoll verarbeiten - Fehlerloggin (console o. Datei)
+ */
+public class CheckGitRep {
+    
+	List<Class> lFormattedClassList = new ArrayList<Class>();
+
+    public String startIt(String gitRepository) {
+		JSONObject oJsonResult = null;
+
+		if(checkLocalCheckstyle() == true)
 		{
-			File[] files = mainDir.listFiles();
-			
-			for (int i = 0; i < files.length; ++i) 
-			{
-			
-				File[] filesSub = new File(files[i].getPath()).listFiles();
-				List<String> pathsSub =  new ArrayList<String>();
-				
-				for (int j = 0 ; j < filesSub.length; ++j)
-				{
-					if(filesSub[j].getPath().endsWith(".java"))
-					{
-						pathsSub.add(filesSub[j].getPath());
-					}
-				}
-				
-				list.add(pathsSub);
-			}
+				List<List<String>> lRepoList = downloadRepoAndGetPath(gitRepository);
+			oJsonResult = checkStyle(lRepoList, gitRepository);
 		}
+        return oJsonResult.toString();
+    }
 
-		return list;
-	}
-	
-	public void checkStyle(List<List<String>> lRepoList)
+    public List<List<String>> downloadRepoAndGetPath(String gitRepo) {
+        List<List<String>> list = new ArrayList<List<String>>();
+		String directoryName = gitRepo.substring(gitRepo.lastIndexOf("/"), gitRepo.length()-1).replace(".","_");
+        String localDirectory = "repositories/"  + directoryName + "_" + System.currentTimeMillis() +"/";
+
+
+        // TODO ueberprüfen ob Repo vorhanden bzw. Giturl okay
+		// TODO Fehler bei bereits vorhandenem GIT Repo beheben
+        try {
+            Git git = Git.cloneRepository()
+                    .setURI(gitRepo)
+                    .setDirectory(new File(localDirectory)).call();
+        } catch (InvalidRemoteException e) {
+            // TODO Auto-generated catch block
+            e.printStackTrace();
+        } catch (TransportException e) {
+            // TODO Auto-generated catch block
+            e.printStackTrace();
+        } catch (GitAPIException e) {
+            // TODO Auto-generated catch block
+            e.printStackTrace();
+        }
+
+        File mainDir = new File(localDirectory + "/src");
+
+        if (mainDir.exists()) {
+            File[] files = mainDir.listFiles();
+
+            for (int i = 0; i < files.length; ++i) {
+
+                File[] filesSub = new File(files[i].getPath()).listFiles();
+                List<String> pathsSub = new ArrayList<String>();
+
+                for (int j = 0; j < filesSub.length; ++j) {
+                    if (filesSub[j].getPath().endsWith(".java")) {
+                        pathsSub.add(filesSub[j].getPath());
+                    }
+                }
+
+                list.add(pathsSub);
+            }
+        }
+
+        return list;
+    }
+
+		public boolean checkLocalCheckstyle()
 	{
-		final String sCheckStylePath = "checkstyle-6.17-all.jar";
-		final String sRuleSetPath = "/sun_checks.xml";
+		boolean bSuccess = false;
+		final String sCheckstyleJar = "checkstyle-6.17-all.jar";
+		final String sDownloadCheckStyleJar = "http://downloads.sourceforge.net/project/checkstyle/checkstyle/6.17/checkstyle-6.17-all.jar?r=https%3A%2F%2Fsourceforge.net%2Fp%2Fcheckstyle%2Factivity%2F%3Fpage%3D0%26limit%3D100&ts=1463416596&use_mirror=vorboss";
 		
-		for(int i = 0; i < lRepoList.size(); i++)
+		File oFile = new File(sCheckstyleJar);
+		ReadableByteChannel oReadableByteChannel = null;
+		FileOutputStream oFileOutput = null;
+		URL oURL = null;
+		
+		if(oFile.exists()) 
+		{ 
+		    System.out.println("Checkstyle .jar already exists!");
+		    bSuccess = true;
+		}
+		else
 		{
-			for(int j = 0; j < lRepoList.get(i).size(); j++)
-			{
-				String sJSON = "";
-				String sFileName = lRepoList.get(i).get(j);
-
-				if (sFileName.endsWith(".java")) 
-				{
-					sFileName = sFileName.substring(0, sFileName.length() - 5);
-				}
+			System.out.println("Checkstyle .jar doesnt exists, Starting download");
 			
-				String sCheckStyleCommand = "java -jar " + sCheckStylePath + " -c " + sRuleSetPath + " " + sFileName + ".java -f xml -o " + sFileName + ".xml";
-			    	
 				try
 				{
+					oURL = new URL(sDownloadCheckStyleJar);
+				} 
+				catch (MalformedURLException e)
+				{
+					System.out.println("Invalid URL");
+				}
+
+				try
+				{
+					oReadableByteChannel = Channels.newChannel(oURL.openStream());
+				} 
+				catch (IOException e)
+				{
+					System.out.println("Can't open URL");
+				}
+
+				try
+				{
+					oFileOutput = new FileOutputStream(sCheckstyleJar);
+				} 
+				catch (FileNotFoundException e)
+				{
+					System.out.println("Did not find an output file");
+				}
+				
+				try
+				{
+					oFileOutput.getChannel().transferFrom(oReadableByteChannel, 0, Long.MAX_VALUE);
+					bSuccess = true;
+				} 
+				catch (IOException e)
+				{
+					System.out.println("Error while transferring bytes into the output file");
+				}
+		}
+		
+		return bSuccess;
+	}
+	
+    public JSONObject checkStyle(List<List<String>> lRepoList, String gitRepository)
+	{
+        final String sCheckStylePath = "checkstyle-6.17-all.jar";
+		final String sRuleSetPath = "/sun_checks.xml";
+		JSONObject oJson = null;
+
+		/* Listeninhalt kuerzen, um JSON vorbereiten */
+		formatList(lRepoList);
+
+		for(int nClassPos = 0; nClassPos < lFormattedClassList.size(); nClassPos++) {
+				String sFullPath = lFormattedClassList.get(nClassPos).sFullPath;
+			
+				if (sFullPath.endsWith(".java")) {
+					sFullPath = sFullPath.substring(0, sFullPath.length() - 5);
+				}
+			
+				String sCheckStyleCommand = "java -jar " + sCheckStylePath + " -c " + sRuleSetPath + " " + sFullPath + ".java -f xml -o " + sFullPath + ".xml";
+
+				try {
 					Runtime runtime = Runtime.getRuntime();
 					Process proc = runtime.exec(sCheckStyleCommand);
 					
-					try 
-					{ 
+					try { 
 						proc.waitFor(); 
 					} 
 					catch (InterruptedException e) { }
 				}
 				catch (IOException ex) { }
-				
-				
-				sJSON = xmlToJson(sFileName + ".xml");				
-				//JSON an Database weitersenden
+		
+				/* Checkstyle Informationen eintragen */
+				storeCheckstyleInformation(sFullPath + ".xml", nClassPos);
 			}
+		
+		if(lFormattedClassList != null)	{
+			/* Schoene einheitliche JSON erstellen */
+			oJson = buildJSON(gitRepository);
+		}
+		
+        return oJson;
+    }
+
+    public void storeCheckstyleInformation(String sXmlPath, int nClassPos)
+	{
+		try 
+		{
+			File oFileXML = new File(sXmlPath);
+			DocumentBuilderFactory dbFactory = DocumentBuilderFactory.newInstance();
+			DocumentBuilder dBuilder = dbFactory.newDocumentBuilder();
+			Document doc = dBuilder.parse(oFileXML);
+			doc.getDocumentElement().normalize();
+					
+			NodeList nList = doc.getElementsByTagName("error");
+
+			for (int nNodePos = 0; nNodePos < nList.getLength(); nNodePos++) 
+			{
+
+				Node nNode = nList.item(nNodePos);
+						 
+				if (nNode.getNodeType() == Node.ELEMENT_NODE) 
+				{
+					Element eElement = (Element) nNode;
+					
+					/* Default Values */
+					int nLine = 0;
+					int nColumn = 0;
+					String sSeverity = "";
+					String sMessage = "";
+					String sSource = "";
+
+					if(isParsable(eElement.getAttribute("line")))
+					{
+						nLine = Integer.parseInt(eElement.getAttribute("line"));
+					}
+					if(isParsable(eElement.getAttribute("column")))
+					{
+						nColumn = Integer.parseInt(eElement.getAttribute("column"));
+					}	
+					if(!eElement.getAttribute("severity").isEmpty())
+					{
+						sSeverity = eElement.getAttribute("severity");
+					}	
+					if(!eElement.getAttribute("message").isEmpty())
+					{
+						sMessage = eElement.getAttribute("message");
+					}
+					if(!eElement.getAttribute("source").isEmpty())
+					{
+						sSource = eElement.getAttribute("source");
+					}
+					
+					Error oError = new Error(nLine, nColumn, sSeverity, sMessage, sSource);
+					
+					lFormattedClassList.get(nClassPos).getErrorList().add(oError);
+				}
+			}
+		} 
+		catch (Exception e) 
+		{
+			e.printStackTrace(); 
 		}
 	}
 
-	public String xmlToJson(String sXmlFilePath)
-    {
-		String sJSON = "";
-		String sXML = "";
+	public boolean isParsable(String input)
+	{
+	    boolean bParsable = true;
+	    
+	    try
+	    {
+	        Integer.parseInt(input);
+	    }
+	    catch(NumberFormatException e)
+	    {
+	        bParsable = false;
+	    }
+	    
+	    return bParsable;
+	}
+	
+	public void formatList(List<List<String>> lRepoList)
+	{
+		for(int nExcercisePos = 0; nExcercisePos < lRepoList.size(); nExcercisePos++)
+		{
+			Class oClass = null;
+			
+			for(int x = 0; x < lRepoList.get(nExcercisePos).size(); x++)
+			{
+				String[] need = lRepoList.get(nExcercisePos).get(x).split("\\\\");
+				String sFullPath = lRepoList.get(nExcercisePos).get(x);
+				
+				oClass = new Class(need[need.length-1].toString(), sFullPath);
+				lFormattedClassList.add(oClass);
+			}
+		}
+	}
+	
+	public JSONObject buildJSON(String sRepo)
+	{
+		List<Error> lTmpErrorList = new ArrayList<Error>();
+		JSONObject oJsonRoot = new JSONObject();
+		JSONArray lJsonClasses = new JSONArray();
 		
-        try
-        {
-        	File oFile = new File(sXmlFilePath);
-
-            if(oFile.exists())
-            {
-            	InputStream oInputStream = new FileInputStream(oFile);
-                StringBuilder oBuilder =  new StringBuilder();
-                int nStringPos = 0;
-                
-                while ((nStringPos = oInputStream.read()) != -1 )
-                {
-                    oBuilder.append((char) nStringPos);
-                }
-                
-                oInputStream.close();
-
-                sXML  = oBuilder.toString();
-                JSONObject jsonObj = XML.toJSONObject(sXML);
-                sJSON = jsonObj.toString();
-                
-                System.out.println(sJSON);
-            }
-            else
-            {
-            	System.out.println("Error: Pfad: " + oFile.getAbsolutePath());
-            }
-            
-        }
-        catch(Exception e)
-        {
-            e.printStackTrace();
-        }
-        
-        return sJSON;
-    }
+		/* add general information to the JSON object */
+		oJsonRoot.put("repositoryUrl", sRepo);
+		//oJsonRoot.put("groupID", nGroupID);
+		//oJsonRoot.put("name", sName);
+		
+		/* all Classes */
+		for(int nClassPos = 0; nClassPos < lFormattedClassList.size(); nClassPos++)
+		{
+			lTmpErrorList = lFormattedClassList.get(nClassPos).getErrorList();	
+			JSONArray lJsonErrors = new JSONArray();
+			JSONObject oJsonClass = new JSONObject();
+				
+			/* all Errors */
+			for(int nErrorPos = 0; nErrorPos < lTmpErrorList.size(); nErrorPos++)
+			{
+				JSONObject oJsonError = new JSONObject();
+				
+				oJsonError.put("line", Integer.toString(lTmpErrorList.get(nErrorPos).nErrorAtLine));
+				oJsonError.put("column", Integer.toString(lTmpErrorList.get(nErrorPos).nColumn));
+				oJsonError.put("severity", lTmpErrorList.get(nErrorPos).sSeverity);
+				oJsonError.put("message", lTmpErrorList.get(nErrorPos).sMessage);
+				oJsonError.put("source", lTmpErrorList.get(nErrorPos).sSource);
+				
+				lJsonErrors.put(oJsonError);
+			}
+			
+			oJsonClass.put("filepath", lFormattedClassList.get(nClassPos).sFullPath);
+			oJsonClass.put("errors", lJsonErrors);
+			lJsonClasses.put(oJsonClass);
+		}
+		
+		oJsonRoot.put("files", lJsonClasses);
+		
+		return oJsonRoot;
+	}
 }
