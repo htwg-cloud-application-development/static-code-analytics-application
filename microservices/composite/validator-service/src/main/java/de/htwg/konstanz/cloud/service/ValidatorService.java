@@ -59,16 +59,14 @@ public class ValidatorService {
     }
 
     @ApiOperation(value = "validate", nickname = "validate")
-    @RequestMapping(value = "/courses/{courseId}/groups/{groupId}/validate", method = RequestMethod.POST)
+    @RequestMapping(value = "/groups/{groupId}/validate", method = RequestMethod.POST)
     @ApiResponse(code = 200, message = "Success", response = String.class)
-    public ResponseEntity<String> validateGroup(@PathVariable String courseId, @PathVariable String groupId) {
+    public ResponseEntity<String> validateGroup(@PathVariable String groupId) {
         try {
-            // TODO [] get repository of course or get it from reqeustBody
-            // TODO use JSON Object instead of String
-            JSONObject mockJsonForTesting = new JSONObject();
-            mockJsonForTesting.put("repositoryUrl", "https://github.com/morph0815/SOTE1");
+            String group = databaseService.getGroup(groupId);
+            //mockJsonForTesting.put("repositoryUrl", "https://github.com/morph0815/SOTE1");
 
-            Future<String> repo = validateRepositoryService.validateRepository(mockJsonForTesting.toString());
+            Future<String> repo = validateRepositoryService.validateRepository(group);
 
             // Wait until they are done
             while (!(repo.isDone())) {
@@ -77,7 +75,6 @@ public class ValidatorService {
             }
 
             JSONObject result = new JSONObject(repo.get());
-            result.put("courseId", courseId);
             result.put("groupId", groupId);
 
             Future<String> save = databaseService.saveResult(result.toString());
