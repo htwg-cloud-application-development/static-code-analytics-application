@@ -11,4 +11,5 @@ public class Group {
     @Id
     String groupId;
     String name;
+    String repositoryUrl;
 }
