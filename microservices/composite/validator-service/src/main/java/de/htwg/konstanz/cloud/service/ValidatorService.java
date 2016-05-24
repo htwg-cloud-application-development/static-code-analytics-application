@@ -64,8 +64,6 @@ public class ValidatorService {
     public ResponseEntity<String> validateGroup(@PathVariable String groupId) {
         try {
             String group = databaseService.getGroup(groupId);
-            //mockJsonForTesting.put("repositoryUrl", "https://github.com/morph0815/SOTE1");
-
             Future<String> repo = validateRepositoryService.validateRepository(group);
 
             // Wait until they are done
@@ -78,8 +76,6 @@ public class ValidatorService {
             result.put("groupId", groupId);
 
             Future<String> save = databaseService.saveResult(result.toString());
-
-            // TODO wait for database response
             return util.createResponse(result.toString(), HttpStatus.OK);
         } catch (InstantiationException e) {
             LOG.error(e.getMessage());
