@@ -64,6 +64,8 @@ public class ValidatorService {
     public ResponseEntity<String> validateGroup(@PathVariable String groupId) {
         try {
             String group = databaseService.getGroup(groupId);
+            // start execution measurement
+            long startTime = System.currentTimeMillis();
             Future<String> repo = validateRepositoryService.validateRepository(group);
 
             // Wait until they are done
@@ -74,6 +76,7 @@ public class ValidatorService {
 
             JSONObject result = new JSONObject(repo.get());
             result.put("groupId", groupId);
+            result.put("duration", (System.currentTimeMillis() - startTime));
 
             Future<String> save = databaseService.saveResult(result.toString());
             return util.createResponse(result.toString(), HttpStatus.OK);
