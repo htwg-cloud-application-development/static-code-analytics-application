@@ -1,6 +1,7 @@
 package de.htwg.konstanz.cloud.service;
 
 
+import com.amazonaws.util.json.JSONObject;
 import com.netflix.hystrix.contrib.javanica.annotation.HystrixCommand;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
@@ -12,6 +13,8 @@ import org.springframework.web.bind.annotation.RestController;
 import org.springframework.web.client.RestTemplate;
 
 import javax.validation.Valid;
+import java.util.HashMap;
+import java.util.concurrent.Future;
 
 
 @RestController
@@ -38,4 +41,15 @@ public class GovernanceService {
         return null;
     }
 
+
+    <T> ResponseEntity<T> createResponse(T body, HttpStatus httpStatus) {
+        return new ResponseEntity<>(body, httpStatus);
+    }
+
+    ResponseEntity<String> createErrorResponse(String errorMessage, HttpStatus status) {
+        HashMap<String, String> errorResponse = new HashMap<>();
+        errorResponse.put("error", errorMessage);
+        JSONObject errorResponseObject = new JSONObject(errorResponse);
+        return createResponse(errorResponseObject.toString(), status);
+    }
 }
