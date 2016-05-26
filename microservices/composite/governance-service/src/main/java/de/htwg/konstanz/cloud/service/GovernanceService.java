@@ -23,10 +23,8 @@ public class GovernanceService {
         return "Governance-Service";
     }
 
-
     @Autowired
     DatabaseService databaseService;
-
 
     @RequestMapping(value = "/courses", method = RequestMethod.GET, consumes = "application/json", produces = "application/json")
     public ResponseEntity<String> getCouses() {
