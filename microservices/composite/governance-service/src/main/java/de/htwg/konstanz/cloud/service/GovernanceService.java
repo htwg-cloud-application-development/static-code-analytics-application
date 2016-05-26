@@ -32,9 +32,18 @@ public class GovernanceService {
 
 
     @RequestMapping(value = "/courses", method = RequestMethod.GET, consumes = "application/json", produces = "application/json")
-    public ResponseEntity<String> validateGroup() {
+    public ResponseEntity<String> getCouses() {
         try {
             return createResponse(databaseService.getAllCourses(), HttpStatus.OK);
+        } catch (InstantiationException e) {
+            return createErrorResponse(e.getMessage(), HttpStatus.SERVICE_UNAVAILABLE);
+        }
+    }
+
+    @RequestMapping(value = "/groups", method = RequestMethod.GET, consumes = "application/json", produces = "application/json")
+    public ResponseEntity<String> getGroups() {
+        try {
+            return createResponse(databaseService.getAllGroups(), HttpStatus.OK);
         } catch (InstantiationException e) {
             return createErrorResponse(e.getMessage(), HttpStatus.SERVICE_UNAVAILABLE);
         }
