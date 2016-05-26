@@ -26,7 +26,7 @@ public class GovernanceService {
     @Autowired
     DatabaseService databaseService;
 
-    @RequestMapping(value = "/courses", method = RequestMethod.GET, consumes = "application/json", produces = "application/json")
+    @RequestMapping(value = "/courses", method = RequestMethod.GET, produces = "application/json")
     public ResponseEntity<String> getCouses() {
         try {
             return createResponse(databaseService.getAllCourses(), HttpStatus.OK);
@@ -35,7 +35,7 @@ public class GovernanceService {
         }
     }
 
-    @RequestMapping(value = "/groups", method = RequestMethod.GET, consumes = "application/json", produces = "application/json")
+    @RequestMapping(value = "/groups", method = RequestMethod.GET, produces = "application/json")
     public ResponseEntity<String> getGroups() {
         try {
             return createResponse(databaseService.getAllGroups(), HttpStatus.OK);
@@ -44,7 +44,7 @@ public class GovernanceService {
         }
     }
 
-    @RequestMapping(value = "/groups/{groupId}", method = RequestMethod.GET, consumes = "application/json", produces = "application/json")
+    @RequestMapping(value = "/groups/{groupId}", method = RequestMethod.GET, produces = "application/json")
     public ResponseEntity<String> getGroup(@PathVariable String groupId) {
         try {
             return createResponse(databaseService.getGroupWithId(groupId), HttpStatus.OK);
@@ -53,7 +53,7 @@ public class GovernanceService {
         }
     }
 
-    @RequestMapping(value = "/courses/{courseId}", method = RequestMethod.GET, consumes = "application/json", produces = "application/json")
+    @RequestMapping(value = "/courses/{courseId}", method = RequestMethod.GET, produces = "application/json")
     public ResponseEntity<String> getCourse(@PathVariable String courseId) {
         try {
             return createResponse(databaseService.getGroupWithId(courseId), HttpStatus.OK);
