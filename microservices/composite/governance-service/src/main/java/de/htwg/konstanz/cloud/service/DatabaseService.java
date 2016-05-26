@@ -29,12 +29,21 @@ public class DatabaseService {
         this.restTemplate = new RestTemplate();
     }
 
-    public String getAllGroups(String groupId) throws InstantiationException {
+    public String getAllGroups() throws InstantiationException {
         return callDatabaseFor("/groups");
+    }
+
+
+    public String getGroupWithId(String groupId) throws InstantiationException {
+        return callDatabaseFor("/groups/" + groupId);
     }
 
     public String getAllCourses() throws InstantiationException {
         return callDatabaseFor("/courses");
+    }
+
+    public String getCourseWithId(String courseId) throws InstantiationException {
+        return callDatabaseFor("/courses/" + courseId);
     }
 
     private String callDatabaseFor(String ROUTE) throws InstantiationException {
