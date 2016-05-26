@@ -29,13 +29,19 @@ public class DatabaseService {
         this.restTemplate = new RestTemplate();
     }
 
-    public String getGroups(String groupId) throws InstantiationException {
-        String GET_GROUP_ROUTE = "/groups";
+    public String getAllGroups(String groupId) throws InstantiationException {
+        return callDatabaseFor("/groups");
+    }
 
+    public String getAllCourses() throws InstantiationException {
+        return callDatabaseFor("/courses");
+    }
+
+    private String callDatabaseFor(String ROUTE) throws InstantiationException {
         ServiceInstance instance = loadBalancer.choose("mongo-service");
         if (null != instance) {
             // build request url
-            String requestUrl = instance.getUri() + GET_GROUP_ROUTE;
+            String requestUrl = instance.getUri() + ROUTE;
             // POST to request url and get String (JSON)
             HttpHeaders headers = new HttpHeaders();
             headers.setContentType(MediaType.APPLICATION_JSON);
