@@ -31,6 +31,14 @@ public class GovernanceService {
     DatabaseService databaseService;
 
 
+    @RequestMapping(value = "/courses", method = RequestMethod.GET, consumes = "application/json", produces = "application/json")
+    public ResponseEntity<String> validateGroup() {
+        try {
+            return createResponse(databaseService.getAllCourses(), HttpStatus.OK);
+        } catch (InstantiationException e) {
+            return createErrorResponse(e.getMessage(), HttpStatus.SERVICE_UNAVAILABLE);
+        }
+    }
 
     @HystrixCommand(fallbackMethod = "getDefaultMoodleStuff")
     private Object getMoodleStuff() {
