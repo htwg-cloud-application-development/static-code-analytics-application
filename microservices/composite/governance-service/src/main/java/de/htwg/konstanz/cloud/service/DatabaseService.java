@@ -28,5 +28,22 @@ public class DatabaseService {
     private void init() {
         this.restTemplate = new RestTemplate();
     }
+
+    public String getGroups(String groupId) throws InstantiationException {
+        String GET_GROUP_ROUTE = "/groups";
+
+        ServiceInstance instance = loadBalancer.choose("mongo-service");
+        if (null != instance) {
+            // build request url
+            String requestUrl = instance.getUri() + GET_GROUP_ROUTE;
+            // POST to request url and get String (JSON)
+            HttpHeaders headers = new HttpHeaders();
+            headers.setContentType(MediaType.APPLICATION_JSON);
+            ResponseEntity<String> entity = restTemplate.getForEntity(requestUrl, String.class, headers);
+            return entity.getBody();
+        }
+        throw new InstantiationException("service is not available");
+    }
+
 }
 
