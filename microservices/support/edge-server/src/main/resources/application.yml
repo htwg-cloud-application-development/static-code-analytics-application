@@ -8,7 +8,9 @@ server:
 zuul:
   routes:
     validator-service:
-      path: /validator-service/**
+      path: /apiv1/validator-service/**
+    governance-service:
+      path: /apiv1/governance-service/**
   host:
     socket-timeout-millis: 200000
 
