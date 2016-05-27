@@ -2,7 +2,10 @@ package de.htwg.konstanz.cloud.service;
 
 
 import com.netflix.hystrix.contrib.javanica.annotation.HystrixCommand;
+import de.htwg.konstanz.cloud.models.MoodleCourse;
 import de.htwg.konstanz.cloud.models.MoodleCredentials;
+import de.htwg.konstanz.cloud.models.MoodleToken;
+import de.htwg.konstanz.cloud.moodle.Moodle;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.RequestBody;
@@ -25,13 +28,18 @@ public class MoodleService {
 
 
     @RequestMapping(value = "/update", method = RequestMethod.POST)
-    public ResponseEntity<Object> getCourses(@Valid @RequestBody MoodleCredentials input) {
+    public ResponseEntity<MoodleCourse> getCourses(@Valid @RequestBody MoodleCredentials input) {
 
 
-        Object moodle = getMoodleStuff();
+        Moodle moodle = new Moodle();
 
+        // first, get the token for requests
+        MoodleToken tokenFromMoodle = moodle.getTokenFromMoodle(input);
 
-        return new ResponseEntity<Object>(moodle, HttpStatus.OK);
+        // then get course information
+        MoodleCourse courseInformation = moodle.getCourseInformation(tokenFromMoodle, 1234);
+
+        return new ResponseEntity(courseInformation, HttpStatus.OK);
 
     }
 
