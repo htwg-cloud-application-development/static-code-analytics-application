@@ -1,5 +1,6 @@
 package de.htwg.konstanz.cloud.moodle;
 
+import de.htwg.konstanz.cloud.models.MoodleCourse;
 import de.htwg.konstanz.cloud.models.MoodleCredentials;
 import de.htwg.konstanz.cloud.models.MoodleToken;
 import org.springframework.web.client.RestTemplate;
@@ -26,4 +27,7 @@ public class Moodle {
         return token;
     }
 
+    public MoodleCourse getCourseInformation(MoodleToken tokenFromMoodle, int s) {
+        return null;
+    }
 }
