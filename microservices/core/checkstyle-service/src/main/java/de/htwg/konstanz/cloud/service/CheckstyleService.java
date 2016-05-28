@@ -4,6 +4,8 @@ import javax.xml.parsers.ParserConfigurationException;
 import java.net.MalformedURLException;
 import java.io.FileNotFoundException;
 import java.io.IOException;
+
+import de.htwg.konstanz.cloud.model.ValidationData;
 import org.xml.sax.SAXException;
 import org.eclipse.jgit.api.errors.GitAPIException;
 import org.eclipse.jgit.api.errors.InvalidRemoteException;
@@ -22,45 +24,22 @@ import org.springframework.web.bind.annotation.*;
 public class CheckstyleService {
 
     @RequestMapping(value = "/validate", method = RequestMethod.POST)
-    public ResponseEntity validate(@RequestBody String data) {
-        try 
-		{
-            JSONObject jsonObj = new JSONObject(data);
-            String repositoryUrl = jsonObj.getString("repositoryUrl");
-            // TODO übergeben der repository Url an Methode oder im Konstruktor zur Validierung - bsp url https://github.com/T1m1/de.htwg.se.monopoly
+    public ResponseEntity validate(@RequestBody ValidationData data) {
+        try {
             CheckGitRep oCheckGitRep = new CheckGitRep();
-            // TODO Die Methode "oCheckGitRep" muss einen Fehler zurückliefern, damit dieser auch verarbeitet werden kann
-            // TODO Wenn Methode schief läuft "InternalServerError" zurückliefern
-            String json = oCheckGitRep.startIt(repositoryUrl);
+            String json = oCheckGitRep.startIt(data.getRepositoryUrl());
             return ResponseEntity.ok(json);
-        }
-		catch (ParserConfigurationException e) 
-		{
-            e.getMessage();
-            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(null);
-        }
-		catch (MalformedURLException e) 
-		{
-            e.getMessage();
-            return ResponseEntity.status(HttpStatus.NOT_FOUND).body(null);
-        }
-		catch (FileNotFoundException e) 
-		{
-            e.getMessage();
-            return ResponseEntity.status(HttpStatus.NOT_FOUND).body(null);
-        }
-		catch (SAXException e) 
-		{
-            e.getMessage();
-            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(null);
-        }
-		catch (IOException e) 
-		{
-            e.getMessage();
-            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(null);
-        }
-		catch (Exception e) 
-		{
+        } catch (ParserConfigurationException e) {
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(e.getMessage());
+        } catch (MalformedURLException e) {
+            return ResponseEntity.status(HttpStatus.NOT_FOUND).body(e.getMessage());
+        } catch (FileNotFoundException e) {
+            return ResponseEntity.status(HttpStatus.NOT_FOUND).body(e.getMessage());
+        } catch (SAXException e) {
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(e.getMessage());
+        } catch (IOException e) {
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(e.getMessage());
+        } catch (Exception e) {
             e.getMessage();
             return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(null);
         }
