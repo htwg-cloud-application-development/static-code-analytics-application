@@ -44,8 +44,6 @@ public class CheckGitRep {
         JSONObject oJsonResult = null;
         SeverityCounter oSeverityCounter = new SeverityCounter();
 
-        System.out.println(getOsName());
-
         checkLocalCheckstyle();
         List<List<String>> lRepoList = downloadRepoAndGetPath(gitRepository);
         oJsonResult = checkStyle(lRepoList, gitRepository, oSeverityCounter, lStartTime);
@@ -55,28 +53,6 @@ public class CheckGitRep {
         }
 
         return oJsonResult.toString();
-    }
-
-    private String OS = null;
-
-    public String getOsName()
-    {
-        if(OS == null)
-        {
-            OS = System.getProperty("os.name");
-        }
-
-        return OS;
-    }
-
-    public boolean isWindows()
-    {
-        return getOsName().startsWith("Windows");
-    }
-
-    public boolean isUnix()
-    {
-        return getOsName().startsWith("Linux");
     }
 
     public List<List<String>> downloadRepoAndGetPath(String gitRepo) {
@@ -266,8 +242,12 @@ public class CheckGitRep {
         for (List<String> aLRepoList : lRepoList) {
             Class oClass = null;
 
-            for (int nClassPos = 0; nClassPos < aLRepoList.size(); nClassPos++) {
-                String[] sFullPathSplit_a = aLRepoList.get(nClassPos).split(File.separator + File.separator);
+            for (int nClassPos = 0; nClassPos < aLRepoList.size(); nClassPos++)
+            {
+                String sFileSeparator = new StringBuilder(File.separatorChar).toString();
+
+                String[] sFullPathSplit_a = aLRepoList.get(nClassPos).split(sFileSeparator);
+
                 String sFullPath = aLRepoList.get(nClassPos);
 
                 String sTmpClassName = sFullPathSplit_a[sFullPathSplit_a.length - 1];
