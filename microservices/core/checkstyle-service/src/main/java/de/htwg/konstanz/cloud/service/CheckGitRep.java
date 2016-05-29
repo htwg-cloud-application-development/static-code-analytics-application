@@ -54,6 +54,7 @@ public class CheckGitRep {
         List<List<String>> list = new ArrayList<List<String>>();
 		String directoryName = gitRepo.substring(gitRepo.lastIndexOf("/"), gitRepo.length()-1).replace(".","_");
         String localDirectory = "repositories/"  + directoryName + "_" + System.currentTimeMillis() +"/";
+		oRepoDir = new File(localDirectory);
 		Git git = null;
 
         // TODO ueberprüfen ob Repo vorhanden bzw. Giturl okay
@@ -130,7 +131,7 @@ public class CheckGitRep {
     public JSONObject checkStyle(List<List<String>> lRepoList, String gitRepository) throws ParserConfigurationException, SAXException, IOException
 	{
         final String sCheckStylePath = "checkstyle-6.17-all.jar";
-		final String sRuleSetPath = "/sun_checks.xml";
+		final String sRuleSetPath = "/google_checks.xml";
 		JSONObject oJson = null;
 
 		/* Listeninhalt kuerzen, um JSON vorbereiten */
