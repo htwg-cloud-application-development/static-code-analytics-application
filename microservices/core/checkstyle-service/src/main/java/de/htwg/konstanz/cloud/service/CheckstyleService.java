@@ -18,7 +18,7 @@ import org.springframework.web.bind.annotation.*;
 @RestController
 public class CheckstyleService {
 
-    @RequestMapping(value = "/validate", method = RequestMethod.POST)
+    @RequestMapping(value = "/validate", method = RequestMethod.POST, produces = "application/json", consumes = "application/json")
     public ResponseEntity validate(@RequestBody ValidationData data) {
         try {
             CheckGitRep oCheckGitRep = new CheckGitRep();
@@ -39,7 +39,7 @@ public class CheckstyleService {
         }
     }
 
-    @RequestMapping("/info")
+    @RequestMapping(value = "/info", method = RequestMethod.GET)
     public String info() {
         return "Checkstyle-Service";
     }
