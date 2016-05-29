@@ -224,7 +224,7 @@ public class CheckGitRep {
             Class oClass = null;
 
             for (int nClassPos = 0; nClassPos < aLRepoList.size(); nClassPos++) {
-                String[] sFullPathSplit_a = aLRepoList.get(nClassPos).split("\\\\");
+                String[] sFullPathSplit_a = aLRepoList.get(nClassPos).split(File.separator + File.separator);
                 String sFullPath = aLRepoList.get(nClassPos);
 
                 String sTmpClassName = sFullPathSplit_a[sFullPathSplit_a.length - 1];
