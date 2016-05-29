@@ -7,13 +7,8 @@ import java.io.IOException;
 
 import de.htwg.konstanz.cloud.model.ValidationData;
 import org.xml.sax.SAXException;
-import org.eclipse.jgit.api.errors.GitAPIException;
-import org.eclipse.jgit.api.errors.InvalidRemoteException;
-import org.eclipse.jgit.api.errors.TransportException;
 
 
-import com.amazonaws.util.json.JSONException;
-import com.amazonaws.util.json.JSONObject;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
@@ -46,7 +41,7 @@ public class CheckstyleService {
 
     @RequestMapping("/info")
     public String info() {
-        return "Checkstyle-Service)";
+        return "Checkstyle-Service";
     }
 
 }
