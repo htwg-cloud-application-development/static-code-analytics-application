@@ -197,17 +197,17 @@ public class CheckGitRep {
                 }
                 if (!eElement.getAttribute("severity").isEmpty()) {
                     sSeverity = eElement.getAttribute("severity");
-
+                    
                     /* Count every Error Type we have found in the XML */
-                    if(sSeverity.toLowerCase().equals("Error"))
+                    if(sSeverity.toLowerCase().equals("error"))
                     {
                         oSeverityCounter.incErrorCount();
                     }
-                    else if(sSeverity.toLowerCase().equals("Warning"))
+                    else if(sSeverity.toLowerCase().equals("warning"))
                     {
                         oSeverityCounter.incWarningCount();
                     }
-                    else if(sSeverity.toLowerCase().equals("Ignore"))
+                    else if(sSeverity.toLowerCase().equals("ignore"))
                     {
                         oSeverityCounter.incIgnoreCount();
                     }
@@ -347,7 +347,6 @@ public class CheckGitRep {
                 }
             }
         }
-
 
         long lEndTime   = System.currentTimeMillis();
         long lTotalTime = (lEndTime - lStartTime);
