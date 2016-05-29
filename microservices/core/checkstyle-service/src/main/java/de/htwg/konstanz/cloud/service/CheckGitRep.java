@@ -40,19 +40,17 @@ public class CheckGitRep {
 
     public String startIt(String gitRepository) throws IOException, ParserConfigurationException, SAXException
     {
+        long lStartTime = System.currentTimeMillis();
         JSONObject oJsonResult = null;
         SeverityCounter oSeverityCounter = new SeverityCounter();
-        long lStartTime = System.currentTimeMillis();
 
         checkLocalCheckstyle();
         List<List<String>> lRepoList = downloadRepoAndGetPath(gitRepository);
-        oJsonResult = checkStyle(lRepoList, gitRepository, oSeverityCounter);
-        if (null != oRepoDir) {
+        oJsonResult = checkStyle(lRepoList, gitRepository, oSeverityCounter, lStartTime);
+        if (oRepoDir != null)
+        {
             FileUtils.deleteDirectory(oRepoDir);
         }
-
-        long lEndTime   = System.currentTimeMillis();
-        long lTotalTime = lEndTime - lStartTime;
 
         return oJsonResult.toString();
     }
@@ -126,7 +124,7 @@ public class CheckGitRep {
         }
     }
 
-    public JSONObject checkStyle(List<List<String>> lRepoList, String gitRepository, SeverityCounter oSeverityCounter) throws ParserConfigurationException, SAXException, IOException {
+    public JSONObject checkStyle(List<List<String>> lRepoList, String gitRepository, SeverityCounter oSeverityCounter, long lStartTime) throws ParserConfigurationException, SAXException, IOException {
         final String sCheckStylePath = "checkstyle-6.17-all.jar";
         final String sRuleSetPath = "/google_checks.xml";
         JSONObject oJson = null;
@@ -162,7 +160,7 @@ public class CheckGitRep {
 
         if (null != lFormattedClassList) {
 			/* generate JSON File */
-            oJson = buildJSON(gitRepository);
+            oJson = buildJSON(gitRepository, oSeverityCounter, lStartTime);
         }
 
         return oJson;
@@ -258,7 +256,7 @@ public class CheckGitRep {
         }
     }
 
-    public JSONObject buildJSON(String sRepo) {
+    public JSONObject buildJSON(String sRepo, SeverityCounter oSeverityCounter, long lStartTime) {
         List<Error> lTmpErrorList = new ArrayList<Error>();
         JSONObject oJsonRoot = new JSONObject();
         JSONObject oJsonExercise = new JSONObject();
@@ -271,6 +269,9 @@ public class CheckGitRep {
 		
 		/* add general information to the JSON object */
         oJsonRoot.put("repositoryUrl", sRepo);
+        oJsonRoot.put("numberOfErrors", oSeverityCounter.getErrorCount());
+        oJsonRoot.put("numberOfWarnings", oSeverityCounter.getWarningCount());
+        oJsonRoot.put("numberOfIgnores", oSeverityCounter.getIgnoreCount());
         //oJsonRoot.put("groupID", nGroupID);
         //oJsonRoot.put("name", sName);
 		
@@ -343,6 +344,11 @@ public class CheckGitRep {
             }
         }
 
+
+        long lEndTime   = System.currentTimeMillis();
+        long lTotalTime = (lEndTime - lStartTime);
+
+        oJsonRoot.put("totalExpendedTime", lTotalTime);
         oJsonRoot.put("files", lJsonExercises);
 
         return oJsonRoot;
