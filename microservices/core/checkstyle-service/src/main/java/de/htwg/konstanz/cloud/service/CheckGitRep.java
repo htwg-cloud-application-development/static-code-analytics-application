@@ -53,6 +53,7 @@ public class CheckGitRep {
         List<List<String>> list = new ArrayList<List<String>>();
 		String directoryName = gitRepo.substring(gitRepo.lastIndexOf("/"), gitRepo.length()-1).replace(".","_");
         String localDirectory = "repositories/"  + directoryName + "_" + System.currentTimeMillis() +"/";
+		oRepoDir = new File(localDirectory);
 		Git git = null;
 
         // TODO ueberprüfen ob Repo vorhanden bzw. Giturl okay
