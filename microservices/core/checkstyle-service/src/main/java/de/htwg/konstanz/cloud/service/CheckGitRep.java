@@ -11,6 +11,7 @@ import java.util.List;
 
 import de.htwg.konstanz.cloud.model.Class;
 import de.htwg.konstanz.cloud.model.Error;
+import de.htwg.konstanz.cloud.model.SeverityCounter;
 import org.apache.commons.io.FileUtils;
 import org.eclipse.jgit.api.Git;
 import org.eclipse.jgit.api.errors.GitAPIException;
@@ -37,15 +38,21 @@ public class CheckGitRep {
     private List<Class> lFormattedClassList = new ArrayList<Class>();
     private File oRepoDir;
 
-    public String startIt(String gitRepository) throws IOException, ParserConfigurationException, SAXException {
+    public String startIt(String gitRepository) throws IOException, ParserConfigurationException, SAXException
+    {
         JSONObject oJsonResult = null;
+        SeverityCounter oSeverityCounter = new SeverityCounter();
+        long lStartTime = System.currentTimeMillis();
 
         checkLocalCheckstyle();
         List<List<String>> lRepoList = downloadRepoAndGetPath(gitRepository);
-        oJsonResult = checkStyle(lRepoList, gitRepository);
+        oJsonResult = checkStyle(lRepoList, gitRepository, oSeverityCounter);
         if (null != oRepoDir) {
             FileUtils.deleteDirectory(oRepoDir);
         }
+
+        long lEndTime   = System.currentTimeMillis();
+        long lTotalTime = lEndTime - lStartTime;
 
         return oJsonResult.toString();
     }
@@ -119,7 +126,7 @@ public class CheckGitRep {
         }
     }
 
-    public JSONObject checkStyle(List<List<String>> lRepoList, String gitRepository) throws ParserConfigurationException, SAXException, IOException {
+    public JSONObject checkStyle(List<List<String>> lRepoList, String gitRepository, SeverityCounter oSeverityCounter) throws ParserConfigurationException, SAXException, IOException {
         final String sCheckStylePath = "checkstyle-6.17-all.jar";
         final String sRuleSetPath = "/google_checks.xml";
         JSONObject oJson = null;
@@ -149,19 +156,19 @@ public class CheckGitRep {
                 // TODO
             }
 
-			/* Checkstyle Informationen eintragen */
-            storeCheckstyleInformation(sFullPath + ".xml", nClassPos);
+			/* store Checkstyle Informationen in the global List */
+            storeCheckstyleInformation(sFullPath + ".xml", nClassPos, oSeverityCounter);
         }
 
         if (null != lFormattedClassList) {
-			/* Schoene einheitliche JSON erstellen */
+			/* generate JSON File */
             oJson = buildJSON(gitRepository);
         }
 
         return oJson;
     }
 
-    public void storeCheckstyleInformation(String sXmlPath, int nClassPos) throws ParserConfigurationException, SAXException, IOException {
+    public void storeCheckstyleInformation(String sXmlPath, int nClassPos, SeverityCounter oSeverityCounter) throws ParserConfigurationException, SAXException, IOException {
         File oFileXML = new File(sXmlPath);
         DocumentBuilderFactory dbFactory = DocumentBuilderFactory.newInstance();
         DocumentBuilder dBuilder = dbFactory.newDocumentBuilder();
@@ -192,6 +199,20 @@ public class CheckGitRep {
                 }
                 if (!eElement.getAttribute("severity").isEmpty()) {
                     sSeverity = eElement.getAttribute("severity");
+
+                    /* Count every Error Type we have found in the XML */
+                    if(sSeverity.toLowerCase().equals("Error"))
+                    {
+                        oSeverityCounter.incErrorCount();
+                    }
+                    else if(sSeverity.toLowerCase().equals("Warning"))
+                    {
+                        oSeverityCounter.incWarningCount();
+                    }
+                    else if(sSeverity.toLowerCase().equals("Ignore"))
+                    {
+                        oSeverityCounter.incIgnoreCount();
+                    }
                 }
                 if (!eElement.getAttribute("message").isEmpty()) {
                     sMessage = eElement.getAttribute("message");
