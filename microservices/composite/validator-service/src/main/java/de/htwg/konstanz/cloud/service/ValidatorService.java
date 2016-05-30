@@ -49,6 +49,9 @@ public class ValidatorService {
 
     @RequestMapping(value = "/courses/{courseId}/validate", method = RequestMethod.POST)
     public String validateCourse(@PathVariable String courseId) {
+
+        // TODO scheduling!!
+
         // [ ] get course data from database
         // [ ] for each repo:
         // [ ] - call validateRepositoryService async
