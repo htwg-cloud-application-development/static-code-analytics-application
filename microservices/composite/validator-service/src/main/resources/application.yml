@@ -35,15 +35,16 @@ server:
   port: 0
 
 eureka:
-      client:
-        serviceUrl:
-          defaultZone: http://localhost:8761/eureka/
-        healthcheck:
-          enabled: true
-      instance:
-        leaseRenewalIntervalInSeconds: 10
-        metadataMap:
-          instanceId: ${spring.application.name}:${spring.application.instance_id:${random.value}}
+  client:
+    serviceUrl:
+      defaultZone: http://localhost:8761/eureka/
+    healthcheck:
+      enabled: true
+  instance:
+    instance-id: ${vcap.application.instance_id:${spring.application.name}:${spring.application.instance_id:${random.value}}}
+    leaseRenewalIntervalInSeconds: 10
+    metadataMap:
+      instanceId: ${spring.application.name}:${spring.application.instance_id:${random.value}}
 ---
 # for use in aws
 spring:
