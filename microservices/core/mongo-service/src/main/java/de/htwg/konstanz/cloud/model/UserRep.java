@@ -15,9 +15,9 @@ public class UserRep {
     private String name;
     private String groupId;
     private String courseId;
-    private long duration;
+    private String duration;
     private String repositoryName;
-    private Collection<File> files = new LinkedHashSet<File>();
+    private Collection<Assignment> assignments = new LinkedHashSet<Assignment>();
 
     public String getId() {
         return id;
@@ -59,18 +59,26 @@ public class UserRep {
         this.repositoryName = repositoryName;
     }
 
-    public Collection<File> getFiles() {
-        return files;
-    }
+	public String getDuration() {
+		return duration;
+	}
 
-    public void setFiles(Collection<File> files) {
-        this.files = files;
-    }
+	public void setDuration(String duration) {
+		this.duration = duration;
+	}
 
-    @Override
+	public Collection<Assignment> getAssignments() {
+		return assignments;
+	}
+
+	public void setAssignments(Collection<Assignment> assignments) {
+		this.assignments = assignments;
+	}
+
+	@Override
     public String toString() {
         return "User [id=" + id + ", name=" + name + ", groupId=" + groupId + ", repositoryName=" + repositoryName
-                + ", files=" + files + "]";
+                + ", files=" + assignments + "]";
     }
 
 }

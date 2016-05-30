@@ -1,6 +1,6 @@
 package de.htwg.konstanz.cloud.model;
 
-import com.sun.javafx.beans.IDProperty;
+//import sun.javafx.beans.IDProperty;
 import lombok.Data;
 import org.springframework.data.annotation.Id;
 
@@ -12,4 +12,5 @@ public class Course {
     String courseId;
     String name;
     List<Group> groups;
+    
 }
