@@ -2,15 +2,16 @@ package de.htwg.konstanz.cloud.service;
 
 
 import com.netflix.hystrix.contrib.javanica.annotation.HystrixCommand;
+import de.htwg.konstanz.cloud.models.MoodleCourse;
 import de.htwg.konstanz.cloud.models.MoodleCredentials;
-import de.htwg.konstanz.cloud.models.Price;
+import de.htwg.konstanz.cloud.models.MoodleToken;
+import de.htwg.konstanz.cloud.moodle.Moodle;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestMethod;
 import org.springframework.web.bind.annotation.RestController;
-import org.springframework.web.client.RestTemplate;
 
 import javax.validation.Valid;
 
@@ -27,14 +28,18 @@ public class MoodleService {
 
 
     @RequestMapping(value = "/update", method = RequestMethod.POST)
-    public ResponseEntity<Price> getCourses(@Valid @RequestBody MoodleCredentials input) {
+    public ResponseEntity<MoodleCourse> getCourses(@Valid @RequestBody MoodleCredentials input) {
 
 
-        getMoodleStuff();
+        Moodle moodle = new Moodle();
 
-        Price price = new Price(23.23);
+        // first, get the token for requests
+        MoodleToken tokenFromMoodle = moodle.getTokenFromMoodle(input);
 
-        return new ResponseEntity<Price>(new Price(123.23), HttpStatus.OK);
+        // then get course information
+        MoodleCourse courseInformation = moodle.getCourseInformation(tokenFromMoodle, 1234);
+
+        return new ResponseEntity(courseInformation, HttpStatus.OK);
 
     }
 

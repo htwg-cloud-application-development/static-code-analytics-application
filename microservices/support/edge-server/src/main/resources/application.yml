@@ -8,7 +8,42 @@ server:
 zuul:
   routes:
     validator-service:
-      path: /validator-service/**
+      path: /apiv1/validator-service/**
+    governance-service:
+      path: /apiv1/governance-service/**
+  host:
+    socket-timeout-millis: 200000
+
+hystrix:
+  command:
+    default:
+      execution:
+        timeout:
+          enabled: false
+        isolation:
+          strategy: THREAD
+          thread:
+            timeoutInMilliseconds: 200000
+
+ribbon:
+  ReadTimeout: 200000
+
+---
+spring:
+  profiles: local
+
+eureka:
+  instance:
+    hostname: localhost
+  client:
+    registerWithEureka: true
+    fetchRegistry: true
+    serviceUrl:
+      defaultZone: http://${eureka.instance.hostname}:${server.port}/eureka/
+---
+
+spring:
+  profiles: aws
 
 eureka:
   instance:
@@ -22,3 +57,5 @@ eureka:
     fetchRegistry: true
     serviceUrl:
       defaultZone: http://ec2-52-29-21-217.eu-central-1.compute.amazonaws.com:8761/eureka/
+
+

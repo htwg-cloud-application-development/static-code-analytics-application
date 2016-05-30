@@ -1,7 +1,17 @@
 package de.htwg.konstanz.cloud.service;
 
-import com.amazonaws.util.json.JSONException;
-import com.amazonaws.util.json.JSONObject;
+import javax.xml.parsers.ParserConfigurationException;
+import java.net.MalformedURLException;
+import java.io.FileNotFoundException;
+import java.io.IOException;
+
+import de.htwg.konstanz.cloud.model.ValidationData;
+import org.eclipse.jgit.api.errors.GitAPIException;
+import org.eclipse.jgit.api.errors.InvalidRemoteException;
+import org.eclipse.jgit.api.errors.TransportException;
+import org.xml.sax.SAXException;
+
+
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
@@ -11,28 +21,37 @@ import org.springframework.web.bind.annotation.*;
 @RestController
 public class CheckstyleService {
 
-    @RequestMapping(value = "/validate", method = RequestMethod.POST)
-    public ResponseEntity validate(@RequestBody String data) {
+    @RequestMapping(value = "/validate", method = RequestMethod.POST, produces = "application/json", consumes = "application/json")
+    public ResponseEntity validate(@RequestBody ValidationData data) {
         try {
-            JSONObject jsonObj = new JSONObject(data);
-            String repositoryUrl = jsonObj.getString("repositoryUrl");
-            // TODO übergeben der repository Url an Methode oder im Konstruktor zur Validierung - bsp url https://github.com/T1m1/de.htwg.se.monopoly
             CheckGitRep oCheckGitRep = new CheckGitRep();
-            // TODO Die Methode "oCheckGitRep" muss einen Fehler zurückliefern, damit dieser auch verarbeitet werden kann
-            // TODO Wenn Methode schief läuft "InternalServerError" zurückliefern
-            String json = oCheckGitRep.startIt(repositoryUrl);
+            String json = oCheckGitRep.startIt(data.getRepositoryUrl());
             return ResponseEntity.ok(json);
+        } catch (ParserConfigurationException e) {
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(e.getMessage());
+        } catch (MalformedURLException e) {
+            return ResponseEntity.status(HttpStatus.NOT_FOUND).body(e.getMessage());
+        } catch (FileNotFoundException e) {
+            return ResponseEntity.status(HttpStatus.NOT_FOUND).body(e.getMessage());
+        } catch (SAXException e) {
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(e.getMessage());
+        } catch (InvalidRemoteException e) {
+            return ResponseEntity.status(HttpStatus.NOT_ACCEPTABLE).body(e.getMessage());
+        } catch (TransportException e) {
+            return ResponseEntity.status(HttpStatus.REQUESTED_RANGE_NOT_SATISFIABLE).body(e.getMessage());
+        } catch (GitAPIException e) {
+            return ResponseEntity.status(HttpStatus.CONFLICT).body(e.getMessage());
+        } catch (IOException e) {
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(e.getMessage());
         } catch (Exception e) {
             e.printStackTrace();
-            return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(null);
+            return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(e.getMessage());
         }
-
-
     }
 
-    @RequestMapping("/info")
+    @RequestMapping(value = "/info", method = RequestMethod.GET)
     public String info() {
-        return "Checkstyle-Service)";
+        return "Checkstyle-Service";
     }
 
 }

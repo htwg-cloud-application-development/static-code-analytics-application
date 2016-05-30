@@ -1,12 +1,12 @@
-package de.htwg.konstanz.cloud.service;
+package de.htwg.konstanz.cloud.model;
 
 public class Error
 {
-	String sSeverity;
-	String sMessage;
-	String sSource;
-	int nColumn;
-	int nErrorAtLine;
+	private String sSeverity;
+	private String sMessage;
+	private String sSource;
+	private int nColumn;
+	private int nErrorAtLine;
 	
 	public Error(int nErrorAtLine, int nColumn, String sSeverity, String sMessage, String sSource)
 	{

@@ -1,18 +1,20 @@
-package de.htwg.konstanz.cloud.service;
+package de.htwg.konstanz.cloud.model;
 
 import java.util.ArrayList;
 import java.util.List;
 
 public class Class 
 {
-	String sClassName;
-	String sFullPath;
-	List<Error> lError = new ArrayList<Error>();
+	private String sClassName;
+	private String sFullPath;
+	private List<Error> lError = new ArrayList<Error>();
+	private String sExerciseName;
 	
-	public Class(String sClassName, String sFullPath)
+	public Class(String sClassName, String sFullPath, String sExcerciseName)
 	{
 		this.sClassName = sClassName;
 		this.sFullPath = sFullPath;
+		this.sExerciseName = sExcerciseName;
 	}
 	
 	public String getFullPath()
@@ -43,5 +45,15 @@ public class Class
 	public void setClassName(String sClassName) 
 	{
 		this.sClassName = sClassName;
+	}
+	
+	public String getsExcerciseName()
+	{
+		return sExerciseName;
+	}
+
+	public void setsExcerciseName(String sExcerciseName)
+	{
+		this.sExerciseName = sExcerciseName;
 	}
 }

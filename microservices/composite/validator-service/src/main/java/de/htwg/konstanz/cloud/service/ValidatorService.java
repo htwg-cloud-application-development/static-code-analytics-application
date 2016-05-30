@@ -1,9 +1,12 @@
 package de.htwg.konstanz.cloud.service;
 
+import com.amazonaws.util.json.JSONException;
 import com.amazonaws.util.json.JSONObject;
+import com.netflix.discovery.converters.Auto;
 import de.htwg.konstanz.cloud.model.ValidationData;
 import io.swagger.annotations.ApiOperation;
 import io.swagger.annotations.ApiResponse;
+import org.codehaus.jackson.map.HandlerInstantiator;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -30,6 +33,9 @@ public class ValidatorService {
     ValidateRepositoryService validateRepositoryService;
 
     @Autowired
+    DatabaseService databaseService;
+
+    @Autowired
     Util util;
 
     @Value("${spring.application.name}")
@@ -53,14 +59,34 @@ public class ValidatorService {
     }
 
     @ApiOperation(value = "validate", nickname = "validate")
-    @RequestMapping(value = "/courses/{courseId}/groups/{groupId}/validate", method = RequestMethod.POST)
+    @RequestMapping(value = "/groups/{groupId}/validate", method = RequestMethod.POST)
     @ApiResponse(code = 200, message = "Success", response = String.class)
-    public String validateGroup(@PathVariable String courseId, @PathVariable String groupId) {
-        // [ ] get repository of course or get it from reqeustBody
-        // [ ] execute validation
-        // [ ] save into database
-        // [ ] return result
-        return null;
+    public ResponseEntity<String> validateGroup(@PathVariable String groupId) {
+        try {
+            String group = databaseService.getGroup(groupId);
+            // start execution measurement
+            long startTime = System.currentTimeMillis();
+            Future<String> repo = validateRepositoryService.validateRepository(group);
+
+            // Wait until they are done
+            while (!(repo.isDone())) {
+                //10-millisecond pause between each check
+                Thread.sleep(10);
+            }
+
+            JSONObject result = new JSONObject(repo.get());
+            result.put("groupId", groupId);
+            result.put("duration", (System.currentTimeMillis() - startTime));
+
+            Future<String> save = databaseService.saveResult(result.toString());
+            return util.createResponse(result.toString(), HttpStatus.OK);
+        } catch (InstantiationException e) {
+            LOG.error(e.getMessage());
+            return util.createErrorResponse(e.getMessage(), HttpStatus.SERVICE_UNAVAILABLE);
+        } catch (Exception e) {
+            LOG.error(e.getMessage());
+            return util.createErrorResponse(e.getMessage(), HttpStatus.INTERNAL_SERVER_ERROR);
+        }
     }
 
     @RequestMapping(value = "/validate", method = RequestMethod.POST, consumes = "application/json", produces = "application/json")
@@ -77,6 +103,7 @@ public class ValidatorService {
 
             return util.createResponse(repo.get(), HttpStatus.OK);
         } catch (InstantiationException e) {
+            LOG.error(e.getMessage());
             return util.createErrorResponse(e.getMessage(), HttpStatus.SERVICE_UNAVAILABLE);
         } catch (Exception e) {
             LOG.error(e.getMessage());
