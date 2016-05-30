@@ -60,19 +60,32 @@ public class ValidatorService {
             JSONArray array = jsonObj.getJSONArray("groups");
 
             int threadNum = array.length();
-            ExecutorService executor = Executors.newFixedThreadPool(threadNum);
+            //ExecutorService executor = Executors.newFixedThreadPool(threadNum);
 
             List<Future<String>> taskList = new ArrayList<Future<String>>();
             for (int i = 0; i < array.length(); i++) {
                 JSONObject obj = array.getJSONObject(i);
-//                Future<String> repo = validateRepositoryService.validateRepository(obj.getString("repositoryUrl"));
-                // [ ] - call validateRepositoryService async
+                Future<String> repo = validateRepositoryService.validateRepository(obj.getString("repositoryUrl"));
+                taskList.add(repo);
             }
 
-            // wait for finish
-            // [ ] - save result in database for each
-            // [ ] build result JSON for course (all repos)
-            // [ ] return result
+            ArrayList<JSONObject> result = new ArrayList<JSONObject>();
+            int numberOfRepos = array.length();
+            int i = 0;
+            while (numberOfRepos > 0) {
+                if (taskList.get(i).isDone()) {
+                    result.add(i, new JSONObject(taskList.get(i)));
+                    // TODO return error
+                    databaseService.saveResult(result.toString());
+                }
+                i++;
+                if (i >= numberOfRepos) {
+                    i = 0;
+                }
+                Thread.sleep(10);
+            }
+
+            return util.createResponse(result.toString(), HttpStatus.OK);
 
         } catch (InstantiationException e) {
             LOG.error(e.getStackTrace().toString());
@@ -81,9 +94,6 @@ public class ValidatorService {
             LOG.error(e.getStackTrace().toString());
             return util.createErrorResponse(e.getMessage(), HttpStatus.INTERNAL_SERVER_ERROR);
         }
-        // TODO scheduling!!
-
-        return null;
     }
 
     @ApiOperation(value = "validate", nickname = "validate")
