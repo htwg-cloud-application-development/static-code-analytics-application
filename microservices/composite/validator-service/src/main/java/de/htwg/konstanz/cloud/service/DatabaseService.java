@@ -50,12 +50,18 @@ public class DatabaseService {
     }
 
     public String getGroup(String groupId) throws InstantiationException {
-        String GET_GROUP_ROUTE = "/groups/" + groupId;
+        return callDatabaseRoute("/groups/" + groupId);
+    }
 
+    public String getCourse(String courseId) throws InstantiationException {
+        return callDatabaseRoute("/courses/" + courseId);
+    }
+
+    private String callDatabaseRoute(String serviceRoute) throws InstantiationException {
         ServiceInstance instance = loadBalancer.choose("mongo-service");
         if (null != instance) {
             // build request url
-            String requestUrl = instance.getUri() + GET_GROUP_ROUTE;
+            String requestUrl = instance.getUri() + serviceRoute;
             // POST to request url and get String (JSON)
             HttpHeaders headers = new HttpHeaders();
             headers.setContentType(MediaType.APPLICATION_JSON);
