@@ -1,12 +1,11 @@
 package de.htwg.konstanz.cloud.service;
 
+import com.amazonaws.util.json.JSONArray;
 import com.amazonaws.util.json.JSONException;
 import com.amazonaws.util.json.JSONObject;
-import com.netflix.discovery.converters.Auto;
 import de.htwg.konstanz.cloud.model.ValidationData;
 import io.swagger.annotations.ApiOperation;
 import io.swagger.annotations.ApiResponse;
-import org.codehaus.jackson.map.HandlerInstantiator;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -17,8 +16,13 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.scheduling.annotation.EnableAsync;
 import org.springframework.web.bind.annotation.*;
 
+import java.util.ArrayList;
 import java.util.Date;
+import java.util.List;
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.Executors;
 import java.util.concurrent.Future;
+import java.util.concurrent.FutureTask;
 
 @RestController
 @EnableAsync
@@ -48,16 +52,37 @@ public class ValidatorService {
 
 
     @RequestMapping(value = "/courses/{courseId}/validate", method = RequestMethod.POST)
-    public String validateCourse(@PathVariable String courseId) {
+    public ResponseEntity<String> validateCourse(@PathVariable String courseId) {
 
+        try {
+            String course = databaseService.getCourse(courseId);
+            JSONObject jsonObj = new JSONObject(course);
+            JSONArray array = jsonObj.getJSONArray("groups");
+
+            int threadNum = array.length();
+            ExecutorService executor = Executors.newFixedThreadPool(threadNum);
+
+            List<Future<String>> taskList = new ArrayList<Future<String>>();
+            for (int i = 0; i < array.length(); i++) {
+                JSONObject obj = array.getJSONObject(i);
+//                Future<String> repo = validateRepositoryService.validateRepository(obj.getString("repositoryUrl"));
+                // [ ] - call validateRepositoryService async
+            }
+
+            // wait for finish
+            // [ ] - save result in database for each
+            // [ ] build result JSON for course (all repos)
+            // [ ] return result
+
+        } catch (InstantiationException e) {
+            LOG.error(e.getStackTrace().toString());
+            return util.createErrorResponse(e.getMessage(), HttpStatus.SERVICE_UNAVAILABLE);
+        } catch (Exception e) {
+            LOG.error(e.getStackTrace().toString());
+            return util.createErrorResponse(e.getMessage(), HttpStatus.INTERNAL_SERVER_ERROR);
+        }
         // TODO scheduling!!
 
-        // [ ] get course data from database
-        // [ ] for each repo:
-        // [ ] - call validateRepositoryService async
-        // [ ] - save result in database
-        // [ ] build result JSON for course (all repos)
-        // [ ] return result
         return null;
     }
 
