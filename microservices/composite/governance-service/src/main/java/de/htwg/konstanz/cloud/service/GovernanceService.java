@@ -18,7 +18,7 @@ import java.util.concurrent.Future;
 public class GovernanceService {
 
 
-    @RequestMapping("/info")
+    @RequestMapping(value = "/info", method = RequestMethod.GET)
     public String info() {
         return "Governance-Service";
     }
@@ -38,6 +38,7 @@ public class GovernanceService {
     @RequestMapping(value = "/groups", method = RequestMethod.GET, produces = "application/json")
     public ResponseEntity<String> getGroups() {
         try {
+            // TODO alle Gruppen (Nur mit Zusammenfassung)
             return createResponse(databaseService.getAllGroups(), HttpStatus.OK);
         } catch (InstantiationException e) {
             return createErrorResponse(e.getMessage(), HttpStatus.SERVICE_UNAVAILABLE);
@@ -47,6 +48,8 @@ public class GovernanceService {
     @RequestMapping(value = "/groups/{groupId}", method = RequestMethod.GET, produces = "application/json")
     public ResponseEntity<String> getGroup(@PathVariable String groupId) {
         try {
+
+            // TODO mit letztem Ergebnis, wenn vorhanden
             return createResponse(databaseService.getGroupWithId(groupId), HttpStatus.OK);
         } catch (InstantiationException e) {
             return createErrorResponse(e.getMessage(), HttpStatus.SERVICE_UNAVAILABLE);
