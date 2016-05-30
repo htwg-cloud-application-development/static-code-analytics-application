@@ -68,7 +68,7 @@ public class CheckGitRep {
                     .setDirectory(new File(localDirectory)).call();
         }
 
-        File mainDir = new File(localDirectory + "/src");
+        File mainDir = new File(localDirectory);
 
         if (mainDir.exists()) {
             File[] files = mainDir.listFiles();
@@ -146,15 +146,15 @@ public class CheckGitRep {
             Process exec = null;
 
             try {
-                ssh = SshSessionFactory.getInstance().getSession(repoUri, null, FS.detect(), 5000);
-                exec = ssh.exec("cd " + repoUri.getPath() +"; git rev-parse --git-dir", 5000);
+                ssh = SshSessionFactory.getInstance().getSession(repoUri, null, FS.detect(), 1000);
+                exec = ssh.exec("cd " + repoUri.getPath() + "; git rev-parse --git-dir", 1000);
 
                 Integer exitValue = null;
                 do {
                     try {
                         exitValue = exec.exitValue();
                     } catch (Exception e) {
-                        try{Thread.sleep(1000);}catch(Exception ee){}
+                        e.printStackTrace();
                     }
                 } while (exitValue == null);
 
@@ -315,14 +315,13 @@ public class CheckGitRep {
 
             for (int nClassPos = 0; nClassPos < aLRepoList.size(); nClassPos++)
             {
-                String sFileSeparator = new StringBuilder(File.separatorChar).toString();
-
-                String[] sFullPathSplit_a = aLRepoList.get(nClassPos).split(sFileSeparator);
+                String blub = File.separatorChar + "" +File.separatorChar;
+                String[] sFullPathSplit_a = aLRepoList.get(nClassPos).split(blub);
 
                 String sFullPath = aLRepoList.get(nClassPos);
 
                 String sTmpClassName = sFullPathSplit_a[sFullPathSplit_a.length - 1];
-                String sTmpExerciseName = sFullPathSplit_a[1];
+                String sTmpExerciseName = sFullPathSplit_a[2];
 
                 oClass = new Class(sTmpClassName, sFullPath, sTmpExerciseName);
 
