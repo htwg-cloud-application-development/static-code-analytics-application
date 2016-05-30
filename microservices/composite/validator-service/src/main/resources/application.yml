@@ -57,4 +57,4 @@ eureka:
     registerWithEureka: true
     fetchRegistry: true
     serviceUrl:
-        defaultZone: http://ec2-52-29-21-217.eu-central-1.compute.amazonaws.com:8761/eureka/
+        defaultZone: http://ec2-52-28-94-178.eu-central-1.compute.amazonaws.com:8761/eureka/
