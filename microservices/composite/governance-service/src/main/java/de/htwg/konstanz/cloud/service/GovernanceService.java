@@ -59,7 +59,7 @@ public class GovernanceService {
     @RequestMapping(value = "/courses/{courseId}", method = RequestMethod.GET, produces = "application/json")
     public ResponseEntity<String> getCourse(@PathVariable String courseId) {
         try {
-            return createResponse(databaseService.getGroupWithId(courseId), HttpStatus.OK);
+            return createResponse(databaseService.getCourseWithId(courseId), HttpStatus.OK);
         } catch (InstantiationException e) {
             return createErrorResponse(e.getMessage(), HttpStatus.SERVICE_UNAVAILABLE);
         }
