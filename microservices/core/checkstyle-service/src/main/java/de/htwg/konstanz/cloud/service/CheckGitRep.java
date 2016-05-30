@@ -3,12 +3,11 @@ package de.htwg.konstanz.cloud.service;
 import java.io.*;
 import java.net.MalformedURLException;
 import java.net.URL;
+import java.net.URLConnection;
 import java.nio.channels.Channels;
 import java.nio.channels.ReadableByteChannel;
-
 import java.util.ArrayList;
 import java.util.List;
-
 import de.htwg.konstanz.cloud.model.Class;
 import de.htwg.konstanz.cloud.model.Error;
 import de.htwg.konstanz.cloud.model.SeverityCounter;
@@ -17,6 +16,11 @@ import org.eclipse.jgit.api.Git;
 import org.eclipse.jgit.api.errors.GitAPIException;
 import org.eclipse.jgit.api.errors.InvalidRemoteException;
 import org.eclipse.jgit.api.errors.TransportException;
+import org.eclipse.jgit.internal.storage.file.FileRepository;
+import org.eclipse.jgit.transport.URIish;
+import org.eclipse.jgit.transport.RemoteSession;
+import org.eclipse.jgit.transport.SshSessionFactory;
+import org.eclipse.jgit.util.FS;
 import org.json.JSONArray;
 import org.json.JSONObject;
 import org.w3c.dom.Document;
@@ -24,21 +28,16 @@ import org.w3c.dom.Element;
 import org.w3c.dom.Node;
 import org.w3c.dom.NodeList;
 import org.xml.sax.SAXException;
-
 import javax.xml.parsers.DocumentBuilder;
 import javax.xml.parsers.DocumentBuilderFactory;
 import javax.xml.parsers.ParserConfigurationException;
 
-
-/**
- * TODO catch bloecke sinnvoll verarbeiten - Fehlerloggin (console o. Datei)
- */
 public class CheckGitRep {
 
     private List<Class> lFormattedClassList = new ArrayList<Class>();
     private File oRepoDir;
 
-    public String startIt(String gitRepository) throws IOException, ParserConfigurationException, SAXException
+    public String startIt(String gitRepository) throws IOException, ParserConfigurationException, SAXException, InvalidRemoteException, TransportException, GitAPIException, MalformedURLException
     {
         long lStartTime = System.currentTimeMillis();
         JSONObject oJsonResult = null;
@@ -55,28 +54,18 @@ public class CheckGitRep {
         return oJsonResult.toString();
     }
 
-    public List<List<String>> downloadRepoAndGetPath(String gitRepo) {
+    public List<List<String>> downloadRepoAndGetPath(String gitRepo) throws InvalidRemoteException, TransportException, GitAPIException, MalformedURLException {
         List<List<String>> list = new ArrayList<List<String>>();
         String directoryName = gitRepo.substring(gitRepo.lastIndexOf("/"), gitRepo.length() - 1).replace(".", "_");
         String localDirectory = "repositories/" + directoryName + "_" + System.currentTimeMillis() + "/";
         oRepoDir = new File(localDirectory);
         Git git = null;
 
-        // TODO ueberprüfen ob Repo vorhanden bzw. Giturl okay
-        // TODO Fehler bei bereits vorhandenem GIT Repo beheben
-        try {
+        if(isValidRepository(new URIish(new URL(gitRepo))))
+        {
             git = Git.cloneRepository()
                     .setURI(gitRepo)
                     .setDirectory(new File(localDirectory)).call();
-        } catch (InvalidRemoteException e) {
-            // TODO Auto-generated catch block
-            e.printStackTrace();
-        } catch (TransportException e) {
-            // TODO Auto-generated catch block
-            e.printStackTrace();
-        } catch (GitAPIException e) {
-            // TODO Auto-generated catch block
-            e.printStackTrace();
         }
 
         File mainDir = new File(localDirectory + "/src");
@@ -102,6 +91,88 @@ public class CheckGitRep {
         git.getRepository().close();
 
         return list;
+    }
+
+    boolean isValidRepository(URIish repoUri) {
+        if (repoUri.isRemote()) {
+            return isValidRemoteRepository(repoUri);
+        } else {
+            return isValidLocalRepository(repoUri);
+        }
+    }
+
+    boolean isValidLocalRepository(URIish repoUri) {
+        boolean result;
+        try {
+            result = new FileRepository(repoUri.getPath()).getObjectDatabase().exists();
+        } catch (IOException e) {
+            result = false;
+        }
+        return result;
+    }
+
+    boolean isValidRemoteRepository(URIish repoUri) {
+        boolean result;
+
+        if (repoUri.getScheme().toLowerCase().startsWith("http") ) {
+            String path = repoUri.getPath();
+            URIish checkUri = repoUri.setPath(path);
+
+            InputStream ins = null;
+            try {
+                URLConnection conn = new URL(checkUri.toString()).openConnection();
+
+                conn.setReadTimeout(1000);
+                ins = conn.getInputStream();
+                result = true;
+            } catch (FileNotFoundException e) {
+                System.out.println("File not Foud");
+                result=false;
+            } catch (IOException e) {
+                System.out.println("IOException");
+                result = false;
+                e.printStackTrace();
+            } finally {
+                try {
+                    ins.close();
+                }
+                catch (Exception e)
+                { /* ignore */ }
+            }
+
+        } else if (repoUri.getScheme().toLowerCase().startsWith("ssh") ) {
+
+            RemoteSession ssh = null;
+            Process exec = null;
+
+            try {
+                ssh = SshSessionFactory.getInstance().getSession(repoUri, null, FS.detect(), 5000);
+                exec = ssh.exec("cd " + repoUri.getPath() +"; git rev-parse --git-dir", 5000);
+
+                Integer exitValue = null;
+                do {
+                    try {
+                        exitValue = exec.exitValue();
+                    } catch (Exception e) {
+                        try{Thread.sleep(1000);}catch(Exception ee){}
+                    }
+                } while (exitValue == null);
+
+                result = exitValue == 0;
+
+            } catch (Exception e) {
+                result = false;
+
+            } finally {
+                try { exec.destroy(); } catch (Exception e) { /* ignore */ }
+                try { ssh.disconnect(); } catch (Exception e) { /* ignore */ }
+            }
+
+        } else {
+            // TODO need to implement tests for other schemas
+            result = true;
+        }
+        return result;
     }
 
     public void checkLocalCheckstyle() throws IOException {
@@ -352,7 +423,7 @@ public class CheckGitRep {
         long lTotalTime = (lEndTime - lStartTime);
 
         oJsonRoot.put("totalExpendedTime", lTotalTime);
-        oJsonRoot.put("files", lJsonExercises);
+        oJsonRoot.put("assignments", lJsonExercises);
 
         return oJsonRoot;
     }
