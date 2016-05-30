@@ -1,18 +1,34 @@
 spring:
   application:
     name: moodle-service
+  profiles:
+    active: development
 
-# dynamic port
-#server:
-#  port: 0
-
+---
 # for development
 server:
   port: 1234
 
+spring:
+  profiles: development
+eureka:
+  instance:
+    hostname: localhost
+  client:
+    registerWithEureka: false
+    fetchRegistry: false
+  
+---
+
+spring:
+  profiles: local
+
+server:
+  port: 0
 
 eureka:
   instance:
+    instance-id: ${vcap.application.instance_id:${spring.application.name}:${spring.application.instance_id:${random.value}}}
     leaseRenewalIntervalInSeconds: 10
     metadataMap:
       instanceId: ${vcap.application.instance_id:${spring.application.name}:${spring.application.instance_id:${random.value}}}

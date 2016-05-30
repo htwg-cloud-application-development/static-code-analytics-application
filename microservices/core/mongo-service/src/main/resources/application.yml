@@ -36,6 +36,7 @@ server:
 
 eureka:
   instance:
+    instance-id: ${vcap.application.instance_id:${spring.application.name}:${spring.application.instance_id:${random.value}}}
     leaseRenewalIntervalInSeconds: 10
     metadataMap:
       instanceId: ${vcap.application.instance_id:${spring.application.name}:${spring.application.instance_id:${random.value}}}
