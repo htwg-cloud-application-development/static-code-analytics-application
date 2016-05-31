@@ -20,7 +20,7 @@ import java.util.concurrent.Future;
 public class ValidateRepositoryService {
     private static final Logger LOG = LoggerFactory.getLogger(ValidateRepositoryService.class);
 
-    private RestTemplate restTemplate;
+    RestTemplate restTemplate;
 
     @Autowired
     private LoadBalancerClient loadBalancer;
@@ -45,7 +45,7 @@ public class ValidateRepositoryService {
             HttpHeaders headers = new HttpHeaders();
             headers.setContentType(MediaType.APPLICATION_JSON);
             ResponseEntity<String> entity = restTemplate.postForEntity(requestUrl, repositoryUrl, String.class, headers);
-            return new AsyncResult<>(entity.getBody());
+            return new AsyncResult<String>(entity.getBody());
         }
         throw new InstantiationException("service is not available");
     }
