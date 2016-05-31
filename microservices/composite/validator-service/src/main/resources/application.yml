@@ -2,13 +2,15 @@ spring:
   application:
     name: validator-service
   profiles:
-    active: development
+    active: local
 
 eureka:
   instance:
     metadataMap:
       instanceId: ${spring.application.name}:${spring.application.instance_id}:${server.port}
 
+logging:
+  file: validator-service.log
 ---
 # profile for development
 spring:
@@ -38,8 +40,6 @@ eureka:
   client:
     serviceUrl:
       defaultZone: http://localhost:8761/eureka/
-    healthcheck:
-      enabled: true
   instance:
     instance-id: ${vcap.application.instance_id:${spring.application.name}:${spring.application.instance_id:${random.value}}}
     leaseRenewalIntervalInSeconds: 10
