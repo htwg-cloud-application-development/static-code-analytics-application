@@ -65,7 +65,7 @@ public class ValidatorService {
             List<Future<String>> taskList = new ArrayList<Future<String>>();
             for (int i = 0; i < array.length(); i++) {
                 JSONObject obj = array.getJSONObject(i);
-                Future<String> repo = validateRepositoryService.validateRepository(obj.getString("repositoryUrl"));
+                Future<String> repo = validateRepositoryService.validateRepository(obj.toString());
                 taskList.add(repo);
             }
 
@@ -74,7 +74,8 @@ public class ValidatorService {
             int i = 0;
             while (numberOfRepos > 0) {
                 if (taskList.get(i).isDone()) {
-                    result.add(i, new JSONObject(taskList.get(i)));
+                    result.add(new JSONObject(taskList.get(i).get()));
+                    numberOfRepos--;
                     // TODO return error
                     databaseService.saveResult(result.toString());
                 }
@@ -82,7 +83,7 @@ public class ValidatorService {
                 if (i >= numberOfRepos) {
                     i = 0;
                 }
-                Thread.sleep(10);
+                Thread.sleep(100);
             }
 
             return util.createResponse(result.toString(), HttpStatus.OK);
@@ -145,6 +146,7 @@ public class ValidatorService {
             return util.createErrorResponse(e.getMessage(), HttpStatus.SERVICE_UNAVAILABLE);
         } catch (Exception e) {
             LOG.error(e.getMessage());
+            e.printStackTrace();
             return util.createErrorResponse(e.getMessage(), HttpStatus.INTERNAL_SERVER_ERROR);
         }
     }
