@@ -204,7 +204,7 @@ public class CheckGitRep {
 
     public JSONObject checkStyle(List<List<String>> lRepoList, String gitRepository, SeverityCounter oSeverityCounter, long lStartTime) throws ParserConfigurationException, SAXException, IOException {
         final String sCheckStylePath = "checkstyle-6.17-all.jar";
-        final String sRuleSetPath = "/google_checks.xml";
+        final String sRuleSetPath = "google_checks_modified.xml";
         JSONObject oJson = null;
 
 		/* Listeninhalt kuerzen, um JSON vorbereiten */
