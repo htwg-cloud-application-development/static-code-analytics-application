@@ -316,14 +316,43 @@ public class CheckGitRep {
         return bParsable;
     }
 
+    private String sOS = null;
+
+    public String getOsName()
+    {
+        if(sOS == null)
+        {
+            sOS = System.getProperty("os.name");
+        }
+
+        return sOS;
+    }
+    private boolean isWindows()
+    {
+        return getOsName().startsWith("Windows");
+    }
+
+    private boolean isLinux()
+    {
+        return getOsName().startsWith("Linux");
+    }
+
     public void formatList(List<List<String>> lRepoList) {
         for (List<String> aLRepoList : lRepoList) {
             Class oClass = null;
+            String sOperatingSystem = "";
 
             for (int nClassPos = 0; nClassPos < aLRepoList.size(); nClassPos++)
             {
-                String blub = File.separatorChar + "" +File.separatorChar;
-                String[] sFullPathSplit_a = aLRepoList.get(nClassPos).split(blub);
+                if(isWindows() == true)
+                {
+                    sOperatingSystem  = File.separatorChar + "" +File.separatorChar;
+                }
+                else if(isLinux())
+                {
+                    sOperatingSystem = File.separatorChar + "";
+                }
+                String[] sFullPathSplit_a = aLRepoList.get(nClassPos).split(sOperatingSystem );
 
                 String sFullPath = aLRepoList.get(nClassPos);
 
