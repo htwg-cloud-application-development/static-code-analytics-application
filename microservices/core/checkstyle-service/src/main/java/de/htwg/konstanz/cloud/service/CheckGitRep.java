@@ -37,7 +37,7 @@ public class CheckGitRep {
     private List<Class> lFormattedClassList = new ArrayList<Class>();
     private File oRepoDir;
 
-    public String startIt(String gitRepository) throws IOException, ParserConfigurationException, SAXException, InvalidRemoteException, TransportException, GitAPIException, MalformedURLException
+    public String startIt(String gitRepository) throws IOException, ParserConfigurationException, SAXException, InvalidRemoteException, TransportException, GitAPIException, MalformedURLException, NullPointerException
     {
         long lStartTime = System.currentTimeMillis();
         JSONObject oJsonResult = null;
@@ -54,7 +54,7 @@ public class CheckGitRep {
         return oJsonResult.toString();
     }
 
-    public List<List<String>> downloadRepoAndGetPath(String gitRepo) throws InvalidRemoteException, TransportException, GitAPIException, MalformedURLException {
+    public List<List<String>> downloadRepoAndGetPath(String gitRepo) throws InvalidRemoteException, TransportException, GitAPIException, MalformedURLException, NullPointerException {
         List<List<String>> list = new ArrayList<List<String>>();
         String directoryName = gitRepo.substring(gitRepo.lastIndexOf("/"), gitRepo.length() - 1).replace(".", "_");
         String localDirectory = "repositories/" + directoryName + "_" + System.currentTimeMillis() + "/";
@@ -68,24 +68,31 @@ public class CheckGitRep {
                     .setDirectory(new File(localDirectory)).call();
         }
 
-        File mainDir = new File(localDirectory);
+        File mainDir;
+        if(new File(localDirectory +"/src").exists()){
+            mainDir = new File(localDirectory + "/src");
+        }else{
+            mainDir = new File(localDirectory);
+        }
+
 
         if (mainDir.exists()) {
             File[] files = mainDir.listFiles();
 
-            for (File file : files) {
+            for (int i = 0; i < files.length; ++i) {
 
-                File[] filesSub = new File(file.getPath()).listFiles();
+                File[] filesSub = new File(files[i].getPath()).listFiles();
                 List<String> pathsSub = new ArrayList<String>();
 
-                for (File aFilesSub : filesSub) {
-                    if (aFilesSub.getPath().endsWith(".java")) {
-                        pathsSub.add(aFilesSub.getPath());
+                for (int j = 0; j < filesSub.length; ++j) {
+                    if (filesSub[j].getPath().endsWith(".java")) {
+                        pathsSub.add(filesSub[j].getPath());
                     }
                 }
 
                 list.add(pathsSub);
             }
+
         }
         /* Closing Object that we can delete the whole directory later */
         git.getRepository().close();
