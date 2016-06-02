@@ -1,9 +1,15 @@
 package de.htwg.konstanz.cloud.moodle;
 
+import com.fasterxml.jackson.core.JsonProcessingException;
+import com.fasterxml.jackson.databind.JsonMappingException;
 import com.fasterxml.jackson.databind.JsonNode;
+import com.fasterxml.jackson.databind.ObjectMapper;
 import de.htwg.konstanz.cloud.models.MoodleCourse;
 import de.htwg.konstanz.cloud.models.MoodleToken;
 import org.springframework.web.client.RestTemplate;
+
+import java.util.ArrayList;
+import java.util.List;
 
 
 /**
@@ -17,11 +23,11 @@ public class Moodle {
     private static final String MOODLE_BASE_URL = "https://moodle.htwg-konstanz.de/moodle/webservice/rest/server.php?" +
             "&moodlewsrestformat=json";
 
-    public String getMoodleIdFromMoodleToken(MoodleToken token) {
+    public String getMoodleIdFromMoodleToken(String token) throws JsonMappingException {
 
         String service = "core_webservice_get_site_info";
         String requestURL = MOODLE_BASE_URL + "&wsfunction=" + service +
-                "&wstoken=" + token.getToken();
+                "&wstoken=" + token;
 
         JsonNode moodleInfo = templ.getForObject(requestURL, JsonNode.class);
 
@@ -30,7 +36,24 @@ public class Moodle {
         return userId;
     }
 
+    public List<MoodleCourse> getCoursesOfMoodleUser(String userId, String token) throws JsonProcessingException {
 
+        String service = "core_enrol_get_users_courses";
+        String requestURL = MOODLE_BASE_URL + "&wsfunction=" + service +
+                "&wstoken=" + token + "&userid=" + userId;
+
+        JsonNode courses = templ.getForObject(requestURL, JsonNode.class);
+
+
+        ObjectMapper mapper = new ObjectMapper();
+        List<MoodleCourse> moodleCourses = new ArrayList<MoodleCourse>();
+        for (JsonNode course : courses) {
+            moodleCourses.add(mapper.treeToValue(course, MoodleCourse.class));
+        }
+
+
+        return moodleCourses;
+    }
 
 
     public MoodleCourse getCourseInformation(MoodleToken tokenFromMoodle, int s) {
