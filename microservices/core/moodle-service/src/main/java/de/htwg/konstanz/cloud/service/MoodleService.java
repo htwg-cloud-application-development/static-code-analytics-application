@@ -10,10 +10,7 @@ import de.htwg.konstanz.cloud.models.MoodleToken;
 import de.htwg.konstanz.cloud.moodle.Moodle;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
-import org.springframework.web.bind.annotation.RequestBody;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RequestMethod;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.bind.annotation.*;
 
 import javax.validation.Valid;
 import java.util.List;
@@ -31,7 +28,7 @@ public class MoodleService {
 
 
     @RequestMapping(value = "/courses", method = RequestMethod.POST)
-    public ResponseEntity<Object> getCourses(@Valid @RequestBody MoodleToken moodleToken) {
+    public ResponseEntity<List<MoodleCourse>> getCourses(@Valid @RequestBody MoodleToken moodleToken) {
 
 
         Moodle moodle = new Moodle(moodleToken.getToken());
@@ -47,13 +44,26 @@ public class MoodleService {
 
 
         } catch (JsonProcessingException e) {
-
             return new ResponseEntity("ERROR", HttpStatus.OK);
         }
 
 
     }
 
+    @RequestMapping(value = "/courses/{id}/assignment", method = RequestMethod.POST)
+    public ResponseEntity<List<MoodleAssignment>> getCourses2(
+            @Valid @RequestBody MoodleToken moodleToken, @Valid @PathVariable int id) {
+
+        Moodle moodle = new Moodle(moodleToken.getToken());
+
+
+        try {
+            List<MoodleAssignment> assignments = moodle.getAssignmentsOfMoodleCourse(id);
+
+            return new ResponseEntity(assignments, HttpStatus.OK);
+        } catch (JsonProcessingException e) {
+            return new ResponseEntity("ERROR", HttpStatus.OK);
+        }
 
 
     }
