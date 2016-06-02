@@ -1,12 +1,9 @@
 package de.htwg.konstanz.cloud.moodle;
 
 import com.fasterxml.jackson.core.JsonProcessingException;
-import com.fasterxml.jackson.databind.JsonMappingException;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
-import de.htwg.konstanz.cloud.models.GeneralMoodleInfo;
-import de.htwg.konstanz.cloud.models.MoodleCourse;
-import de.htwg.konstanz.cloud.models.MoodleToken;
+import de.htwg.konstanz.cloud.models.*;
 import org.springframework.web.client.RestTemplate;
 
 import java.util.ArrayList;
@@ -36,7 +33,7 @@ public class Moodle {
         return moodleInfo.getUserid();
     }
 
-    public List<MoodleCourse> getCoursesOfMoodleUser(String userId, String token) throws JsonProcessingException {
+    public List<MoodleCourse> getCoursesOfMoodleUser(Integer userId, String token) throws JsonProcessingException {
 
         String service = "core_enrol_get_users_courses";
         String requestURL = MOODLE_BASE_URL + "&wsfunction=" + service +
@@ -53,6 +50,17 @@ public class Moodle {
 
 
         return moodleCourses;
+    }
+
+    public MoodleCourseDetail getInfoOfMoodleCourse(Integer courseId, String token)  {
+
+        String service = "core_course_get_contents";
+        String requestURL = MOODLE_BASE_URL + "&wsfunction=" + service +
+                "&wstoken=" + token + "&courseid=" + courseId;
+
+        MoodleCourseDetail course = templ.getForObject(requestURL, MoodleCourseDetail.class);
+
+        return course;
     }
 
 
