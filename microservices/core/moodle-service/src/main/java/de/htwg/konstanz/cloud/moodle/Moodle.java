@@ -78,8 +78,28 @@ public class Moodle {
     }
 
 
+    private List<MoodleAssignment> findAssignmentsInCourse(JsonNode course) throws JsonProcessingException {
 
-    public MoodleCourse getCourseInformation(MoodleToken tokenFromMoodle, int s) {
-        return null;
+        ObjectMapper mapper = new ObjectMapper();
+        List<MoodleAssignment> assignments = new ArrayList<>();
+
+        // iterate over all course parts
+        for (JsonNode coursePart : course) {
+            JsonNode modules = coursePart.findPath("modules");
+
+
+            // iterate over all modules of that part
+            for (JsonNode module : modules) {
+
+                // if module is an assignment
+                if ("assign".equals(module.findPath("modname").asText())) {
+                    assignments.add(mapper.treeToValue(module, MoodleAssignment.class));
+                }
+            }
+        }
+
+
+        return assignments;
     }
+
 }
