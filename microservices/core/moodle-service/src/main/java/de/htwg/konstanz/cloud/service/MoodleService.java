@@ -3,10 +3,7 @@ package de.htwg.konstanz.cloud.service;
 
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.netflix.hystrix.contrib.javanica.annotation.HystrixCommand;
-import de.htwg.konstanz.cloud.models.GeneralMoodleInfo;
-import de.htwg.konstanz.cloud.models.MoodleAssignment;
-import de.htwg.konstanz.cloud.models.MoodleCourse;
-import de.htwg.konstanz.cloud.models.MoodleToken;
+import de.htwg.konstanz.cloud.models.*;
 import de.htwg.konstanz.cloud.moodle.Moodle;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -39,10 +36,7 @@ public class MoodleService {
         try {
             List<MoodleCourse> courses = moodle.getCoursesOfMoodleUser(user.getUserid());
 
-
             return new ResponseEntity(courses, HttpStatus.OK);
-
-
         } catch (JsonProcessingException e) {
             return new ResponseEntity("ERROR", HttpStatus.OK);
         }
@@ -51,7 +45,7 @@ public class MoodleService {
     }
 
     @RequestMapping(value = "/courses/{id}/assignment", method = RequestMethod.POST)
-    public ResponseEntity<List<MoodleAssignment>> getCourses2(
+    public ResponseEntity<List<MoodleAssignment>> getAssignmentOfCourse(
             @Valid @RequestBody MoodleToken moodleToken, @Valid @PathVariable int id) {
 
         Moodle moodle = new Moodle(moodleToken.getToken());
@@ -61,6 +55,24 @@ public class MoodleService {
             List<MoodleAssignment> assignments = moodle.getAssignmentsOfMoodleCourse(id);
 
             return new ResponseEntity(assignments, HttpStatus.OK);
+        } catch (JsonProcessingException e) {
+            return new ResponseEntity("ERROR", HttpStatus.OK);
+        }
+
+
+    }
+
+    @RequestMapping(value = "/assignments/{id}/submission", method = RequestMethod.POST)
+    public ResponseEntity<List<MoodleSubmissionOfAssignmet>> getSubmissionsOfAssignment(
+            @Valid @RequestBody MoodleToken moodleToken, @Valid @PathVariable int id) {
+
+        Moodle moodle = new Moodle(moodleToken.getToken());
+
+
+        try {
+            List<MoodleSubmissionOfAssignmet> submissions = moodle.getSubmissionsOfAssignment(id);
+
+            return new ResponseEntity(submissions, HttpStatus.OK);
         } catch (JsonProcessingException e) {
             return new ResponseEntity("ERROR", HttpStatus.OK);
         }
