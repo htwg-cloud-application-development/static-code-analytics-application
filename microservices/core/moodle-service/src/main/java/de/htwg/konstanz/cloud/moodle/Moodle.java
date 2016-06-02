@@ -7,6 +7,7 @@ import de.htwg.konstanz.cloud.models.*;
 import org.springframework.web.client.RestTemplate;
 
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.List;
 
 
@@ -58,22 +59,26 @@ public class Moodle {
 
     public List<MoodleAssignment> getAssignmentsOfMoodleCourse(Integer courseId) throws JsonProcessingException {
 
-        String service = "core_course_get_contents";
-        String requestURL = MOODLE_BASE_URL + "&wsfunction=" + service + "&courseid=" + courseId;
+        final String service = "core_course_get_contents";
+        final String requestURL = MOODLE_BASE_URL + "&wsfunction=" + service + "&courseid=" + courseId;
 
         JsonNode course = templ.getForObject(requestURL, JsonNode.class);
 
         return findAssignmentsInCourse(course);
     }
 
-    public List<MoodleSubmissionOfAssignmet> getSubmissionsOfAssignment(Integer assignmentId) {
+    public List<MoodleSubmissionOfAssignmet> getSubmissionsOfAssignment(Integer assignmentId) throws JsonProcessingException {
 
-        String service = "mod_assign_get_submissions";
-        String requestURL = MOODLE_BASE_URL + "&wsfunction=" + service + "&assignmentids[0]=" + assignmentId;
+        final String service = "mod_assign_get_submissions";
+        final String requestURL = MOODLE_BASE_URL + "&wsfunction=" + service + "&assignmentids[0]=" + 2045;
 
-        MoodleSubmissionOfAssignmet course = templ.getForObject(requestURL, MoodleSubmissionOfAssignmet.class);
+        JsonNode assignment = templ.getForObject(requestURL, JsonNode.class);
 
-        return null;
+        if (!assignment.has(0)) {
+            return Collections.emptyList();
+        }
+
+        return findSubmissionsInAssignment(assignment.get(0));
 
     }
 
@@ -97,9 +102,27 @@ public class Moodle {
                 }
             }
         }
-
-
         return assignments;
+    }
+
+    private List<MoodleSubmissionOfAssignmet> findSubmissionsInAssignment(JsonNode assignment) throws JsonProcessingException {
+
+        ObjectMapper mapper = new ObjectMapper();
+
+
+        JsonNode submissions = assignment.findPath("submissions");
+
+        if (submissions.size() < 1) {
+            return Collections.emptyList();
+        }
+
+        List<MoodleSubmissionOfAssignmet> returnSubmissions = new ArrayList<>();
+        for (JsonNode singleSubmission : submissions) {
+            returnSubmissions.add(mapper.treeToValue(singleSubmission, MoodleSubmissionOfAssignmet.class));
+        }
+
+        return returnSubmissions;
+
     }
 
 }
