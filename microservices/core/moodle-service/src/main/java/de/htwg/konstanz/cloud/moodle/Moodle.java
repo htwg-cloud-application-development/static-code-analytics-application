@@ -18,12 +18,10 @@ public class Moodle {
 
     private RestTemplate templ = new RestTemplate();
 
-    private String token;
     private String MOODLE_BASE_URL = "https://moodle.htwg-konstanz.de/moodle/webservice/rest/server.php?" +
             "&moodlewsrestformat=json";
 
     public Moodle(String token) {
-        this.token = token;
         this.MOODLE_BASE_URL += "&wstoken=" + token;
     }
 
@@ -141,7 +139,7 @@ public class Moodle {
             return "";
         }
 
-        for (JsonNode plugin: plugins) {
+        for (JsonNode plugin : plugins) {
 
             if ("onlinetext".equals(plugin.findPath("type").asText())) {
                 JsonNode editorfields = plugin.findPath("editorfields");
@@ -150,17 +148,17 @@ public class Moodle {
                     return "";
                 }
 
-                for (JsonNode field: editorfields) {
+                for (JsonNode field : editorfields) {
                     JsonNode actualSubmit = field.findPath("text");
 
-                    if(!actualSubmit.isMissingNode()) {
+                    if (!actualSubmit.isMissingNode()) {
                         return actualSubmit.asText();  // TODO: fix html shit
                     }
                 }
 
             }
         }
-        return null;
+        return "";
     }
 
 
