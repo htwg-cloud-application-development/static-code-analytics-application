@@ -23,7 +23,7 @@ public class MoodleService {
 
     @RequestMapping("/info")
     public String info() {
-        return "Moode-Service";
+        return "Moodle-Service";
     }
 
 
