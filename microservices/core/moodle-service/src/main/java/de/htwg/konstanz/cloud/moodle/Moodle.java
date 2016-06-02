@@ -1,7 +1,7 @@
 package de.htwg.konstanz.cloud.moodle;
 
+import com.fasterxml.jackson.databind.JsonNode;
 import de.htwg.konstanz.cloud.models.MoodleCourse;
-import de.htwg.konstanz.cloud.models.MoodleCredentials;
 import de.htwg.konstanz.cloud.models.MoodleToken;
 import org.springframework.web.client.RestTemplate;
 
@@ -11,21 +11,27 @@ import org.springframework.web.client.RestTemplate;
  */
 public class Moodle {
 
-    private static final String LOGIN_MOODLE_URL = "https://moodle.htwg-konstanz.de/moodle/login/token.php?" +
-            "service=moodle_mobile_app&moodlewsrestformat=json";
-
-    public MoodleToken getTokenFromMoodle(MoodleCredentials credentials) {
+    private RestTemplate templ = new RestTemplate();
 
 
-        String requestURL = LOGIN_MOODLE_URL + "&username=" + credentials.getUsername() +
-                "&password=" + credentials.getPassword();
+    private static final String MOODLE_BASE_URL = "https://moodle.htwg-konstanz.de/moodle/webservice/rest/server.php?" +
+            "&moodlewsrestformat=json";
 
-        RestTemplate templ = new RestTemplate();
+    public String getMoodleIdFromMoodleToken(MoodleToken token) {
 
-        MoodleToken token = templ.getForObject(requestURL, MoodleToken.class);
+        String service = "core_webservice_get_site_info";
+        String requestURL = MOODLE_BASE_URL + "&wsfunction=" + service +
+                "&wstoken=" + token.getToken();
 
-        return token;
+        JsonNode moodleInfo = templ.getForObject(requestURL, JsonNode.class);
+
+        String userId = moodleInfo.findPath("userid").asText();
+
+        return userId;
     }
+
+
+
 
     public MoodleCourse getCourseInformation(MoodleToken tokenFromMoodle, int s) {
         return null;
