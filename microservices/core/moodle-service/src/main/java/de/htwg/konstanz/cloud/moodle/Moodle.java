@@ -62,6 +62,18 @@ public class Moodle {
 
         return course;
     }
+    public MoodleSubmissionOfAssignmet getSubmissionsOfAssignment(Integer assignmentId, String token) {
+
+        String service = "mod_assign_get_submissions";
+        String requestURL = MOODLE_BASE_URL + "&wsfunction=" + service +
+                "&wstoken=" + token + "&assignmentids[0]=" + assignmentId;
+
+        MoodleSubmissionOfAssignmet course = templ.getForObject(requestURL, MoodleSubmissionOfAssignmet.class);
+
+        return course;
+
+    }
+
 
 
     public MoodleCourse getCourseInformation(MoodleToken tokenFromMoodle, int s) {
