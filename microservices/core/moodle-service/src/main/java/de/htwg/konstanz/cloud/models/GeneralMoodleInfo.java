@@ -11,7 +11,7 @@ import java.util.List;
 @Data
 @JsonIgnoreProperties(ignoreUnknown = true)
 public class GeneralMoodleInfo {
-    
+
     String sitename;
     String username;
     String firstname;
