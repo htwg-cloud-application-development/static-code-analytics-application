@@ -4,6 +4,7 @@ import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.JsonMappingException;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
+import de.htwg.konstanz.cloud.models.GeneralMoodleInfo;
 import de.htwg.konstanz.cloud.models.MoodleCourse;
 import de.htwg.konstanz.cloud.models.MoodleToken;
 import org.springframework.web.client.RestTemplate;
@@ -23,17 +24,16 @@ public class Moodle {
     private static final String MOODLE_BASE_URL = "https://moodle.htwg-konstanz.de/moodle/webservice/rest/server.php?" +
             "&moodlewsrestformat=json";
 
-    public String getMoodleIdFromMoodleToken(String token) throws JsonMappingException {
+    public Integer getMoodleIdFromMoodleToken(String token) {
 
         String service = "core_webservice_get_site_info";
         String requestURL = MOODLE_BASE_URL + "&wsfunction=" + service +
                 "&wstoken=" + token;
 
-        JsonNode moodleInfo = templ.getForObject(requestURL, JsonNode.class);
+        GeneralMoodleInfo moodleInfo = templ.getForObject(requestURL, GeneralMoodleInfo.class);
 
-        String userId = moodleInfo.findPath("userid").asText();
 
-        return userId;
+        return moodleInfo.getUserid();
     }
 
     public List<MoodleCourse> getCoursesOfMoodleUser(String userId, String token) throws JsonProcessingException {
