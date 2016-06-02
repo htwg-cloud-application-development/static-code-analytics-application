@@ -125,4 +125,35 @@ public class Moodle {
 
     }
 
+    private String findRepoInSubmission(JsonNode singleSubmission) {
+
+        JsonNode plugins = singleSubmission.findPath("plugins");
+
+        if (plugins.size() < 1) {
+            return "";
+        }
+
+        for (JsonNode plugin: plugins) {
+
+            if ("onlinetext".equals(plugin.findPath("type").asText())) {
+                JsonNode editorfields = plugin.findPath("editorfields");
+
+                if (editorfields.size() < 1) {
+                    return "";
+                }
+
+                for (JsonNode field: editorfields) {
+                    JsonNode actualSubmit = field.findPath("text");
+
+                    if(!actualSubmit.isMissingNode()) {
+                        return actualSubmit.asText();  // TODO: fix html shit
+                    }
+                }
+
+            }
+        }
+        return null;
+    }
+
+
 }
