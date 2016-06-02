@@ -70,11 +70,11 @@ public class Moodle {
     public List<MoodleSubmissionOfAssignmet> getSubmissionsOfAssignment(Integer assignmentId) throws JsonProcessingException {
 
         final String service = "mod_assign_get_submissions";
-        final String requestURL = MOODLE_BASE_URL + "&wsfunction=" + service + "&assignmentids[0]=" + 2045;
+        final String requestURL = MOODLE_BASE_URL + "&wsfunction=" + service + "&assignmentids[0]=" + assignmentId;
 
-        JsonNode assignment = templ.getForObject(requestURL, JsonNode.class);
+        JsonNode assignment = templ.getForObject(requestURL, JsonNode.class).findPath("assignments");
 
-        if (!assignment.has(0)) {
+        if (assignment.size() < 1) {
             return Collections.emptyList();
         }
 
@@ -110,18 +110,26 @@ public class Moodle {
         ObjectMapper mapper = new ObjectMapper();
 
 
-        JsonNode submissions = assignment.findPath("submissions");
+        JsonNode moodleSubmissions = assignment.findPath("submissions");
 
-        if (submissions.size() < 1) {
+        if (moodleSubmissions.size() < 1) {
             return Collections.emptyList();
         }
 
-        List<MoodleSubmissionOfAssignmet> returnSubmissions = new ArrayList<>();
-        for (JsonNode singleSubmission : submissions) {
-            returnSubmissions.add(mapper.treeToValue(singleSubmission, MoodleSubmissionOfAssignmet.class));
+        List<MoodleSubmissionOfAssignmet> submissions = new ArrayList<>();
+        for (JsonNode singleSubmission : moodleSubmissions) {
+
+            // create pojo
+            MoodleSubmissionOfAssignmet tempSubmission = mapper.treeToValue(singleSubmission, MoodleSubmissionOfAssignmet.class);
+
+            // find repo url and add it to pojo
+            tempSubmission.setRepository(findRepoInSubmission(singleSubmission));
+
+            // add pojo to list
+            submissions.add(tempSubmission);
         }
 
-        return returnSubmissions;
+        return submissions;
 
     }
 
