@@ -23,7 +23,6 @@ public class UserRepRepositoryImpl implements UserRepOperations {
 
 		student = mongo.getConverter().read(UserRep.class, (DBObject) JSON.parse(jsonString));
 		mongo.insert(student);
-
 	}
 
 	public String addTimestamp(String json){

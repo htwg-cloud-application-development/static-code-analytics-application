@@ -45,7 +45,6 @@ public class CourseService {
         return newGroup;
     }
 
-
     @RequestMapping(value = "{courseId}", method = RequestMethod.GET)
     public Course getCourses(@PathVariable String courseId) {
         return courseRepository.findOne(courseId);
