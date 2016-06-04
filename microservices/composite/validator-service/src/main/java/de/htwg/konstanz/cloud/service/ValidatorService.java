@@ -11,6 +11,7 @@ import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.cloud.client.loadbalancer.LoadBalancerClient;
+import org.springframework.core.env.Environment;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.scheduling.annotation.EnableAsync;
@@ -32,6 +33,9 @@ public class ValidatorService {
 
     @Autowired
     private LoadBalancerClient loadBalancer;
+
+    @Autowired
+    private Environment environment;
 
     @Autowired
     ValidateRepositoryService validateRepositoryService;
@@ -60,9 +64,24 @@ public class ValidatorService {
             JSONArray array = jsonObj.getJSONArray("groups");
 
             int threadNum = array.length();
-            //ExecutorService executor = Executors.newFixedThreadPool(threadNum);
-
             List<Future<String>> taskList = new ArrayList<Future<String>>();
+
+
+            // check if service runs on aws
+            if (environment.getActiveProfiles()[0].equals("aws")) {
+                // TODO:
+                // - read executiontime of each repository
+                // - sort repositories after execution time
+                // - read number of available services (Checkstyle, etc)
+                // - calculation to get number of new instances (if necessary)
+                // - start only 1 execution at same time
+                // - note which service executes task for specific repository
+                // - loop:
+                //      - check if service free
+                //      - execute shortes repo first (greedy)
+            }
+
+
             for (int i = 0; i < array.length(); i++) {
                 JSONObject obj = array.getJSONObject(i);
                 Future<String> repo = validateRepositoryService.validateRepository(obj.toString());
