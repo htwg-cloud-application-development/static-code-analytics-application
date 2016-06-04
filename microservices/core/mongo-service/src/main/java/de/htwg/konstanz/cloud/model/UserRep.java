@@ -16,7 +16,9 @@ public class UserRep {
     private String numberOfIgnores;
     private String totalExpendedTime;
     private String timestamp;
+    private String groupId;
     private Object assignments;
+
 
   	@Override
 	public String toString() {

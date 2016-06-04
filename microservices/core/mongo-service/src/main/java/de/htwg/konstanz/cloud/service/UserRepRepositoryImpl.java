@@ -28,7 +28,7 @@ public class UserRepRepositoryImpl implements UserRepOperations {
 	public String addTimestamp(String json){
 
 		JSONObject jsonOBject = new JSONObject(json);
-        jsonOBject.put("timestamp", new Date().toString());
+        jsonOBject.put("timestamp", String.valueOf(new Date().getTime()));
 
         return jsonOBject.toString();
 	}
