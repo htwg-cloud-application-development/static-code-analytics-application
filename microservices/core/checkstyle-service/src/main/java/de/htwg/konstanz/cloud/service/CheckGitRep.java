@@ -37,7 +37,7 @@ public class CheckGitRep {
     private List<Class> lFormattedClassList = new ArrayList<Class>();
     private File oRepoDir;
 
-    public String startIt(String gitRepository) throws IOException, ParserConfigurationException, SAXException, InvalidRemoteException, TransportException, GitAPIException, MalformedURLException
+    public String startIt(String gitRepository) throws IOException, ParserConfigurationException, SAXException, InvalidRemoteException, TransportException, GitAPIException, MalformedURLException, NullPointerException
     {
         long lStartTime = System.currentTimeMillis();
         JSONObject oJsonResult = null;
@@ -54,7 +54,7 @@ public class CheckGitRep {
         return oJsonResult.toString();
     }
 
-    public List<List<String>> downloadRepoAndGetPath(String gitRepo) throws InvalidRemoteException, TransportException, GitAPIException, MalformedURLException {
+    public List<List<String>> downloadRepoAndGetPath(String gitRepo) throws InvalidRemoteException, TransportException, GitAPIException, MalformedURLException, NullPointerException {
         List<List<String>> list = new ArrayList<List<String>>();
         String directoryName = gitRepo.substring(gitRepo.lastIndexOf("/"), gitRepo.length() - 1).replace(".", "_");
         String localDirectory = "repositories/" + directoryName + "_" + System.currentTimeMillis() + "/";
@@ -68,24 +68,31 @@ public class CheckGitRep {
                     .setDirectory(new File(localDirectory)).call();
         }
 
-        File mainDir = new File(localDirectory);
+        File mainDir;
+        if(new File(localDirectory +"/src").exists()){
+            mainDir = new File(localDirectory + "/src");
+        }else{
+            mainDir = new File(localDirectory);
+        }
+
 
         if (mainDir.exists()) {
             File[] files = mainDir.listFiles();
 
-            for (File file : files) {
+            for (int i = 0; i < files.length; ++i) {
 
-                File[] filesSub = new File(file.getPath()).listFiles();
+                File[] filesSub = new File(files[i].getPath()).listFiles();
                 List<String> pathsSub = new ArrayList<String>();
 
-                for (File aFilesSub : filesSub) {
-                    if (aFilesSub.getPath().endsWith(".java")) {
-                        pathsSub.add(aFilesSub.getPath());
+                for (int j = 0; j < filesSub.length; ++j) {
+                    if (filesSub[j].getPath().endsWith(".java")) {
+                        pathsSub.add(filesSub[j].getPath());
                     }
                 }
 
                 list.add(pathsSub);
             }
+
         }
         /* Closing Object that we can delete the whole directory later */
         git.getRepository().close();
@@ -197,7 +204,7 @@ public class CheckGitRep {
 
     public JSONObject checkStyle(List<List<String>> lRepoList, String gitRepository, SeverityCounter oSeverityCounter, long lStartTime) throws ParserConfigurationException, SAXException, IOException {
         final String sCheckStylePath = "checkstyle-6.17-all.jar";
-        final String sRuleSetPath = "/google_checks.xml";
+        final String sRuleSetPath = "google_checks_modified.xml";
         JSONObject oJson = null;
 
 		/* Listeninhalt kuerzen, um JSON vorbereiten */
@@ -309,14 +316,43 @@ public class CheckGitRep {
         return bParsable;
     }
 
+    private String sOS = null;
+
+    public String getOsName()
+    {
+        if(sOS == null)
+        {
+            sOS = System.getProperty("os.name");
+        }
+
+        return sOS;
+    }
+    private boolean isWindows()
+    {
+        return getOsName().startsWith("Windows");
+    }
+
+    private boolean isLinux()
+    {
+        return getOsName().startsWith("Linux");
+    }
+
     public void formatList(List<List<String>> lRepoList) {
         for (List<String> aLRepoList : lRepoList) {
             Class oClass = null;
+            String sOperatingSystem = "";
 
             for (int nClassPos = 0; nClassPos < aLRepoList.size(); nClassPos++)
             {
-                String blub = File.separatorChar + "" +File.separatorChar;
-                String[] sFullPathSplit_a = aLRepoList.get(nClassPos).split(blub);
+                if(isWindows() == true)
+                {
+                    sOperatingSystem  = File.separatorChar + "" +File.separatorChar;
+                }
+                else if(isLinux())
+                {
+                    sOperatingSystem = File.separatorChar + "";
+                }
+                String[] sFullPathSplit_a = aLRepoList.get(nClassPos).split(sOperatingSystem );
 
                 String sFullPath = aLRepoList.get(nClassPos);
 
