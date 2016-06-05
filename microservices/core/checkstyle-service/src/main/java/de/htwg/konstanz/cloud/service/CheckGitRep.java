@@ -36,6 +36,7 @@ public class CheckGitRep {
 
     private List<Class> lFormattedClassList = new ArrayList<Class>();
     private File oRepoDir;
+    private String sOS = null;
 
     public String startIt(String gitRepository) throws IOException, ParserConfigurationException, SAXException, InvalidRemoteException, TransportException, GitAPIException, MalformedURLException, NullPointerException
     {
@@ -316,9 +317,7 @@ public class CheckGitRep {
         return bParsable;
     }
 
-    private String sOS = null;
-
-    public String getOsName()
+    private String getOsName()
     {
         if(sOS == null)
         {
