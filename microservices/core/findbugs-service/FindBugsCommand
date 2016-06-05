@@ -1,0 +1,1 @@
+java -jar C:\Users\Nexoc\Downloads\findbugs-3.0.1\findbugs-3.0.1\lib\findbugs.jar -textui -high -xml -auxclasspathFromInput -output test.xml C:\Users\Nexoc\GitHub\MyFirstAws\bin\AWSController.class
