@@ -36,7 +36,7 @@ public class DatabaseService {
         String SAVE_ROUTE = "/addEntry";
 
         // get database service instance
-        ServiceInstance instance = loadBalancer.choose("mongo-service");
+        ServiceInstance instance = loadBalancer.choose("mongo");
         if (null != instance) {
             // build request url
             String requestUrl = instance.getUri() + SAVE_ROUTE;
@@ -58,7 +58,7 @@ public class DatabaseService {
     }
 
     private String callDatabaseRoute(String serviceRoute) throws InstantiationException {
-        ServiceInstance instance = loadBalancer.choose("mongo-service");
+        ServiceInstance instance = loadBalancer.choose("mongo");
         if (null != instance) {
             // build request url
             String requestUrl = instance.getUri() + serviceRoute;

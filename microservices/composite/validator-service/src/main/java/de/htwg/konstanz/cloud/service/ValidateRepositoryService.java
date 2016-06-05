@@ -36,7 +36,7 @@ public class ValidateRepositoryService {
         System.out.println("Validate " + repositoryUrl);
 
         // get checkstyle service instance
-        ServiceInstance instance = loadBalancer.choose("checkstyle-service");
+        ServiceInstance instance = loadBalancer.choose("checkstyle");
         if (null != instance) {
             // build request url
             String requestUrl = instance.getUri() + VALIDATE_ROUTE;
