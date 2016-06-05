@@ -1,6 +1,6 @@
 spring:
   application:
-    name: checkstyle-service
+    name: checkstyle
   profiles:
     active: development
 

@@ -1,6 +1,6 @@
 spring:
   application:
-    name: mongo-service
+    name: mongo
   profiles:
     active: development
 
