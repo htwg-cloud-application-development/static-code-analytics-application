@@ -6,11 +6,12 @@ server:
   port: 1111
 
 zuul:
+  prefix: /apiv1
   routes:
-    validator-service:
-      path: /apiv1/validator/**
-    governance-service:
-      path: /apiv1/governance/**
+    validator:
+      path: /validator/**
+    governance:
+      path: /governance/**
   host:
     socket-timeout-millis: 200000
 
