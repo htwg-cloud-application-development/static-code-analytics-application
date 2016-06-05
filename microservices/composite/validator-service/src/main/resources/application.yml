@@ -1,6 +1,6 @@
 spring:
   application:
-    name: validator-service
+    name: validator
   profiles:
     active: local
 
@@ -8,6 +8,10 @@ eureka:
   instance:
     metadataMap:
       instanceId: ${spring.application.name}:${spring.application.instance_id}:${server.port}
+
+endpoints:
+  restart:
+    enabled: true
 
 logging:
   file: validator-service.log
