@@ -20,7 +20,7 @@ public class GovernanceService {
 
     @RequestMapping(value = "/info", method = RequestMethod.GET)
     public String info() {
-        return "Governance-Service";
+        return "governance";
     }
 
     @Autowired

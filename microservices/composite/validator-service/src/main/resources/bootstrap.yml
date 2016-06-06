@@ -1,0 +1,6 @@
+spring:
+  application:
+    name: validator
+  cloud:
+    config:
+      uri: http://ec2-52-58-87-195.eu-central-1.compute.amazonaws.com:8888

@@ -5,3 +5,4 @@ target
 mvnw
 mvnw.cmd
 .DS_STORE
+*.log

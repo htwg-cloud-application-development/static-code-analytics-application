@@ -1,16 +1,17 @@
 spring:
   application:
-    name: edgeserver
+    name: edge
 
 server:
   port: 1111
 
 zuul:
+  prefix: /apiv1
   routes:
-    validator-service:
-      path: /apiv1/validator-service/**
-    governance-service:
-      path: /apiv1/governance-service/**
+    validator:
+      path: /validator/**
+    governance:
+      path: /governance/**
   host:
     socket-timeout-millis: 200000
 
@@ -47,7 +48,6 @@ spring:
 
 eureka:
   instance:
-    hostname: ec2-52-58-161-190.eu-central-1.compute.amazonaws.com
     leaseRenewalIntervalInSeconds: 10
     metadataMap:
       instanceId: ${eureka.instance.hostname:${spring.application.name}:${spring.application.instance_id:${server.port}}}

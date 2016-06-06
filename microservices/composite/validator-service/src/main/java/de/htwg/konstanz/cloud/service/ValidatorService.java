@@ -11,6 +11,7 @@ import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.cloud.client.loadbalancer.LoadBalancerClient;
+import org.springframework.core.env.Environment;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.scheduling.annotation.EnableAsync;
@@ -32,6 +33,9 @@ public class ValidatorService {
 
     @Autowired
     private LoadBalancerClient loadBalancer;
+
+    @Autowired
+    private Environment environment;
 
     @Autowired
     ValidateRepositoryService validateRepositoryService;
@@ -60,19 +64,48 @@ public class ValidatorService {
             JSONArray array = jsonObj.getJSONArray("groups");
 
             int threadNum = array.length();
-            ExecutorService executor = Executors.newFixedThreadPool(threadNum);
-
             List<Future<String>> taskList = new ArrayList<Future<String>>();
-            for (int i = 0; i < array.length(); i++) {
-                JSONObject obj = array.getJSONObject(i);
-//                Future<String> repo = validateRepositoryService.validateRepository(obj.getString("repositoryUrl"));
-                // [ ] - call validateRepositoryService async
+
+
+            // check if service runs on aws
+            if (environment.getActiveProfiles()[0].equals("aws")) {
+                // TODO:
+                // - read executiontime of each repository
+                // - sort repositories after execution time
+                // - read number of available services (Checkstyle, etc)
+                // - calculation to get number of new instances (if necessary)
+                // - start only 1 execution at same time
+                // - note which service executes task for specific repository
+                // - loop:
+                //      - check if service free
+                //      - execute shortes repo first (greedy)
             }
 
-            // wait for finish
-            // [ ] - save result in database for each
-            // [ ] build result JSON for course (all repos)
-            // [ ] return result
+
+            for (int i = 0; i < array.length(); i++) {
+                JSONObject obj = array.getJSONObject(i);
+                Future<String> repo = validateRepositoryService.validateRepository(obj.toString());
+                taskList.add(repo);
+            }
+
+            ArrayList<JSONObject> result = new ArrayList<JSONObject>();
+            int numberOfRepos = array.length();
+            int i = 0;
+            while (numberOfRepos > 0) {
+                if (taskList.get(i).isDone()) {
+                    result.add(new JSONObject(taskList.get(i).get()));
+                    numberOfRepos--;
+                    // TODO return error
+                    databaseService.saveResult(result.toString());
+                }
+                i++;
+                if (i >= numberOfRepos) {
+                    i = 0;
+                }
+                Thread.sleep(100);
+            }
+
+            return util.createResponse(result.toString(), HttpStatus.OK);
 
         } catch (InstantiationException e) {
             LOG.error(e.getStackTrace().toString());
@@ -81,9 +114,6 @@ public class ValidatorService {
             LOG.error(e.getStackTrace().toString());
             return util.createErrorResponse(e.getMessage(), HttpStatus.INTERNAL_SERVER_ERROR);
         }
-        // TODO scheduling!!
-
-        return null;
     }
 
     @ApiOperation(value = "validate", nickname = "validate")
@@ -135,6 +165,7 @@ public class ValidatorService {
             return util.createErrorResponse(e.getMessage(), HttpStatus.SERVICE_UNAVAILABLE);
         } catch (Exception e) {
             LOG.error(e.getMessage());
+            e.printStackTrace();
             return util.createErrorResponse(e.getMessage(), HttpStatus.INTERNAL_SERVER_ERROR);
         }
     }

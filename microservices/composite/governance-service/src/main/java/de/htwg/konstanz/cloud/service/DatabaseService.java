@@ -47,7 +47,7 @@ public class DatabaseService {
     }
 
     private String callDatabaseFor(String ROUTE) throws InstantiationException {
-        ServiceInstance instance = loadBalancer.choose("mongo-service");
+        ServiceInstance instance = loadBalancer.choose("mongo");
         if (null != instance) {
             // build request url
             String requestUrl = instance.getUri() + ROUTE;

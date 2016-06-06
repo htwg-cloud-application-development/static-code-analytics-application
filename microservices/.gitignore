@@ -1,0 +1,9 @@
+**/.project
+**/.settings
+**/.classpath
+**/target
+**/*.jar
+**/*.xml
+**/*.iml
+**/repositories
+**/*.zip
