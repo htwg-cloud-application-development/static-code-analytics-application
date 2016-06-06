@@ -44,7 +44,7 @@ public class MoodleService {
 
     }
 
-    @RequestMapping(value = "/courses/{id}/assignment", method = RequestMethod.POST)
+    @RequestMapping(value = "/courses/{id}/assignment", method = RequestMethod.GET)
     public ResponseEntity<List<MoodleAssignment>> getAssignmentOfCourse(
             @Valid @RequestBody MoodleToken moodleToken, @Valid @PathVariable int id) {
 
@@ -62,7 +62,7 @@ public class MoodleService {
 
     }
 
-    @RequestMapping(value = "/assignments/{id}/submission", method = RequestMethod.POST)
+    @RequestMapping(value = "/assignments/{id}/submission", method = RequestMethod.GET)
     public ResponseEntity<List<MoodleSubmissionOfAssignmet>> getSubmissionsOfAssignment(
             @Valid @RequestBody MoodleToken moodleToken, @Valid @PathVariable int id) {
 
