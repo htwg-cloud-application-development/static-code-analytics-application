@@ -81,7 +81,7 @@ public class GovernanceService {
             // compose json for database
             String valueToSave = "{ \"user\":" + user + ",\"courses\":" + courses + "}";
 
-            databaseService.saveCourses(valueToSave);
+            //databaseService.saveCourses(valueToSave);
 
             return createResponse(valueToSave, HttpStatus.OK);
         } catch (InstantiationException e) {
