@@ -72,8 +72,18 @@ public class GovernanceService {
     public ResponseEntity<String> importCourses(@PathVariable String token) {
         try {
 
-            return createResponse(moodleService.getCourses(token), HttpStatus.OK);
-            //return createResponse(null, HttpStatus.OK);
+            // get the list of all courses
+            String courses = moodleService.getCourses(token);
+
+            // get the user information of the prof
+            String user = moodleService.getUserInformation(token);
+
+            // compose json for database
+            String valueToSave = "{ \"user\":" + user + ",\"courses\":" + courses + "}";
+
+            //databaseService.saveCourses(valueToSave);
+
+            return createResponse(valueToSave, HttpStatus.OK);
         } catch (InstantiationException e) {
             return createErrorResponse(e.getMessage(), HttpStatus.SERVICE_UNAVAILABLE);
         }

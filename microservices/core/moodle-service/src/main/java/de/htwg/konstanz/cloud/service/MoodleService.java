@@ -44,7 +44,19 @@ public class MoodleService {
 
     }
 
-    @RequestMapping(value = "/courses/{id}/assignment", method = RequestMethod.POST)
+    @RequestMapping(value = "/user/token/{token}", method = RequestMethod.GET)
+    public ResponseEntity<List<MoodleCourse>> getUser(@Valid @PathVariable String token) {
+
+
+        Moodle moodle = new Moodle(token);
+
+        // get the user
+        GeneralMoodleInfo user = moodle.getMoodleInfoFromMoodleToken();
+
+        return new ResponseEntity(user, HttpStatus.OK);
+    }
+
+    @RequestMapping(value = "/courses/{id}/assignment", method = RequestMethod.GET)
     public ResponseEntity<List<MoodleAssignment>> getAssignmentOfCourse(
             @Valid @RequestBody MoodleToken moodleToken, @Valid @PathVariable int id) {
 
@@ -62,7 +74,7 @@ public class MoodleService {
 
     }
 
-    @RequestMapping(value = "/assignments/{id}/submission", method = RequestMethod.POST)
+    @RequestMapping(value = "/assignments/{id}/submission", method = RequestMethod.GET)
     public ResponseEntity<List<MoodleSubmissionOfAssignmet>> getSubmissionsOfAssignment(
             @Valid @RequestBody MoodleToken moodleToken, @Valid @PathVariable int id) {
 

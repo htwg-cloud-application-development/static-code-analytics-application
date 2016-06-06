@@ -21,5 +21,5 @@ public class GeneralMoodleInfo {
     Integer userid;
     String siteurl;
     String userpictureurl;
-    List<MoodleFunction> functions;
+
 }
