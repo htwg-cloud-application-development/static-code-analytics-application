@@ -21,32 +21,22 @@ import java.util.concurrent.Future;
 public class MoodleService {
     private static final Logger LOG = LoggerFactory.getLogger(MoodleService.class);
 
-    RestTemplate restTemplate;
 
     @Autowired
     private LoadBalancerClient loadBalancer;
 
-    @PostConstruct
-    private void init() {
-        this.restTemplate = new RestTemplate();
-    }
+    @Autowired
+    private GovernanceUtil util;
+
 
     @Async
     public String getCourses(String token) throws InstantiationException {
         String route = "/courses/token/" + token;
 
-        // get checkstyle service instance
-        ServiceInstance instance = loadBalancer.choose("moodle");
+        return util.getFromService(route, "moodle");
+    }
 
-        if (null != instance) {
-
-            String requestUrl = instance.getUri() + route;
-
-            // POST to request url and get String (JSON)
-            HttpHeaders headers = new HttpHeaders();
-            headers.setContentType(MediaType.APPLICATION_JSON);
-            return restTemplate.getForObject(requestUrl, String.class);
-        }
-        throw new InstantiationException("service is not available");
+    public String getUserInformation(String token) {
+        return null;
     }
 }
