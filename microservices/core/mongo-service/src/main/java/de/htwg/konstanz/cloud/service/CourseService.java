@@ -11,7 +11,7 @@ import java.util.List;
 @RestController
 @RequestMapping("/courses")
 public class CourseService {
-
+/*
     @Autowired
     private GroupRepository groupRepository;
 
@@ -61,4 +61,5 @@ public class CourseService {
     public void delete(@PathVariable String courseId) {
         courseRepository.delete(courseId);
     }
+*/
 }

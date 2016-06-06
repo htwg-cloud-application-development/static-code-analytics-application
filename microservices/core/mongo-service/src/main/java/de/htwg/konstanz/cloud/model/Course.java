@@ -8,9 +8,11 @@ import java.util.List;
 
 @Data
 public class Course {
-    @Id
-    String courseId;
-    String name;
-    List<Group> groups;
-    
+
+    String id;
+    String shortname;
+    String fullname;
+    String enrolledusercount;
+    String idnumber;
+    String visible;
 }

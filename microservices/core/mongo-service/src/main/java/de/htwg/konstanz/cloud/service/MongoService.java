@@ -2,10 +2,13 @@ package de.htwg.konstanz.cloud.service;
 
 import de.htwg.konstanz.cloud.model.CheckstyleResults;
 import de.htwg.konstanz.cloud.model.PMDResults;
+import jdk.nashorn.internal.parser.TokenType;
 import org.json.JSONObject;
 import org.springframework.data.domain.Sort;
 import org.springframework.data.mongodb.core.query.Criteria;
 import org.springframework.data.mongodb.core.query.Query;
+import org.springframework.http.HttpStatus;
+import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
 import org.springframework.beans.factory.annotation.Autowired;
@@ -14,7 +17,8 @@ import org.springframework.data.mongodb.core.MongoOperations;
 import java.util.Date;
 import java.util.List;
 
-
+//TODO:Exceptions for ID not found etc?
+//TODO:Own mapping or only mapping to methods?
 @RestController
 public class MongoService {
 
