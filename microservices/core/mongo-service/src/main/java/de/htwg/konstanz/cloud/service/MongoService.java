@@ -22,8 +22,8 @@ public class MongoService{
 	@Autowired
 	CheckstyleResultsRepositoryImpl repo;
 	
-	@RequestMapping(value = "/addEntry", method = RequestMethod.POST)
-	public void addEntryToDb(@RequestBody String jsonString){
+	@RequestMapping(value = "/addCheckstyleEntry", method = RequestMethod.POST)
+	public void addCheckstyleEntry(@RequestBody String jsonString){
 
 		repo.persistJson(jsonString);
 	}
@@ -35,5 +35,11 @@ public class MongoService{
        List<CheckstyleResults> userReps =  mongo.find(Query.query(Criteria.where("groupId").is(groupId)).with(new Sort(Sort.Direction.DESC, "timestamp")).limit(1), CheckstyleResults.class);
        return userReps.get(0);
     }
+
+	@RequestMapping(value ="/addPMDEntry", method = RequestMethod.POST)
+	public void addPMDEntry(@RequestBody String jsonString){
+
+
+	}
 
 }
