@@ -78,6 +78,7 @@ public class GovernanceService {
             // get the user information of the prof
             String user = moodleService.getUserInformation(token);
 
+            // compose json for database
             String valueToSave = "{ \"user\":" + user + ",\"courses\":" + courses + "}";
 
             databaseService.saveCourses(valueToSave);

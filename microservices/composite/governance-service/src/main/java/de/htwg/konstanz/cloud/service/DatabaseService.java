@@ -53,7 +53,12 @@ public class DatabaseService {
         return util.getFromService(ROUTE, "mongo");
     }
 
-    public void saveCourses(String valueToSave) {
+    public String saveCourses(String valueToSave) throws InstantiationException {
+        return postDataBaseFor("", valueToSave);
+    }
+
+    private String postDataBaseFor(String route, String data) throws InstantiationException {
+        return util.postToService(route, data, "mongo");
     }
 }
 
