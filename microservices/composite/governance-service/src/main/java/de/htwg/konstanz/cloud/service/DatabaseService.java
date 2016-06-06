@@ -24,6 +24,9 @@ public class DatabaseService {
     @Autowired
     private LoadBalancerClient loadBalancer;
 
+    @Autowired
+    private GovernanceUtil util;
+
     @PostConstruct
     private void init() {
         this.restTemplate = new RestTemplate();
@@ -47,18 +50,10 @@ public class DatabaseService {
     }
 
     private String callDatabaseFor(String ROUTE) throws InstantiationException {
-        ServiceInstance instance = loadBalancer.choose("mongo");
-        if (null != instance) {
-            // build request url
-            String requestUrl = instance.getUri() + ROUTE;
-            // POST to request url and get String (JSON)
-            HttpHeaders headers = new HttpHeaders();
-            headers.setContentType(MediaType.APPLICATION_JSON);
-            ResponseEntity<String> entity = restTemplate.getForEntity(requestUrl, String.class, headers);
-            return entity.getBody();
-        }
-        throw new InstantiationException("service is not available");
+        return util.getFromService(ROUTE, "mongo");
     }
 
+    public void saveCourses(String valueToSave) {
+    }
 }
 
