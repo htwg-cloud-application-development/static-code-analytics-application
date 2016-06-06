@@ -11,12 +11,10 @@ import springfox.documentation.spring.web.plugins.Docket;
 import springfox.documentation.swagger2.annotations.EnableSwagger2;
 
 import static springfox.documentation.builders.PathSelectors.regex;
-import org.springframework.boot.autoconfigure.EnableAutoConfiguration;
 
 @SpringBootApplication
 @EnableDiscoveryClient
 @EnableSwagger2
-@EnableAutoConfiguration
 public class MongoServiceApplication {
 
     public static void main(String[] args) {
