@@ -24,11 +24,11 @@ public class MoodleService {
     }
 
 
-    @RequestMapping(value = "/courses", method = RequestMethod.POST)
-    public ResponseEntity<List<MoodleCourse>> getCourses(@Valid @RequestBody MoodleToken moodleToken) {
+    @RequestMapping(value = "/courses/token/{token}", method = RequestMethod.GET)
+    public ResponseEntity<List<MoodleCourse>> getCourses(@Valid @PathVariable String token) {
 
 
-        Moodle moodle = new Moodle(moodleToken.getToken());
+        Moodle moodle = new Moodle(token);
 
         // first, get the user
         GeneralMoodleInfo user = moodle.getMoodleInfoFromMoodleToken();
@@ -38,7 +38,7 @@ public class MoodleService {
 
             return new ResponseEntity(courses, HttpStatus.OK);
         } catch (JsonProcessingException e) {
-            return new ResponseEntity("ERROR", HttpStatus.OK);
+            return new ResponseEntity("ERROR", HttpStatus.INTERNAL_SERVER_ERROR);
         }
 
 
@@ -56,7 +56,7 @@ public class MoodleService {
 
             return new ResponseEntity(assignments, HttpStatus.OK);
         } catch (JsonProcessingException e) {
-            return new ResponseEntity("ERROR", HttpStatus.OK);
+            return new ResponseEntity("ERROR", HttpStatus.INTERNAL_SERVER_ERROR);
         }
 
 
@@ -74,7 +74,7 @@ public class MoodleService {
 
             return new ResponseEntity(submissions, HttpStatus.OK);
         } catch (JsonProcessingException e) {
-            return new ResponseEntity("ERROR", HttpStatus.OK);
+            return new ResponseEntity("ERROR", HttpStatus.INTERNAL_SERVER_ERROR);
         }
 
 
