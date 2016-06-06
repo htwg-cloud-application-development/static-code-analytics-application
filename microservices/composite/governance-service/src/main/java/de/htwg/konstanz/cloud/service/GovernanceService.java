@@ -26,6 +26,9 @@ public class GovernanceService {
     @Autowired
     DatabaseService databaseService;
 
+    @Autowired
+    MoodleService moodleService;
+
     @RequestMapping(value = "/courses", method = RequestMethod.GET, produces = "application/json")
     public ResponseEntity<String> getCouses() {
         try {
@@ -60,6 +63,17 @@ public class GovernanceService {
     public ResponseEntity<String> getCourse(@PathVariable String courseId) {
         try {
             return createResponse(databaseService.getCourseWithId(courseId), HttpStatus.OK);
+        } catch (InstantiationException e) {
+            return createErrorResponse(e.getMessage(), HttpStatus.SERVICE_UNAVAILABLE);
+        }
+    }
+
+    @RequestMapping(value = "/import/{token}", method = RequestMethod.GET, produces = "application/json")
+    public ResponseEntity<String> importCourses(@PathVariable String token) {
+        try {
+
+            return createResponse(moodleService.getCourses(token), HttpStatus.OK);
+            //return createResponse(null, HttpStatus.OK);
         } catch (InstantiationException e) {
             return createErrorResponse(e.getMessage(), HttpStatus.SERVICE_UNAVAILABLE);
         }
