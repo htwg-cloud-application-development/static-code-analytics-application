@@ -32,13 +32,13 @@ public class MongoService {
 	@Autowired
 	PMDResultsRepository pmdRepo;
 	
-	@RequestMapping(value = "/addCheckstyleEntry", method = RequestMethod.POST)
+	@RequestMapping(value = "/addCheckstyleEntry", method = RequestMethod.POST, consumes = "application/json")
 	public void addCheckstyleEntry(@RequestBody CheckstyleResults checkstyleResults){
 		checkstyleResults.setTimestamp(String.valueOf(new Date().getTime()));
         checkstyleRepo.save(checkstyleResults);
 	}
 
-	@RequestMapping(value ="/addPMDEntry", method = RequestMethod.POST)
+	@RequestMapping(value ="/addPMDEntry", method = RequestMethod.POST, consumes = "application/json")
 	public void addPMDEntry(@RequestBody PMDResults pmdResults){
         pmdResults.setTimestamp(String.valueOf(new Date().getTime()));
 		pmdRepo.save(pmdResults);
