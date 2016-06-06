@@ -78,12 +78,11 @@ public class GovernanceService {
             // get the user information of the prof
             String user = moodleService.getUserInformation(token);
 
-            String valueToSave = "{ user:" + user + "},{courses:" + courses + "}";
+            String valueToSave = "{ \"user\":" + user + ",\"courses\":" + courses + "}";
 
             databaseService.saveCourses(valueToSave);
 
-            return createResponse(moodleService.getCourses(token), HttpStatus.OK);
-            //return createResponse(null, HttpStatus.OK);
+            return createResponse(valueToSave, HttpStatus.OK);
         } catch (InstantiationException e) {
             return createErrorResponse(e.getMessage(), HttpStatus.SERVICE_UNAVAILABLE);
         }
