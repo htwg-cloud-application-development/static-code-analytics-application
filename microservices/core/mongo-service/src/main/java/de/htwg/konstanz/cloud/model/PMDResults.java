@@ -6,8 +6,7 @@ import org.springframework.data.mongodb.core.mapping.Document;
 
 @Data
 @Document
-public class CheckstyleResults {
-
+public class PMDResults {
     @Id
     private String id;
     private String repositoryUrl;
@@ -18,14 +17,4 @@ public class CheckstyleResults {
     private String timestamp;
     private String groupId;
     private Object assignments;
-
-
-    //TODO: quark, verbessern
-  	@Override
-	public String toString() {
-		return "CheckstyleResults [id=" + id + ", repositoryUrl=" + repositoryUrl + ", numberOfErrors=" + numberOfErrors
-				+ ", numberOfWarnings=" + numberOfWarnings + ", numberOfIgnores=" + numberOfIgnores
-				+ ", totalExpendedTime=" + totalExpendedTime + ", assignments=]";
-	}
-   
 }
