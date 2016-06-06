@@ -36,7 +36,11 @@ public class MoodleService {
         return util.getFromService(route, "moodle");
     }
 
-    public String getUserInformation(String token) {
-        return null;
+    public String getUserInformation(String token) throws InstantiationException {
+
+        String route = "/user/token/" + token;
+
+        return util.getFromService(route, "moodle");
+
     }
 }
