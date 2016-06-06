@@ -1,5 +1,6 @@
 package de.htwg.konstanz.cloud.service;
 
+import de.htwg.konstanz.cloud.model.CheckstyleResults;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.mongodb.core.MongoOperations;
 import org.json.JSONObject;
@@ -7,21 +8,19 @@ import org.json.JSONObject;
 import com.mongodb.DBObject;
 import com.mongodb.util.JSON;
 
-import de.htwg.konstanz.cloud.model.UserRep;
-
 import java.util.Date;
 
-public class UserRepRepositoryImpl implements UserRepOperations {
+public class CheckstyleResultsRepositoryImpl implements CheckstyleResultsOperations {
 	
 	@Autowired
 	MongoOperations mongo;
 	
 	public void persistJson(String jsonString){
 		
-		UserRep student;
+		CheckstyleResults student;
         jsonString = addTimestamp(jsonString);
 
-		student = mongo.getConverter().read(UserRep.class, (DBObject) JSON.parse(jsonString));
+		student = mongo.getConverter().read(CheckstyleResults.class, (DBObject) JSON.parse(jsonString));
 		mongo.insert(student);
 	}
 

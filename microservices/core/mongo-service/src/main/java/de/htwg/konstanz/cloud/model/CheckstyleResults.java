@@ -6,7 +6,7 @@ import org.springframework.data.mongodb.core.mapping.Document;
 
 @Data
 @Document
-public class UserRep {
+public class CheckstyleResults {
 
     @Id
     private String id;
@@ -22,7 +22,7 @@ public class UserRep {
 
   	@Override
 	public String toString() {
-		return "UserRep [id=" + id + ", repositoryUrl=" + repositoryUrl + ", numberOfErrors=" + numberOfErrors
+		return "CheckstyleResults [id=" + id + ", repositoryUrl=" + repositoryUrl + ", numberOfErrors=" + numberOfErrors
 				+ ", numberOfWarnings=" + numberOfWarnings + ", numberOfIgnores=" + numberOfIgnores
 				+ ", totalExpendedTime=" + totalExpendedTime + ", assignments=]";
 	}
