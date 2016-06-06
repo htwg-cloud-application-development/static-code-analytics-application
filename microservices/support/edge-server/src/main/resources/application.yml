@@ -48,7 +48,6 @@ spring:
 
 eureka:
   instance:
-    hostname: ec2-52-58-161-190.eu-central-1.compute.amazonaws.com
     leaseRenewalIntervalInSeconds: 10
     metadataMap:
       instanceId: ${eureka.instance.hostname:${spring.application.name}:${spring.application.instance_id:${server.port}}}
