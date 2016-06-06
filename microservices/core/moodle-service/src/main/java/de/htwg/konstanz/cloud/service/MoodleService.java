@@ -24,11 +24,11 @@ public class MoodleService {
     }
 
 
-    @RequestMapping(value = "/courses", method = RequestMethod.POST)
-    public ResponseEntity<List<MoodleCourse>> getCourses(@Valid @RequestBody MoodleToken moodleToken) {
+    @RequestMapping(value = "/courses/token/{token}", method = RequestMethod.GET)
+    public ResponseEntity<List<MoodleCourse>> getCourses(@Valid @PathVariable String token) {
 
 
-        Moodle moodle = new Moodle(moodleToken.getToken());
+        Moodle moodle = new Moodle(token);
 
         // first, get the user
         GeneralMoodleInfo user = moodle.getMoodleInfoFromMoodleToken();
@@ -38,13 +38,25 @@ public class MoodleService {
 
             return new ResponseEntity(courses, HttpStatus.OK);
         } catch (JsonProcessingException e) {
-            return new ResponseEntity("ERROR", HttpStatus.OK);
+            return new ResponseEntity("ERROR", HttpStatus.INTERNAL_SERVER_ERROR);
         }
 
 
     }
 
-    @RequestMapping(value = "/courses/{id}/assignment", method = RequestMethod.POST)
+    @RequestMapping(value = "/user/token/{token}", method = RequestMethod.GET)
+    public ResponseEntity<List<MoodleCourse>> getUser(@Valid @PathVariable String token) {
+
+
+        Moodle moodle = new Moodle(token);
+
+        // get the user
+        GeneralMoodleInfo user = moodle.getMoodleInfoFromMoodleToken();
+
+        return new ResponseEntity(user, HttpStatus.OK);
+    }
+
+    @RequestMapping(value = "/courses/{id}/assignment", method = RequestMethod.GET)
     public ResponseEntity<List<MoodleAssignment>> getAssignmentOfCourse(
             @Valid @RequestBody MoodleToken moodleToken, @Valid @PathVariable int id) {
 
@@ -56,13 +68,13 @@ public class MoodleService {
 
             return new ResponseEntity(assignments, HttpStatus.OK);
         } catch (JsonProcessingException e) {
-            return new ResponseEntity("ERROR", HttpStatus.OK);
+            return new ResponseEntity("ERROR", HttpStatus.INTERNAL_SERVER_ERROR);
         }
 
 
     }
 
-    @RequestMapping(value = "/assignments/{id}/submission", method = RequestMethod.POST)
+    @RequestMapping(value = "/assignments/{id}/submission", method = RequestMethod.GET)
     public ResponseEntity<List<MoodleSubmissionOfAssignmet>> getSubmissionsOfAssignment(
             @Valid @RequestBody MoodleToken moodleToken, @Valid @PathVariable int id) {
 
@@ -74,7 +86,7 @@ public class MoodleService {
 
             return new ResponseEntity(submissions, HttpStatus.OK);
         } catch (JsonProcessingException e) {
-            return new ResponseEntity("ERROR", HttpStatus.OK);
+            return new ResponseEntity("ERROR", HttpStatus.INTERNAL_SERVER_ERROR);
         }
 
 

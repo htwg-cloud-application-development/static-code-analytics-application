@@ -11,9 +11,7 @@ import java.util.Collections;
 import java.util.List;
 
 
-/**
- * Created by steffen on 27/05/16.
- */
+
 public class Moodle {
 
     private RestTemplate templ = new RestTemplate();
