@@ -13,6 +13,7 @@ import org.springframework.stereotype.Component;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
+import java.util.stream.Collectors;
 
 @Component
 class Util {
@@ -67,13 +68,10 @@ class Util {
     }
 
     List<Instance> getAllActiveInstances(AmazonEC2 ec2) {
-        List<Instance> instances = new ArrayList();
-        for (Instance instance : getAllInstances(ec2)) {
-            if (instance.getState().getCode() == 16 || instance.getState().getCode() == 0) {
-                instances.add(instance);
-            }
-        }
-        return instances;
+        return getAllInstances(ec2)
+                .stream()
+                .filter(instance -> instance.getState().getCode() == 16 || instance.getState().getCode() == 0)
+                .collect(Collectors.toList());
     }
 
     List<Instance> getAllInstances(AmazonEC2 ec2) {
