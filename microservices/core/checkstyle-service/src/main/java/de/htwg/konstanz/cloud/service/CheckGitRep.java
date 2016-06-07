@@ -31,6 +31,13 @@ import org.xml.sax.SAXException;
 import javax.xml.parsers.DocumentBuilder;
 import javax.xml.parsers.DocumentBuilderFactory;
 import javax.xml.parsers.ParserConfigurationException;
+import javax.swing.text.BadLocationException;
+import javax.swing.text.html.HTML;
+import javax.swing.text.html.HTMLDocument;
+import javax.swing.text.html.HTMLEditorKit;
+import org.apache.commons.codec.binary.Base64;
+import javax.xml.parsers.DocumentBuilder;
+import javax.xml.parsers.DocumentBuilderFactory;
 
 public class CheckGitRep {
 
@@ -38,45 +45,189 @@ public class CheckGitRep {
     private File oRepoDir;
     private String sOS = null;
 
-    public String startIt(String gitRepository) throws IOException, ParserConfigurationException, SAXException, InvalidRemoteException, TransportException, GitAPIException, MalformedURLException, NullPointerException
-    {
+    public String startIt(String gitRepository) throws IOException, ParserConfigurationException, SAXException, InvalidRemoteException, TransportException, GitAPIException, MalformedURLException, BadLocationException {
         long lStartTime = System.currentTimeMillis();
         JSONObject oJsonResult = null;
+        String sResult = "";
         SeverityCounter oSeverityCounter = new SeverityCounter();
 
         checkLocalCheckstyle();
-        List<List<String>> lRepoList = downloadRepoAndGetPath(gitRepository);
-        oJsonResult = checkStyle(lRepoList, gitRepository, oSeverityCounter, lStartTime);
+        //List<List<String>> lRepoList = //downloadRepoAndGetPath(gitRepository);
+       // oJsonResult = checkStyle(lRepoList, gitRepository, oSeverityCounter, lStartTime);
+        oJsonResult = determination(gitRepository,oSeverityCounter,lStartTime );
         if (oRepoDir != null)
         {
             FileUtils.deleteDirectory(oRepoDir);
         }
 
-        return oJsonResult.toString();
+        if(null == oJsonResult)
+        {
+            sResult = "Invalid Repository";
+        }
+        else
+        {
+            sResult = oJsonResult.toString();
+        }
+
+        return sResult;
     }
 
-    public List<List<String>> downloadRepoAndGetPath(String gitRepo) throws InvalidRemoteException, TransportException, GitAPIException, MalformedURLException, NullPointerException {
+    public JSONObject determination(String url, SeverityCounter oSeverityCounter,long lStartTime) throws IOException, BadLocationException, InvalidRemoteException, TransportException, GitAPIException, ParserConfigurationException, SAXException {
+        JSONObject oJson = null;
+        //SVN
+        if(url.contains("141.37.122.26")){
+            oJson = (checkStyle(generateCheckStyleServiceData(downloadSVNRepo(url)),url,oSeverityCounter,lStartTime));
+        }
+        //GIT
+        if(url.contains("github.com")){
+            oJson = (checkStyle(generateCheckStyleServiceData(downloadGITRepo(url)),url,oSeverityCounter,lStartTime));
+        }
+        return oJson;
+    }
+
+    public String downloadSVNRepo(String svnLink) throws IOException, BadLocationException{
+        //Parameters to access svn
+        //TODO
+        String local = "";
+        String name = System.getenv("SVN_USER");
+        String password = System.getenv("SVN_PASSWORD");
+        if((name != null)&& (password != null)) {
+
+            // URL Proccesing
+            String[] parts = svnLink.split("\\/");
+
+            local = local + parts[parts.length - 1];
+            local = "repositories/" + local + "_" + System.currentTimeMillis()
+                    + "/";
+            File dir1 = new File(local);
+            dir1.mkdir();
+
+            svnCheckout(
+                    svnLink,
+                    genAuthString(name, password), local);
+        }
+        //Local Targetpath
+        return local;
+    }
+
+    public String genAuthString(String name, String pass) {
+        // HTTP Authentication
+        String authString = name + ":" + pass;
+        byte[] authEncBytes = Base64.encodeBase64(authString.getBytes());
+        String authStringEnc = new String(authEncBytes);
+        return authStringEnc;
+    }
+
+    public void svnCheckout(String mainURL, String authStringEnc,
+                            String localPath) throws FileNotFoundException, IOException, BadLocationException {
+        List<String> listValue = new ArrayList<String>();
+        // Generate and open the URL Connection
+        URL url = new URL(mainURL);
+        URLConnection urlConnection = url.openConnection();
+        urlConnection.setRequestProperty("Authorization", "Basic "
+                + authStringEnc);
+        // read HTML File
+        BufferedReader br = new BufferedReader(new InputStreamReader(
+                urlConnection.getInputStream()));
+        // Generate Iterator to walk through the HTML File
+        HTMLEditorKit editorKit = new HTMLEditorKit();
+        HTMLDocument htmlDoc = new HTMLDocument();
+        htmlDoc.putProperty("IgnoreCharsetDirective", Boolean.TRUE);
+        editorKit.read(br, htmlDoc, 0);
+        HTMLDocument.Iterator iter = htmlDoc.getIterator(HTML.Tag.A);
+        listValue = iterToList(iter);
+
+        for (int i = 0; i < listValue.size(); i++) {
+            if (java.net.URLDecoder.decode(listValue.get(i), "UTF-8").endsWith("/")) {
+                // String Magic
+                String[] parts = java.net.URLDecoder.decode(listValue.get(i), "UTF-8").split("\\/");
+                String localPathn = localPath + "/" + parts[parts.length - 1];
+                // Create new Dir
+                new File(localPathn).mkdir();
+                // start new logic for the located dir
+
+                svnCheckout(mainURL + "/" + java.net.URLDecoder.decode(listValue.get(i), "UTF-8"), authStringEnc,
+                        localPathn);
+            } else {
+                // download file
+                downloadFile(mainURL + "/" + java.net.URLDecoder.decode(listValue.get(i), "UTF-8"), localPath + "/"
+                        + java.net.URLDecoder.decode(listValue.get(i), "UTF-8"), authStringEnc);
+            }
+        }
+    }
+
+    public List<String> iterToList(HTMLDocument.Iterator iter) {
+        List<String> list = new ArrayList<String>();
+        // Get Headstructure of SVN and store it into List
+        do {
+            list.add(iter.getAttributes().getAttribute(HTML.Attribute.HREF)
+                    .toString());
+            iter.next();
+        } while (iter.isValid());
+        // Remove first and last Object because they contain no relevant data
+        list.remove(0);
+        list.remove(list.size() - 1);
+        return list;
+    }
+
+    public void downloadFile(String urlString, String dest,
+                             String authStringEnc) throws IOException {
+        // Authenticate
+        URL url = new URL(urlString);
+        URLConnection urlConnection = url.openConnection();
+        urlConnection.setRequestProperty("Authorization", "Basic "
+                + authStringEnc);
+        // Generate InputSTream
+        InputStream is = urlConnection.getInputStream();
+
+        FileOutputStream outputStream = null;
+        // Start to Download the File and save it locally
+        try {
+            File fi = new File(dest);
+            outputStream = new FileOutputStream(fi);
+            int read = 0;
+            byte[] bytes = new byte[1024];
+
+            while ((read = is.read(bytes)) != -1) {
+                outputStream.write(bytes, 0, read);
+            }
+        } catch (IOException e) {
+            e.printStackTrace();
+        } finally {
+            if (is != null) {
+                try {
+                    is.close();
+                } catch (IOException e) {
+                    e.printStackTrace();
+                }
+            }
+            if (outputStream != null) {
+                try {
+                    outputStream.close();
+                } catch (IOException e) {
+                    e.printStackTrace();
+                }
+            }
+        }
+
+    }
+
+
+    public List<List<String>> generateCheckStyleServiceData(
+            String localDirectory) {
+        System.out.println(localDirectory);
+        //Generate Data for CheckstyleService
         List<List<String>> list = new ArrayList<List<String>>();
-        String directoryName = gitRepo.substring(gitRepo.lastIndexOf("/"), gitRepo.length() - 1).replace(".", "_");
-        String localDirectory = "repositories/" + directoryName + "_" + System.currentTimeMillis() + "/";
-        oRepoDir = new File(localDirectory);
-        Git git = null;
-
-        if(isValidRepository(new URIish(new URL(gitRepo))))
-        {
-            git = Git.cloneRepository()
-                    .setURI(gitRepo)
-                    .setDirectory(new File(localDirectory)).call();
-        }
-
         File mainDir;
-        if(new File(localDirectory +"/src").exists()){
+        //Check if local /src-dir exists
+        if (new File(localDirectory + "/src").exists()) {
             mainDir = new File(localDirectory + "/src");
-        }else{
+            System.out.println("existiert");
+        } else {
             mainDir = new File(localDirectory);
+            System.out.println("existiert nicht");
         }
-
-
+        //List all files for CheckstyleService
         if (mainDir.exists()) {
             File[] files = mainDir.listFiles();
 
@@ -88,18 +239,17 @@ public class CheckGitRep {
                 for (int j = 0; j < filesSub.length; ++j) {
                     if (filesSub[j].getPath().endsWith(".java")) {
                         pathsSub.add(filesSub[j].getPath());
+                        System.out.println(filesSub[j].getPath());
                     }
                 }
 
                 list.add(pathsSub);
             }
-
         }
-        /* Closing Object that we can delete the whole directory later */
-        git.getRepository().close();
-
         return list;
     }
+
+
 
     boolean isValidRepository(URIish repoUri) {
         if (repoUri.isRemote()) {
@@ -117,6 +267,29 @@ public class CheckGitRep {
             result = false;
         }
         return result;
+    }
+
+
+
+    public String downloadGITRepo(String gitRepo)
+            throws InvalidRemoteException, TransportException, GitAPIException,
+            MalformedURLException {
+        //Checkout Git-Repo
+
+        //String Magic
+        String directoryName = gitRepo.substring(gitRepo.lastIndexOf("/"),
+                gitRepo.length() - 1).replace(".", "_");
+        String localDirectory = "repositories/" + directoryName + "_"
+                + System.currentTimeMillis() + "/";
+
+        //Clone Command with jGIT
+        URL f = new URL(gitRepo);
+        if (isValidRepository(new URIish(f))) {
+            Git.cloneRepository().setURI(gitRepo)
+                    .setDirectory(new File(localDirectory)).call();
+        }
+        //Local Targetpath
+        return localDirectory;
     }
 
     boolean isValidRemoteRepository(URIish repoUri) {
