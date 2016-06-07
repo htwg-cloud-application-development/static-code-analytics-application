@@ -1,23 +1,13 @@
 package de.htwg.konstanz.cloud.service;
 
 import com.amazonaws.util.json.JSONObject;
-import de.htwg.konstanz.cloud.model.CourseIds;
 import de.htwg.konstanz.cloud.model.MoodleCredentials;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.cloud.client.ServiceInstance;
 import org.springframework.cloud.client.loadbalancer.LoadBalancerClient;
-import org.springframework.http.HttpHeaders;
-import org.springframework.http.MediaType;
-import org.springframework.http.ResponseEntity;
 import org.springframework.scheduling.annotation.Async;
-import org.springframework.scheduling.annotation.AsyncResult;
 import org.springframework.stereotype.Service;
-import org.springframework.web.client.RestTemplate;
-
-import javax.annotation.PostConstruct;
-import java.util.concurrent.Future;
 
 
 @Service
