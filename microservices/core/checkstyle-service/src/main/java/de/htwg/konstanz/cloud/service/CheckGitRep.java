@@ -76,6 +76,12 @@ public class CheckGitRep {
         JSONObject oJson = null;
         //SVN
         if(url.contains("141.37.122.26")){
+            if (!url.startsWith("http://")){
+                url = "http://"+url;
+            }
+            if (url.endsWith("/")){
+                url = url.substring(0, url.length()-1);
+            }
             oJson = (checkStyle(generateCheckStyleServiceData(downloadSVNRepo(url)),url,oSeverityCounter,lStartTime));
         }
         //GIT
@@ -87,7 +93,6 @@ public class CheckGitRep {
 
     public String downloadSVNRepo(String svnLink) throws IOException, BadLocationException{
         //Parameters to access svn
-        //TODO
         String local = "";
         String name = System.getenv("SVN_USER");
         String password = System.getenv("SVN_PASSWORD");
@@ -239,7 +244,6 @@ public class CheckGitRep {
                 for (int j = 0; j < filesSub.length; ++j) {
                     if (filesSub[j].getPath().endsWith(".java")) {
                         pathsSub.add(filesSub[j].getPath());
-                        System.out.println(filesSub[j].getPath());
                     }
                 }
 
