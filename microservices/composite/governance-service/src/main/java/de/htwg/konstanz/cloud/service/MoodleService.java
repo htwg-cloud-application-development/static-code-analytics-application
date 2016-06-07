@@ -1,5 +1,6 @@
 package de.htwg.konstanz.cloud.service;
 
+import de.htwg.konstanz.cloud.model.CourseIds;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -42,5 +43,20 @@ public class MoodleService {
 
         return util.getFromService(route, "moodle");
 
+    }
+
+    public String getAssignmentsOfCourse(String course, String token) {
+        return null;
+    }
+
+    public String getSubmissionOfAssignment(String assignment, String token) {
+        return null;
+    }
+
+    public String getSubmissionsOfCourses(Integer courseid, String token) throws InstantiationException {
+
+        String route = "/courses/" + courseid + "/groups/token/" + token;
+
+        return util.getFromService(route, "moodle");
     }
 }
