@@ -90,8 +90,7 @@ public class MoodleService {
 
             for (MoodleAssignment assignment : assignmentsOfMoodleCourse) {
 
-                if ("Repository Link".equals(assignment.getName())) {
-
+                if ("repository".equals(assignment.getName().toLowerCase())) {
                     submissionsOfAssignment = moodle.getSubmissionsOfAssignment(assignment.getId());
                 }
             }
