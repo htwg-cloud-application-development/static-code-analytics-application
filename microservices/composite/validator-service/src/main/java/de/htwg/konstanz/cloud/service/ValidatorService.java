@@ -1,5 +1,10 @@
 package de.htwg.konstanz.cloud.service;
 
+import com.amazonaws.auth.InstanceProfileCredentialsProvider;
+import com.amazonaws.services.ec2.AmazonEC2;
+import com.amazonaws.services.ec2.AmazonEC2Client;
+import com.amazonaws.services.ec2.model.Instance;
+import com.amazonaws.services.ec2.model.Region;
 import com.amazonaws.util.json.JSONArray;
 import com.amazonaws.util.json.JSONException;
 import com.amazonaws.util.json.JSONObject;
@@ -82,6 +87,9 @@ public class ValidatorService {
             }
 
 
+            // start execution measurement
+            long startTime = System.currentTimeMillis();
+
             for (int i = 0; i < array.length(); i++) {
                 JSONObject obj = array.getJSONObject(i);
                 Future<String> repo = validateRepositoryService.validateRepository(obj.toString());
@@ -93,10 +101,14 @@ public class ValidatorService {
             int i = 0;
             while (numberOfRepos > 0) {
                 if (taskList.get(i).isDone()) {
-                    result.add(new JSONObject(taskList.get(i).get()));
+                    JSONObject obj = new JSONObject(taskList.get(i).get());
+                    obj.put("groupId", array.getJSONObject(i).getString("groupId"));
+                    obj.put("duration", (System.currentTimeMillis() - startTime));
+                    result.add(obj);
+
                     numberOfRepos--;
                     // TODO return error
-                    databaseService.saveResult(result.toString());
+                    databaseService.saveResult(obj.toString());
                 }
                 i++;
                 if (i >= numberOfRepos) {
