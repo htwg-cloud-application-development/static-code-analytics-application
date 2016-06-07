@@ -4,6 +4,7 @@ package de.htwg.konstanz.cloud.service;
 import com.amazonaws.util.json.JSONObject;
 import com.netflix.hystrix.contrib.javanica.annotation.HystrixCommand;
 import de.htwg.konstanz.cloud.model.CourseIds;
+import de.htwg.konstanz.cloud.model.MoodleCredentials;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -61,6 +62,16 @@ public class GovernanceService {
     public ResponseEntity<String> getCourse(@PathVariable String courseId) {
         try {
             return createResponse(databaseService.getCourseWithId(courseId), HttpStatus.OK);
+        } catch (InstantiationException e) {
+            return createErrorResponse(e.getMessage(), HttpStatus.SERVICE_UNAVAILABLE);
+        }
+    }
+
+    @RequestMapping(value = "/login", method = RequestMethod.POST, produces = "application/json")
+    public ResponseEntity<String> getToken(@RequestBody MoodleCredentials credentials) {
+
+        try {
+            return createResponse(moodleService.getToken(credentials), HttpStatus.OK);
         } catch (InstantiationException e) {
             return createErrorResponse(e.getMessage(), HttpStatus.SERVICE_UNAVAILABLE);
         }
