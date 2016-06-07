@@ -1,6 +1,5 @@
 package de.htwg.konstanz.cloud.service;
 
-import com.netflix.discovery.converters.Auto;
 import de.htwg.konstanz.cloud.model.Assignment;
 import de.htwg.konstanz.cloud.model.Course;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -17,25 +16,25 @@ public class AssignmentService {
     CourseRepository courseRepo;
 
     @Autowired
-    AssignmentRepository assigmentRepo;
+    AssignmentRepository assignmentRepo;
 
-    @RequestMapping(path ="/{courseId", method = RequestMethod.POST, consumes = "application/json")
-    public void create(@PathVariable String courseId, @RequestBody Assignment assigmnet) throws NoSuchFieldException{
+    @RequestMapping(path ="/{courseId}", method = RequestMethod.POST, consumes = "application/json")
+    public void create(@PathVariable String courseId, @RequestBody Assignment assignment) throws NoSuchFieldException{
 
         Course course = courseRepo.findOne(courseId);
         if(null == course){
             throw new NoSuchFieldException("Course not found");
         }
 
-        assigmentRepo.save(assigmnet);
+        assignmentRepo.save(assignment);
 
         List<Assignment> assignments = course.getAssignments();
         if(null == assignments){
             assignments = new ArrayList<>();
         }
 
-        assignments.add(assigmnet);
-
-
+        assignments.add(assignment);
+        course.setAssignments(assignments);
+        courseRepo.save(course);
     }
 }

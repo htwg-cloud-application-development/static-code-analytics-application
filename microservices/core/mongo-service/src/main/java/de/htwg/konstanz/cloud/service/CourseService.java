@@ -19,7 +19,7 @@ public class CourseService {
     @Autowired
     private CourseRepository courseRepo;
 
-    @RequestMapping(path = "/{userId}", method = RequestMethod.PUT, consumes = "application/json")
+    @RequestMapping(path = "/{userId}", method = RequestMethod.POST, consumes = "application/json")
     public void create(@RequestBody Course course, @PathVariable String userId) throws NoSuchFieldException{
 
         User user = userRepo.findOne(userId);
@@ -34,9 +34,11 @@ public class CourseService {
 
         }
         courses.add(course);
+        user.setCourses(courses);
+        userRepo.save(user);
     }
 
-    @RequestMapping(value = "{courseId}", method = RequestMethod.GET)
+    @RequestMapping(value = "/{courseId}", method = RequestMethod.GET)
     public Course getCourse(@PathVariable String courseId){
 
         return courseRepo.findOne(courseId);

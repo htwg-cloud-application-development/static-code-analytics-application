@@ -6,6 +6,7 @@ import org.springframework.data.mongodb.core.MongoOperations;
 import org.springframework.web.bind.annotation.*;
 
 @RestController
+@RequestMapping("/user")
 public class UserService {
 
     @Autowired
@@ -14,7 +15,7 @@ public class UserService {
     @Autowired
     UserRepository userRepo;
 
-    @RequestMapping(value = "/addUser", method = RequestMethod.POST)
+    @RequestMapping(value = "/add", method = RequestMethod.POST)
     public void addUser (@RequestBody User user){
 
         userRepo.save(user);
