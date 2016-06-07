@@ -3,15 +3,13 @@ package de.htwg.konstanz.cloud.service;
 
 import com.amazonaws.util.json.JSONObject;
 import com.netflix.hystrix.contrib.javanica.annotation.HystrixCommand;
+import de.htwg.konstanz.cloud.model.CourseIds;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
-import org.springframework.web.client.RestTemplate;
 
-import javax.validation.Valid;
 import java.util.HashMap;
-import java.util.concurrent.Future;
 
 
 @RestController
@@ -84,6 +82,24 @@ public class GovernanceService {
             //databaseService.saveCourses(valueToSave);
 
             return createResponse(valueToSave, HttpStatus.OK);
+        } catch (InstantiationException e) {
+            return createErrorResponse(e.getMessage(), HttpStatus.SERVICE_UNAVAILABLE);
+        }
+    }
+
+    @RequestMapping(value = "/import/courses/{token}", method = RequestMethod.POST, produces = "application/json")
+    public ResponseEntity<String> importCoursesOfProf(@PathVariable String token, @RequestBody CourseIds courses) {
+        try {
+
+            for (Integer courseid : courses.getCourses()) {
+                String groups = moodleService.getSubmissionsOfCourses(courseid, token);
+
+                databaseService.saveGroups(courseid, groups);
+            }
+
+
+            return createResponse("", HttpStatus.OK);
+
         } catch (InstantiationException e) {
             return createErrorResponse(e.getMessage(), HttpStatus.SERVICE_UNAVAILABLE);
         }
