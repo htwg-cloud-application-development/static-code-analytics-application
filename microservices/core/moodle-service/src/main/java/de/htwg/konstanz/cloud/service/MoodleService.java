@@ -10,6 +10,7 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
 import javax.validation.Valid;
+import java.util.Collections;
 import java.util.List;
 
 
@@ -73,6 +74,36 @@ public class MoodleService {
 
 
     }
+
+    // helper method to gather all needed information
+    @RequestMapping(value = "/courses/{courseid}/groups/token/{token}", method = RequestMethod.GET)
+    public ResponseEntity<List<MoodleSubmissionOfAssignmet>> getGroupsOfCourse(
+            @Valid @PathVariable String token, @Valid @PathVariable String courseid) {
+
+        Moodle moodle = new Moodle(token);
+
+        List<MoodleSubmissionOfAssignmet> submissionsOfAssignment = Collections.emptyList();
+
+        try {
+
+            List<MoodleAssignment> assignmentsOfMoodleCourse = moodle.getAssignmentsOfMoodleCourse(Integer.parseInt(courseid));
+
+            for (MoodleAssignment assignment : assignmentsOfMoodleCourse) {
+
+                if ("repository".equals(assignment.getName().toLowerCase())) {
+                    submissionsOfAssignment = moodle.getSubmissionsOfAssignment(assignment.getId());
+                }
+            }
+
+
+            return new ResponseEntity(submissionsOfAssignment, HttpStatus.OK);
+        } catch (JsonProcessingException e) {
+            return new ResponseEntity("ERROR", HttpStatus.INTERNAL_SERVER_ERROR);
+        }
+
+
+    }
+
 
     @RequestMapping(value = "/assignments/{id}/submission/token/{token}", method = RequestMethod.GET)
     public ResponseEntity<List<MoodleSubmissionOfAssignmet>> getSubmissionsOfAssignment(

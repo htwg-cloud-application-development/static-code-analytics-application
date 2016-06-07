@@ -12,8 +12,6 @@ public class MoodleAssignment {
 
     Integer id;
     String name;
-    String modicon;
-    String modname;
-    String modplural;
-    Integer indent;
+    Integer course;
+
 }

@@ -24,8 +24,8 @@ public class PmdService {
     @RequestMapping(value = "/validate", method = RequestMethod.POST, produces = "application/json", consumes = "application/json")
     public ResponseEntity validate(@RequestBody ValidationData data) {
         try {
-            CheckGitRep oCheckGitRep = new CheckGitRep();
-            String json = oCheckGitRep.startIt(data.getRepositoryUrl());
+            PMD oPMD = new PMD();
+            String json = oPMD.startIt(data.getRepositoryUrl());
             return ResponseEntity.ok(json);
         } catch (ParserConfigurationException e) {
             return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(e.getMessage());

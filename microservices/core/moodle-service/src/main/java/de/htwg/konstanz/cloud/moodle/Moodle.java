@@ -11,7 +11,6 @@ import java.util.Collections;
 import java.util.List;
 
 
-
 public class Moodle {
 
     private RestTemplate templ = new RestTemplate();
@@ -55,8 +54,8 @@ public class Moodle {
 
     public List<MoodleAssignment> getAssignmentsOfMoodleCourse(Integer courseId) throws JsonProcessingException {
 
-        final String service = "core_course_get_contents";
-        final String requestURL = MOODLE_BASE_URL + "&wsfunction=" + service + "&courseid=" + courseId;
+        final String service = "mod_assign_get_assignments";
+        final String requestURL = MOODLE_BASE_URL + "&wsfunction=" + service + "&courseids[0]=" + courseId;
 
         JsonNode course = templ.getForObject(requestURL, JsonNode.class);
 
@@ -81,29 +80,26 @@ public class Moodle {
 
     private List<MoodleAssignment> findAssignmentsInCourse(JsonNode course) throws JsonProcessingException {
 
+        JsonNode jsonCourse = course.findPath("courses");
+
+        if (jsonCourse.size() < 1) {
+            return Collections.emptyList();
+        }
+        JsonNode jsonAssignments = jsonCourse.elements().next().findPath("assignments");
+
         ObjectMapper mapper = new ObjectMapper();
         List<MoodleAssignment> assignments = new ArrayList<>();
-
-        // iterate over all course parts
-        for (JsonNode coursePart : course) {
-            JsonNode modules = coursePart.findPath("modules");
-
-
-            // iterate over all modules of that part
-            for (JsonNode module : modules) {
-
-                // if module is an assignment
-                if ("assign".equals(module.findPath("modname").asText())) {
-                    assignments.add(mapper.treeToValue(module, MoodleAssignment.class));
-                }
-            }
+        
+        // iterate over all assignments
+        for (JsonNode assign : jsonAssignments) {
+            assignments.add(mapper.treeToValue(assign, MoodleAssignment.class));
         }
+
         return assignments;
     }
 
     private List<MoodleSubmissionOfAssignmet> findSubmissionsInAssignment(JsonNode assignment) throws JsonProcessingException {
 
-        ObjectMapper mapper = new ObjectMapper();
 
 
         JsonNode moodleSubmissions = assignment.findPath("submissions");
@@ -111,6 +107,8 @@ public class Moodle {
         if (moodleSubmissions.size() < 1) {
             return Collections.emptyList();
         }
+
+        ObjectMapper mapper = new ObjectMapper();
 
         List<MoodleSubmissionOfAssignmet> submissions = new ArrayList<>();
         for (JsonNode singleSubmission : moodleSubmissions) {
