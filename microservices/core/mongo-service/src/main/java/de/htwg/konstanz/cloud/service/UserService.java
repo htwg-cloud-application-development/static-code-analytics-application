@@ -24,6 +24,4 @@ public class UserService {
     public String info(){
         return "Hello";
     }
-
-
 }
