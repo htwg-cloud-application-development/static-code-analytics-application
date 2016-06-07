@@ -4,7 +4,6 @@ import com.amazonaws.auth.EnvironmentVariableCredentialsProvider;
 import com.amazonaws.regions.Regions;
 import com.amazonaws.services.ec2.AmazonEC2;
 import com.amazonaws.services.ec2.AmazonEC2Client;
-import com.amazonaws.services.ec2.model.Instance;
 import com.amazonaws.util.json.JSONArray;
 import com.amazonaws.util.json.JSONObject;
 import de.htwg.konstanz.cloud.model.ValidationData;
@@ -53,23 +52,19 @@ public class ValidatorService {
 
     @RequestMapping(value = "/info", method = RequestMethod.GET, produces = "application/json")
     public String info() {
-        // - read number of available services (Checkstyle, etc)
         StringBuilder sb = new StringBuilder();
-        AmazonEC2 ec2 = new AmazonEC2Client(new EnvironmentVariableCredentialsProvider());
-        ec2.setRegion(com.amazonaws.regions.Region.getRegion(Regions.EU_CENTRAL_1));
+        if (environment.getActiveProfiles()[0].equals("aws")) {
+            try {
+                AmazonEC2 ec2 = new AmazonEC2Client(new EnvironmentVariableCredentialsProvider());
+                ec2.setRegion(com.amazonaws.regions.Region.getRegion(Regions.EU_CENTRAL_1));
 
-        List<Instance> allActiveInstances = util.getAllActiveInstances(ec2);
-        for (Instance instance : allActiveInstances) {
-            sb.append("\nImageId: ").append(instance.getImageId());
-            sb.append("\nKeyName: ").append(instance.getKeyName());
-            sb.append("\nLaunch: ").append(instance.getLaunchTime());
-        }
+                // - read number of available services (Checkstyle, etc)
+                sb.append("NumberOfActiveCheckstyleInstances").append(util.getNumberOfActiveCheckstyleInstances(ec2));
 
-
-        try {
-            util.runNewCheckstyleInstance(ec2,1,3);
-        } catch (NoSuchFieldException e) {
-            return e.getMessage();
+                util.runNewCheckstyleInstance(ec2, 1, 1);
+            } catch (NoSuchFieldException e) {
+                return e.getMessage();
+            }
         }
 
         return "{\"timestamp\":\"" + new Date() + "\",\"serviceId\":\"" + sb.toString() + "\"}";
@@ -93,12 +88,6 @@ public class ValidatorService {
                 // TODO:
                 // - read executiontime of each repository
                 // - sort repositories after execution time
-
-
-
-
-
-
 
 
                 // - calculation to get number of new instances (if necessary)
