@@ -11,7 +11,6 @@ import java.util.Collections;
 import java.util.List;
 
 
-
 public class Moodle {
 
     private RestTemplate templ = new RestTemplate();
@@ -55,8 +54,8 @@ public class Moodle {
 
     public List<MoodleAssignment> getAssignmentsOfMoodleCourse(Integer courseId) throws JsonProcessingException {
 
-        final String service = "core_course_get_contents";
-        final String requestURL = MOODLE_BASE_URL + "&wsfunction=" + service + "&courseid=" + courseId;
+        final String service = "mod_assign_get_assignments";
+        final String requestURL = MOODLE_BASE_URL + "&wsfunction=" + service + "&courseids[0]=" + courseId;
 
         JsonNode course = templ.getForObject(requestURL, JsonNode.class);
 
@@ -84,20 +83,13 @@ public class Moodle {
         ObjectMapper mapper = new ObjectMapper();
         List<MoodleAssignment> assignments = new ArrayList<>();
 
-        // iterate over all course parts
-        for (JsonNode coursePart : course) {
-            JsonNode modules = coursePart.findPath("modules");
-
-
-            // iterate over all modules of that part
-            for (JsonNode module : modules) {
-
-                // if module is an assignment
-                if ("assign".equals(module.findPath("modname").asText())) {
-                    assignments.add(mapper.treeToValue(module, MoodleAssignment.class));
-                }
-            }
+        JsonNode jsonAssignments = course.findPath("courses").elements().next().findPath("assignments");
+        
+        // iterate over all assignments
+        for (JsonNode assign : jsonAssignments) {
+            assignments.add(mapper.treeToValue(assign, MoodleAssignment.class));
         }
+
         return assignments;
     }
 
