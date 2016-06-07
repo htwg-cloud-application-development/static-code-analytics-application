@@ -276,7 +276,6 @@ public class PMD {
                 lFormattedClassList.add(oClass);
             }
         }
-        System.out.println("DEBUG");
     }
 
     public void storePmdInformation(String sXmlPath, int nClassPos, SeverityCounter oSeverityCounter) throws ParserConfigurationException, SAXException, IOException {
