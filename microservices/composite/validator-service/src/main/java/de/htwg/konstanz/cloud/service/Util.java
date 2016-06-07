@@ -35,6 +35,8 @@ class Util {
         RunInstancesRequest runInstancesRequest = new RunInstancesRequest()
                 .withInstanceType("t2.micro")
                 .withImageId("ami-1e04ea71")
+                .withMinCount(1)
+                .withMaxCount(1)
                 .withMonitoring(true)
                 .withSecurityGroupIds("sg-5f2cd437");
         ec2.runInstances(runInstancesRequest);
