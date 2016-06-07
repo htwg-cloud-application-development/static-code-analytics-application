@@ -56,7 +56,22 @@ public class ValidatorService {
 
     @RequestMapping(value = "/info", method = RequestMethod.GET, produces = "application/json")
     public String info() {
-        return "{\"timestamp\":\"" + new Date() + "\",\"serviceId\":\"" + serviceName + "\"}";
+        // - read number of available services (Checkstyle, etc)
+        InstanceProfileCredentialsProvider tmp = new InstanceProfileCredentialsProvider();
+        LOG.info(tmp.getCredentials().toString());
+        StringBuilder sb = new StringBuilder();
+        sb.append(tmp.getCredentials().toString());
+
+        AmazonEC2 ec2 = new AmazonEC2Client(tmp);
+
+        List<Instance> alleMeineEntchen = util.getAllActiveInstances(ec2);
+        for (Instance instance : alleMeineEntchen) {
+            LOG.info(instance.getImageId() +" - " + instance.getPublicDnsName());
+            sb.append(instance.getImageId() +" - " + instance.getPublicDnsName());
+        }
+
+        util.runNewCheckstyleInstance(ec2);
+        return "{\"timestamp\":\"" + new Date() + "\",\"serviceId\":\"" + sb.toString() + "\"}";
     }
 
 
@@ -79,18 +94,7 @@ public class ValidatorService {
                 // - sort repositories after execution time
 
 
-                // - read number of available services (Checkstyle, etc)
-                InstanceProfileCredentialsProvider tmp = new InstanceProfileCredentialsProvider();
-                LOG.info(tmp.getCredentials().toString());
 
-                AmazonEC2 ec2 = new AmazonEC2Client(tmp);
-
-                List<Instance> alleMeineEntchen = util.getAllActiveInstances(ec2);
-                for (Instance instance : alleMeineEntchen) {
-                    LOG.info(instance.getImageId() +" - " + instance.getPublicDnsName());
-                }
-
-                util.runNewCheckstyleInstance(ec2);
 
 
 
