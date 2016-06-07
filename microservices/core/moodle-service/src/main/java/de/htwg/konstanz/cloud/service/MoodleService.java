@@ -8,6 +8,7 @@ import de.htwg.konstanz.cloud.moodle.Moodle;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
+import org.springframework.web.client.RestTemplate;
 
 import javax.validation.Valid;
 import java.util.Collections;
@@ -24,6 +25,20 @@ public class MoodleService {
         return "Moodle-Service";
     }
 
+    @RequestMapping(value = "/login", method = RequestMethod.GET)
+    public ResponseEntity<MoodleCredentials> login(@Valid @RequestBody MoodleCredentials credentials) {
+
+        RestTemplate templ = new RestTemplate();
+
+        String url = "https://moodle.htwg-konstanz.de/moodle/login/token.php?" +
+                "moodlewsrestformat=json&service=moodle_mobile_app" +
+                "&username=" + credentials.getUsername() + "&password=" + credentials.getPassword();
+
+        MoodleToken token = templ.getForObject(url, MoodleToken.class);
+
+        return new ResponseEntity(token, HttpStatus.OK);
+
+    }
 
     @RequestMapping(value = "/courses/token/{token}", method = RequestMethod.GET)
     public ResponseEntity<List<MoodleCourse>> getCourses(@Valid @PathVariable String token) {
