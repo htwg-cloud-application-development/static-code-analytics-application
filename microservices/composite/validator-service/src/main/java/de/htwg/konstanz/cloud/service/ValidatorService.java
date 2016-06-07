@@ -53,13 +53,14 @@ public class ValidatorService {
     @RequestMapping(value = "/info", method = RequestMethod.GET, produces = "application/json")
     public String info() {
         StringBuilder sb = new StringBuilder();
+        sb.append("\nActiveProfile: ").append(environment.getActiveProfiles()[0]);
         if (environment.getActiveProfiles()[0].equals("aws")) {
             try {
                 AmazonEC2 ec2 = new AmazonEC2Client(new EnvironmentVariableCredentialsProvider());
                 ec2.setRegion(com.amazonaws.regions.Region.getRegion(Regions.EU_CENTRAL_1));
 
                 // - read number of available services (Checkstyle, etc)
-                sb.append("NumberOfActiveCheckstyleInstances").append(util.getNumberOfActiveCheckstyleInstances(ec2));
+                sb.append("\nNumberOfActiveCheckstyleInstances").append(util.getNumberOfActiveCheckstyleInstances(ec2));
 
                 util.runNewCheckstyleInstance(ec2, 1, 1);
             } catch (NoSuchFieldException e) {
