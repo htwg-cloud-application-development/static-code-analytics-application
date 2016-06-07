@@ -44,16 +44,17 @@ class Util {
         return createResponse(errorResponseObject.toString(), status);
     }
 
-    void runNewCheckstyleInstance(AmazonEC2 ec2) {
-        RunInstancesRequest runInstancesRequest = new RunInstancesRequest()
-                .withInstanceType("t2.micro")
-                .withImageId("ami-1e04ea71")
-                .withMinCount(1)
-                .withMaxCount(1)
-                .withMonitoring(true)
-                .withKeyName("aws_frankfurt")
-                .withSecurityGroupIds("sg-5f2cd437");
-        ec2.runInstances(runInstancesRequest);
+    void runNewCheckstyleInstance(AmazonEC2 ec2, int minCount, int maxCount) throws NoSuchFieldException {
+            RunInstancesRequest runInstancesRequest = new RunInstancesRequest()
+                    .withInstanceType(checkstyleInstanceType)
+                    .withImageId(checkstyleImageId)
+                    .withMinCount(minCount)
+                    .withMaxCount(maxCount)
+                    .withMonitoring(true)
+                    .withKeyName(checkstyleKeyName)
+                    .withSecurityGroupIds(securityGroup);
+            ec2.runInstances(runInstancesRequest);
+
     }
 
     List<Instance> getAllActiveInstances(AmazonEC2 ec2) {
