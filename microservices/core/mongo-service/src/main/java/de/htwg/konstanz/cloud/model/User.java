@@ -12,14 +12,13 @@ import java.util.List;
 public class User {
 
     @Id
-    String id;
+    String userid;
     String sitename;
     String username;
     String firstname;
     String lastname;
     String fullname;
     String lang;
-    String userid;
     String siteurl;
     String userpictureurl;
     @DBRef

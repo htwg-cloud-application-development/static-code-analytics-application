@@ -26,7 +26,6 @@ public class CourseService {
         if(null == user){
             throw new NoSuchFieldException("User not found");
         }
-
         courseRepo.save(course);
 
         List<Course> courses = user.getCourses();
