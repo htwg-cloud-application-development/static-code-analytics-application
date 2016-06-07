@@ -5,6 +5,7 @@ import com.amazonaws.services.ec2.model.*;
 import com.amazonaws.util.json.JSONObject;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Component;
@@ -17,6 +18,18 @@ import java.util.List;
 class Util {
 
     private static final Logger LOG = LoggerFactory.getLogger(Util.class);
+
+    @Value("${app.aws.securityGroup}")
+    private String securityGroup;
+
+    @Value("${app.aws.services.checkstyle.imageId}")
+    private String checkstyleImageId;
+
+    @Value("${app.aws.services.checkstyle.instanceType}")
+    private String checkstyleInstanceType;
+
+    @Value("${app.aws.services.checkstyle.keyName}")
+    private String checkstyleKeyName;
 
 
     <T> ResponseEntity<T> createResponse(T body, HttpStatus httpStatus) {
