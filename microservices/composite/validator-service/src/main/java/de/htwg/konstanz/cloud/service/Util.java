@@ -45,6 +45,9 @@ class Util {
     }
 
     void runNewCheckstyleInstance(AmazonEC2 ec2, int minCount, int maxCount) throws NoSuchFieldException {
+        if (!securityGroup.isEmpty() && !checkstyleImageId.isEmpty()
+                && !checkstyleInstanceType.isEmpty() && !checkstyleKeyName.isEmpty()) {
+
             RunInstancesRequest runInstancesRequest = new RunInstancesRequest()
                     .withInstanceType(checkstyleInstanceType)
                     .withImageId(checkstyleImageId)
@@ -54,7 +57,13 @@ class Util {
                     .withKeyName(checkstyleKeyName)
                     .withSecurityGroupIds(securityGroup);
             ec2.runInstances(runInstancesRequest);
-
+        } else {
+            throw new NoSuchFieldException("Missing Config Parameter for one of following parameter:\n " +
+                    "[securityGroup=" + securityGroup +
+                    "|checkstyleImageId=" + checkstyleImageId +
+                    "|checkstyleInstanceType=" + checkstyleInstanceType +
+                    "|checkstyleKeyName=" + checkstyleKeyName + "]");
+        }
     }
 
     List<Instance> getAllActiveInstances(AmazonEC2 ec2) {
