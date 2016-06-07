@@ -3,7 +3,6 @@ package de.htwg.konstanz.cloud.service;
 import java.io.*;
 import java.net.MalformedURLException;
 import java.net.URL;
-import java.net.URLConnection;
 import java.nio.channels.Channels;
 import java.nio.channels.ReadableByteChannel;
 import java.util.ArrayList;
@@ -12,15 +11,9 @@ import de.htwg.konstanz.cloud.model.Class;
 import de.htwg.konstanz.cloud.model.Error;
 import de.htwg.konstanz.cloud.model.SeverityCounter;
 import org.apache.commons.io.FileUtils;
-import org.eclipse.jgit.api.Git;
 import org.eclipse.jgit.api.errors.GitAPIException;
 import org.eclipse.jgit.api.errors.InvalidRemoteException;
 import org.eclipse.jgit.api.errors.TransportException;
-import org.eclipse.jgit.internal.storage.file.FileRepository;
-import org.eclipse.jgit.transport.URIish;
-import org.eclipse.jgit.transport.RemoteSession;
-import org.eclipse.jgit.transport.SshSessionFactory;
-import org.eclipse.jgit.util.FS;
 import org.json.JSONArray;
 import org.json.JSONObject;
 import org.w3c.dom.Document;
@@ -31,52 +24,79 @@ import org.xml.sax.SAXException;
 import javax.xml.parsers.DocumentBuilder;
 import javax.xml.parsers.DocumentBuilderFactory;
 import javax.xml.parsers.ParserConfigurationException;
+import javax.swing.text.BadLocationException;
 
-public class CheckGitRep {
+public class Checkstyle {
 
     private List<Class> lFormattedClassList = new ArrayList<Class>();
     private File oRepoDir;
-    private String sOS = null;
+    private GIT oGit = new GIT();
+    private SVN oSvn = new SVN();
 
-    public String startIt(String gitRepository) throws IOException, ParserConfigurationException, SAXException, InvalidRemoteException, TransportException, GitAPIException, MalformedURLException, NullPointerException
-    {
+    public String startIt(String gitRepository) throws IOException, ParserConfigurationException, SAXException, InvalidRemoteException, TransportException, GitAPIException, MalformedURLException, BadLocationException {
         long lStartTime = System.currentTimeMillis();
         JSONObject oJsonResult = null;
+        String sResult = "";
         SeverityCounter oSeverityCounter = new SeverityCounter();
 
-        checkLocalCheckstyle();
-        List<List<String>> lRepoList = downloadRepoAndGetPath(gitRepository);
-        oJsonResult = checkStyle(lRepoList, gitRepository, oSeverityCounter, lStartTime);
+        oJsonResult = determination(gitRepository,oSeverityCounter,lStartTime );
         if (oRepoDir != null)
         {
             FileUtils.deleteDirectory(oRepoDir);
         }
 
-        return oJsonResult.toString();
+        if(null == oJsonResult)
+        {
+            sResult = "Invalid Repository";
+        }
+        else
+        {
+            sResult = oJsonResult.toString();
+        }
+
+        return sResult;
     }
 
-    public List<List<String>> downloadRepoAndGetPath(String gitRepo) throws InvalidRemoteException, TransportException, GitAPIException, MalformedURLException, NullPointerException {
+    private JSONObject determination(String sRepoUrl, SeverityCounter oSeverityCounter, long lStartTime) throws IOException, BadLocationException, InvalidRemoteException, TransportException, GitAPIException, ParserConfigurationException, SAXException {
+        JSONObject oJson = null;
+
+        /* SVN */
+        if(sRepoUrl.contains("141.37.122.26")){
+            /* URL needs to start with HTTP:// */
+            if (!sRepoUrl.startsWith("http://")){
+                sRepoUrl = "http://"+ sRepoUrl;
+            }
+            /* remove the last / */
+            if (sRepoUrl.endsWith("/")){
+                sRepoUrl = sRepoUrl.substring(0, sRepoUrl.length()-1);
+            }
+            oJson = (checkStyle(generateCheckStyleServiceData(oSvn.downloadSVNRepo(sRepoUrl)), sRepoUrl,oSeverityCounter,lStartTime));
+        }
+
+        /* GIT */
+        if(sRepoUrl.contains("github.com")){
+            checkLocalCheckstyle();
+            oJson = (checkStyle(generateCheckStyleServiceData(oGit.downloadGITRepo(sRepoUrl)), sRepoUrl,oSeverityCounter,lStartTime));
+        }
+
+        return oJson;
+    }
+
+    private List<List<String>> generateCheckStyleServiceData(String localDirectory) {
+        /* Generate Data for CheckstyleService */
         List<List<String>> list = new ArrayList<List<String>>();
-        String directoryName = gitRepo.substring(gitRepo.lastIndexOf("/"), gitRepo.length() - 1).replace(".", "_");
-        String localDirectory = "repositories/" + directoryName + "_" + System.currentTimeMillis() + "/";
-        oRepoDir = new File(localDirectory);
-        Git git = null;
-
-        if(isValidRepository(new URIish(new URL(gitRepo))))
-        {
-            git = Git.cloneRepository()
-                    .setURI(gitRepo)
-                    .setDirectory(new File(localDirectory)).call();
-        }
-
         File mainDir;
-        if(new File(localDirectory +"/src").exists()){
+
+        /* Check if local /src-dir exists */
+        if (new File(localDirectory + "/src").exists()) {
             mainDir = new File(localDirectory + "/src");
-        }else{
+            System.out.println("existiert");
+        } else {
             mainDir = new File(localDirectory);
+            System.out.println("existiert nicht");
         }
 
-
+        /* List all files for CheckstyleService */
         if (mainDir.exists()) {
             File[] files = mainDir.listFiles();
 
@@ -93,97 +113,12 @@ public class CheckGitRep {
 
                 list.add(pathsSub);
             }
-
         }
-        /* Closing Object that we can delete the whole directory later */
-        git.getRepository().close();
 
         return list;
     }
 
-    boolean isValidRepository(URIish repoUri) {
-        if (repoUri.isRemote()) {
-            return isValidRemoteRepository(repoUri);
-        } else {
-            return isValidLocalRepository(repoUri);
-        }
-    }
-
-    boolean isValidLocalRepository(URIish repoUri) {
-        boolean result;
-        try {
-            result = new FileRepository(repoUri.getPath()).getObjectDatabase().exists();
-        } catch (IOException e) {
-            result = false;
-        }
-        return result;
-    }
-
-    boolean isValidRemoteRepository(URIish repoUri) {
-        boolean result;
-
-        if (repoUri.getScheme().toLowerCase().startsWith("http") ) {
-            String path = repoUri.getPath();
-            URIish checkUri = repoUri.setPath(path);
-
-            InputStream ins = null;
-            try {
-                URLConnection conn = new URL(checkUri.toString()).openConnection();
-
-                conn.setReadTimeout(1000);
-                ins = conn.getInputStream();
-                result = true;
-            } catch (FileNotFoundException e) {
-                System.out.println("File not Foud");
-                result=false;
-            } catch (IOException e) {
-                System.out.println("IOException");
-                result = false;
-                e.printStackTrace();
-            } finally {
-                try {
-                    ins.close();
-                }
-                catch (Exception e)
-                { /* ignore */ }
-            }
-
-        } else if (repoUri.getScheme().toLowerCase().startsWith("ssh") ) {
-
-            RemoteSession ssh = null;
-            Process exec = null;
-
-            try {
-                ssh = SshSessionFactory.getInstance().getSession(repoUri, null, FS.detect(), 1000);
-                exec = ssh.exec("cd " + repoUri.getPath() + "; git rev-parse --git-dir", 1000);
-
-                Integer exitValue = null;
-                do {
-                    try {
-                        exitValue = exec.exitValue();
-                    } catch (Exception e) {
-                        e.printStackTrace();
-                    }
-                } while (exitValue == null);
-
-                result = exitValue == 0;
-
-            } catch (Exception e) {
-                result = false;
-
-            } finally {
-                try { exec.destroy(); } catch (Exception e) { /* ignore */ }
-                try { ssh.disconnect(); } catch (Exception e) { /* ignore */ }
-            }
-
-        } else {
-            // TODO need to implement tests for other schemas
-            result = true;
-        }
-        return result;
-    }
-
-    public void checkLocalCheckstyle() throws IOException {
+    private void checkLocalCheckstyle() throws IOException {
         final String sCheckstyleJar = "checkstyle-6.17-all.jar";
         final String sDownloadCheckStyleJar = "http://downloads.sourceforge.net/project/checkstyle/checkstyle/6.17/checkstyle-6.17-all.jar?r=https%3A%2F%2Fsourceforge.net%2Fp%2Fcheckstyle%2Factivity%2F%3Fpage%3D0%26limit%3D100&ts=1463416596&use_mirror=vorboss";
 
@@ -203,7 +138,7 @@ public class CheckGitRep {
         }
     }
 
-    public JSONObject checkStyle(List<List<String>> lRepoList, String gitRepository, SeverityCounter oSeverityCounter, long lStartTime) throws ParserConfigurationException, SAXException, IOException {
+    private JSONObject checkStyle(List<List<String>> lRepoList, String gitRepository, SeverityCounter oSeverityCounter, long lStartTime) throws ParserConfigurationException, SAXException, IOException {
         final String sCheckStylePath = "checkstyle-6.17-all.jar";
         final String sRuleSetPath = "google_checks_modified.xml";
         JSONObject oJson = null;
@@ -245,7 +180,7 @@ public class CheckGitRep {
         return oJson;
     }
 
-    public void storeCheckstyleInformation(String sXmlPath, int nClassPos, SeverityCounter oSeverityCounter) throws ParserConfigurationException, SAXException, IOException {
+    private void storeCheckstyleInformation(String sXmlPath, int nClassPos, SeverityCounter oSeverityCounter) throws ParserConfigurationException, SAXException, IOException {
         File oFileXML = new File(sXmlPath);
         DocumentBuilderFactory dbFactory = DocumentBuilderFactory.newInstance();
         DocumentBuilder dBuilder = dbFactory.newDocumentBuilder();
@@ -305,7 +240,7 @@ public class CheckGitRep {
         }
     }
 
-    public boolean isParsable(String input) {
+    private boolean isParsable(String input) {
         boolean bParsable = true;
 
         try {
@@ -317,41 +252,24 @@ public class CheckGitRep {
         return bParsable;
     }
 
-    private String getOsName()
-    {
-        if(sOS == null)
-        {
-            sOS = System.getProperty("os.name");
-        }
+    private void formatList(List<List<String>> lRepoList) {
+        OperatingSystemCheck oOsCheck = new OperatingSystemCheck();
 
-        return sOS;
-    }
-    private boolean isWindows()
-    {
-        return getOsName().startsWith("Windows");
-    }
-
-    private boolean isLinux()
-    {
-        return getOsName().startsWith("Linux");
-    }
-
-    public void formatList(List<List<String>> lRepoList) {
         for (List<String> aLRepoList : lRepoList) {
             Class oClass = null;
-            String sOperatingSystem = "";
+            String sOperatingSystemSeparator = "";
 
             for (int nClassPos = 0; nClassPos < aLRepoList.size(); nClassPos++)
             {
-                if(isWindows() == true)
+                if(oOsCheck.isWindows() == true)
                 {
-                    sOperatingSystem  = File.separatorChar + "" +File.separatorChar;
+                    sOperatingSystemSeparator  = File.separatorChar + "" + File.separatorChar;
                 }
-                else if(isLinux())
+                else if(oOsCheck.isLinux())
                 {
-                    sOperatingSystem = File.separatorChar + "";
+                    sOperatingSystemSeparator = File.separatorChar + "";
                 }
-                String[] sFullPathSplit_a = aLRepoList.get(nClassPos).split(sOperatingSystem );
+                String[] sFullPathSplit_a = aLRepoList.get(nClassPos).split(sOperatingSystemSeparator );
 
                 String sFullPath = aLRepoList.get(nClassPos);
 
@@ -365,7 +283,7 @@ public class CheckGitRep {
         }
     }
 
-    public JSONObject buildJSON(String sRepo, SeverityCounter oSeverityCounter, long lStartTime) {
+    private JSONObject buildJSON(String sRepo, SeverityCounter oSeverityCounter, long lStartTime) {
         List<Error> lTmpErrorList = new ArrayList<Error>();
         JSONObject oJsonRoot = new JSONObject();
         JSONObject oJsonExercise = new JSONObject();

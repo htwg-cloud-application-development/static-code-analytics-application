@@ -1,19 +1,19 @@
 package de.htwg.konstanz.cloud.model;
 
+
 import lombok.Data;
 import org.springframework.data.annotation.Id;
 import org.springframework.data.mongodb.core.mapping.Document;
 
 @Data
 @Document
-public class Group {
+public class Assignment {
 
     @Id
     String id;
-    String userid;
-    String attemptnumber;
-    String timecreated;
-    String timemodified;
-    String status;
-    String repository;
+    String name;
+    String modicon;
+    String modname;
+    String modplural;
+    String indent;
 }

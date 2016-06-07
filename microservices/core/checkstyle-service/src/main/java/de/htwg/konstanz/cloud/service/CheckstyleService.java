@@ -24,8 +24,8 @@ public class CheckstyleService {
     @RequestMapping(value = "/validate", method = RequestMethod.POST, produces = "application/json", consumes = "application/json")
     public ResponseEntity validate(@RequestBody ValidationData data) {
         try {
-            CheckGitRep oCheckGitRep = new CheckGitRep();
-            String json = oCheckGitRep.startIt(data.getRepositoryUrl());
+            Checkstyle oCheckstyle = new Checkstyle();
+            String json = oCheckstyle.startIt(data.getRepositoryUrl());
             return ResponseEntity.ok(json);
         } catch (ParserConfigurationException e) {
             return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(e.getMessage());
@@ -43,8 +43,6 @@ public class CheckstyleService {
             return ResponseEntity.status(HttpStatus.CONFLICT).body(e.getMessage());
         } catch (IOException e) {
             return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(e.getMessage());
-        } catch (NullPointerException e){
-            return ResponseEntity.status(HttpStatus.NOT_FOUND).body(e.getMessage());
         } catch (Exception e) {
             e.printStackTrace();
             return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(e.getMessage());
