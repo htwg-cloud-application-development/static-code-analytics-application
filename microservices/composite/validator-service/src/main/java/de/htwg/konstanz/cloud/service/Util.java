@@ -38,6 +38,7 @@ class Util {
                 .withMinCount(1)
                 .withMaxCount(1)
                 .withMonitoring(true)
+                .withKeyName("aws_frankfurt")
                 .withSecurityGroupIds("sg-5f2cd437");
         ec2.runInstances(runInstancesRequest);
     }
