@@ -49,6 +49,9 @@ class Util {
         if (!securityGroup.isEmpty() && !checkstyleImageId.isEmpty()
                 && !checkstyleInstanceType.isEmpty() && !checkstyleKeyName.isEmpty()) {
 
+            if (minCount < 1) minCount = 1;
+            if (maxCount < 1) maxCount = 1;
+
             RunInstancesRequest runInstancesRequest = new RunInstancesRequest()
                     .withInstanceType(checkstyleInstanceType)
                     .withImageId(checkstyleImageId)
@@ -74,10 +77,9 @@ class Util {
                 .collect(Collectors.toList());
     }
 
-    List<Instance> getAllInstances(AmazonEC2 ec2) {
-        DescribeInstancesResult result = ec2.describeInstances();
-        List<Reservation> reservations = result.getReservations();
-        List<Instance> instances = new ArrayList();
+    private List<Instance> getAllInstances(AmazonEC2 ec2) {
+        List<Reservation> reservations = ec2.describeInstances().getReservations();
+        List<Instance> instances = new ArrayList<>();
 
         for (Reservation reservation : reservations) {
             instances.addAll(reservation.getInstances());

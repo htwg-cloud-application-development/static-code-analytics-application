@@ -22,6 +22,7 @@ import org.springframework.scheduling.annotation.EnableAsync;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Date;
 import java.util.List;
 import java.util.concurrent.Future;
@@ -65,7 +66,11 @@ public class ValidatorService {
         }
 
 
-        util.runNewCheckstyleInstance(ec2);
+        try {
+            util.runNewCheckstyleInstance(ec2,1,3);
+        } catch (NoSuchFieldException e) {
+            return e.getMessage();
+        }
 
         return "{\"timestamp\":\"" + new Date() + "\",\"serviceId\":\"" + sb.toString() + "\"}";
     }
@@ -80,7 +85,7 @@ public class ValidatorService {
             JSONArray array = jsonObj.getJSONArray("groups");
 
             int threadNum = array.length();
-            List<Future<String>> taskList = new ArrayList<Future<String>>();
+            List<Future<String>> taskList = new ArrayList<>();
 
 
             // check if service runs on aws
@@ -114,7 +119,7 @@ public class ValidatorService {
                 taskList.add(repo);
             }
 
-            ArrayList<JSONObject> result = new ArrayList<JSONObject>();
+            ArrayList<JSONObject> result = new ArrayList<>();
             int numberOfRepos = array.length();
             int i = 0;
             while (numberOfRepos > 0) {
@@ -138,10 +143,10 @@ public class ValidatorService {
             return util.createResponse(result.toString(), HttpStatus.OK);
 
         } catch (InstantiationException e) {
-            LOG.error(e.getStackTrace().toString());
+            LOG.error(Arrays.toString(e.getStackTrace()));
             return util.createErrorResponse(e.getMessage(), HttpStatus.SERVICE_UNAVAILABLE);
         } catch (Exception e) {
-            LOG.error(e.getStackTrace().toString());
+            LOG.error(Arrays.toString(e.getStackTrace()));
             return util.createErrorResponse(e.getMessage(), HttpStatus.INTERNAL_SERVER_ERROR);
         }
     }
