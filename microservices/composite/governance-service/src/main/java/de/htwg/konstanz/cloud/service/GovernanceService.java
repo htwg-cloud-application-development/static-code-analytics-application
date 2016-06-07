@@ -91,14 +91,18 @@ public class GovernanceService {
     public ResponseEntity<String> importCoursesOfProf(@PathVariable String token, @RequestBody CourseIds courses) {
         try {
 
+
             for (Integer courseid : courses.getCourses()) {
+
+                // get the submissions
                 String groups = moodleService.getSubmissionsOfCourses(courseid, token);
 
+                // save the submissions
                 databaseService.saveGroups(courseid, groups);
             }
 
 
-            return createResponse("", HttpStatus.OK);
+            return createResponse("{\"ok\":true}", HttpStatus.OK);
 
         } catch (InstantiationException e) {
             return createErrorResponse(e.getMessage(), HttpStatus.SERVICE_UNAVAILABLE);
