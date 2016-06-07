@@ -1,6 +1,8 @@
 package de.htwg.konstanz.cloud.service;
 
+import com.amazonaws.util.json.JSONObject;
 import de.htwg.konstanz.cloud.model.CourseIds;
+import de.htwg.konstanz.cloud.model.MoodleCredentials;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -58,5 +60,13 @@ public class MoodleService {
         String route = "/courses/" + courseid + "/groups/token/" + token;
 
         return util.getFromService(route, "moodle");
+    }
+
+    public String getToken(MoodleCredentials credentials) throws InstantiationException {
+
+        String route = "/login";
+        JSONObject jsonObject = new JSONObject(credentials);
+
+        return util.postToService(route, jsonObject.toString(), "moodle");
     }
 }
