@@ -51,6 +51,7 @@ class Util {
 
             if (minCount < 1) minCount = 1;
             if (maxCount < 1) maxCount = 1;
+            if (minCount > maxCount) maxCount = minCount;
 
             RunInstancesRequest runInstancesRequest = new RunInstancesRequest()
                     .withInstanceType(checkstyleInstanceType)
