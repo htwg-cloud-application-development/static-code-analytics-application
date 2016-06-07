@@ -77,7 +77,25 @@ public class ValidatorService {
                 // TODO:
                 // - read executiontime of each repository
                 // - sort repositories after execution time
+
+
                 // - read number of available services (Checkstyle, etc)
+                InstanceProfileCredentialsProvider tmp = new InstanceProfileCredentialsProvider();
+                LOG.info(tmp.getCredentials().toString());
+
+                AmazonEC2 ec2 = new AmazonEC2Client(tmp);
+
+                List<Instance> alleMeineEntchen = util.getAllActiveInstances(ec2);
+                for (Instance instance : alleMeineEntchen) {
+                    LOG.info(instance.getImageId() +" - " + instance.getPublicDnsName());
+                }
+
+                util.runNewCheckstyleInstance(ec2);
+
+
+
+
+
                 // - calculation to get number of new instances (if necessary)
                 // - start only 1 execution at same time
                 // - note which service executes task for specific repository
