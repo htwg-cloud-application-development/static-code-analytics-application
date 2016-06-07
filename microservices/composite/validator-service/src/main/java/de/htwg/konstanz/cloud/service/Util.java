@@ -71,7 +71,7 @@ class Util {
         }
     }
 
-    List<Instance> getAllActiveInstances(AmazonEC2 ec2) {
+    private List<Instance> getAllActiveInstances(AmazonEC2 ec2) {
         return getAllInstances(ec2)
                 .stream()
                 .filter(instance -> instance.getState().getCode() == 16 || instance.getState().getCode() == 0)
@@ -89,4 +89,12 @@ class Util {
     }
 
 
+    int getNumberOfActiveCheckstyleInstances(AmazonEC2 ec2) {
+        List<Instance> allActiveInstances = getAllActiveInstances(ec2);
+        int numberOfInstances = 0;
+        for (Instance instance : allActiveInstances) {
+            if (instance.getImageId().equals(checkstyleImageId)) numberOfInstances++;
+        }
+        return numberOfInstances;
+    }
 }
