@@ -6,3 +6,4 @@ mvnw
 mvnw.cmd
 .DS_STORE
 *.log
+*.out

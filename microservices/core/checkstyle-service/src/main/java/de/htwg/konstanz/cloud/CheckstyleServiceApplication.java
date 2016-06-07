@@ -15,6 +15,7 @@ import static springfox.documentation.builders.PathSelectors.regex;
 
 @SpringBootApplication
 @EnableEurekaClient
+@EnableSwagger2
 public class CheckstyleServiceApplication {
 
     public static void main(String[] args) {

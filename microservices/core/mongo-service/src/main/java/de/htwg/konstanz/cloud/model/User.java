@@ -9,17 +9,18 @@ import java.util.List;
 
 @Data
 @Document
-public class Course {
+public class User {
 
     @Id
-    String id;
-    String shortname;
+    String userid;
+    String sitename;
+    String username;
+    String firstname;
+    String lastname;
     String fullname;
-    String enrolledusercount;
-    String idnumber;
-    String visible;
+    String lang;
+    String siteurl;
+    String userpictureurl;
     @DBRef
-    List<Assignment> assignments;
-    @DBRef
-    List<Group> groups;
+    List<Course> courses;
 }
