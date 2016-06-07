@@ -53,24 +53,20 @@ public class ValidatorService {
     @RequestMapping(value = "/info", method = RequestMethod.GET, produces = "application/json")
     public String info() {
         // - read number of available services (Checkstyle, etc)
-        //InstanceProfileCredentialsProvider tmp = new InstanceProfileCredentialsProvider();
-        EnvironmentVariableCredentialsProvider tmp = new EnvironmentVariableCredentialsProvider();
-        //ProfileCredentialsProvider tmp3 = new ProfileCredentialsProvider();
-        LOG.info(tmp.getCredentials().toString());
         StringBuilder sb = new StringBuilder();
-        sb.append(tmp.getCredentials().toString());
-
-        AmazonEC2 ec2 = new AmazonEC2Client(tmp);
+        AmazonEC2 ec2 = new AmazonEC2Client(new EnvironmentVariableCredentialsProvider());
         ec2.setRegion(com.amazonaws.regions.Region.getRegion(Regions.EU_CENTRAL_1));
 
-
-        List<Instance> alleMeineEntchen = util.getAllActiveInstances(ec2);
-        for (Instance instance : alleMeineEntchen) {
-            LOG.info(instance.getImageId() +" - " + instance.getPublicDnsName());
-            sb.append(instance.getImageId() +" - " + instance.getPublicDnsName());
+        List<Instance> allActiveInstances = util.getAllActiveInstances(ec2);
+        for (Instance instance : allActiveInstances) {
+            sb.append("\nImageId: ").append(instance.getImageId());
+            sb.append("\nKeyName: ").append(instance.getKeyName());
+            sb.append("\nLaunch: ").append(instance.getLaunchTime());
         }
 
+
         util.runNewCheckstyleInstance(ec2);
+
         return "{\"timestamp\":\"" + new Date() + "\",\"serviceId\":\"" + sb.toString() + "\"}";
     }
 
