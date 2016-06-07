@@ -21,8 +21,8 @@ public class UserService {
         userRepo.save(user);
     }
 
-    @RequestMapping(value ="/info", method = RequestMethod.GET)
-    public String info(){
-        return "Hello";
+    @RequestMapping(value ="{userId}", method = RequestMethod.GET)
+    public User getUser(@PathVariable String userId){
+        return userRepo.findOne(userId);
     }
 }
