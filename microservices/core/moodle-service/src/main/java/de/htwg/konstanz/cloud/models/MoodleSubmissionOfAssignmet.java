@@ -18,6 +18,5 @@ public class MoodleSubmissionOfAssignmet {
     Integer timecreated;
     Integer timemodified;
     String status;
-    Integer groupid;
     String repository;
 }
