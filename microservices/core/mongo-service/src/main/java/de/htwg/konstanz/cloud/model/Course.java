@@ -20,4 +20,6 @@ public class Course {
     String visible;
     @DBRef
     List<Assignment> assignments;
+    @DBRef
+    List<Group> groups;
 }

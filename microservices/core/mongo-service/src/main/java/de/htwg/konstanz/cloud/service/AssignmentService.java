@@ -38,7 +38,7 @@ public class AssignmentService {
         courseRepo.save(course);
     }
 
-    @RequestMapping(path = "/{assignmentId", method = RequestMethod.GET)
+    @RequestMapping(path = "/{assignmentId}", method = RequestMethod.GET)
     public Assignment getAssignment(@PathVariable String assignmentId){
         return assignmentRepo.findOne(assignmentId);
     }

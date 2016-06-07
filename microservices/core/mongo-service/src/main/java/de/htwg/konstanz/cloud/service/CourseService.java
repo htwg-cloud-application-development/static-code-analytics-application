@@ -10,7 +10,7 @@ import java.util.ArrayList;
 import java.util.List;
 
 @RestController
-@RequestMapping("/courses")
+@RequestMapping("/course")
 public class CourseService {
 
     @Autowired
@@ -31,8 +31,8 @@ public class CourseService {
         List<Course> courses = user.getCourses();
         if (null == courses){
             courses = new ArrayList<>();
-
         }
+
         courses.add(course);
         user.setCourses(courses);
         userRepo.save(user);
@@ -42,5 +42,16 @@ public class CourseService {
     public Course getCourse(@PathVariable String courseId){
 
         return courseRepo.findOne(courseId);
+    }
+
+    @RequestMapping(value = "/groups/{courseId}", method = RequestMethod.GET)
+    public List<Group> getGroups(@PathVariable String courseId) throws NoSuchFieldException{
+
+        Course course = courseRepo.findOne(courseId);
+        if (null == course){
+            throw new NoSuchFieldException("Course not found");
+        }
+
+        return course.getGroups();
     }
 }
