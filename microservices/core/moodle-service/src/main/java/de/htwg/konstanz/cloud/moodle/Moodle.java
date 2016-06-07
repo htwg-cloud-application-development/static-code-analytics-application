@@ -80,10 +80,15 @@ public class Moodle {
 
     private List<MoodleAssignment> findAssignmentsInCourse(JsonNode course) throws JsonProcessingException {
 
+        JsonNode jsonCourse = course.findPath("courses");
+
+        if (jsonCourse.size() < 1) {
+            return Collections.emptyList();
+        }
+        JsonNode jsonAssignments = jsonCourse.elements().next().findPath("assignments");
+
         ObjectMapper mapper = new ObjectMapper();
         List<MoodleAssignment> assignments = new ArrayList<>();
-
-        JsonNode jsonAssignments = course.findPath("courses").elements().next().findPath("assignments");
         
         // iterate over all assignments
         for (JsonNode assign : jsonAssignments) {
@@ -95,7 +100,6 @@ public class Moodle {
 
     private List<MoodleSubmissionOfAssignmet> findSubmissionsInAssignment(JsonNode assignment) throws JsonProcessingException {
 
-        ObjectMapper mapper = new ObjectMapper();
 
 
         JsonNode moodleSubmissions = assignment.findPath("submissions");
@@ -103,6 +107,8 @@ public class Moodle {
         if (moodleSubmissions.size() < 1) {
             return Collections.emptyList();
         }
+
+        ObjectMapper mapper = new ObjectMapper();
 
         List<MoodleSubmissionOfAssignmet> submissions = new ArrayList<>();
         for (JsonNode singleSubmission : moodleSubmissions) {
