@@ -92,11 +92,11 @@ public class SVN {
                 new File(localPathn).mkdir();
                 // start new logic for the located dir
 
-                svnCheckout(mainURL + "/" + java.net.URLDecoder.decode(listValue.get(i), "UTF-8"), authStringEnc,
+                svnCheckout(mainURL + sFileSeparator + java.net.URLDecoder.decode(listValue.get(i), "UTF-8"), authStringEnc,
                         localPathn);
             } else {
                 // download file
-                downloadFile(mainURL + "/" + java.net.URLDecoder.decode(listValue.get(i), "UTF-8"), localPath + sFileSeparator
+                downloadFile(mainURL + sFileSeparator + java.net.URLDecoder.decode(listValue.get(i), "UTF-8"), localPath + sFileSeparator
                         + java.net.URLDecoder.decode(listValue.get(i), "UTF-8"), authStringEnc);
             }
         }
