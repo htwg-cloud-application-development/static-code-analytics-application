@@ -1,7 +1,15 @@
 package de.htwg.konstanz.cloud.service;
 
+import com.amazonaws.services.cloudwatch.AmazonCloudWatchClient;
+import com.amazonaws.services.cloudwatch.model.ComparisonOperator;
+import com.amazonaws.services.cloudwatch.model.Dimension;
+import com.amazonaws.services.cloudwatch.model.PutMetricAlarmRequest;
+import com.amazonaws.services.cloudwatch.model.Statistic;
 import com.amazonaws.services.ec2.AmazonEC2;
-import com.amazonaws.services.ec2.model.*;
+import com.amazonaws.services.ec2.model.Instance;
+import com.amazonaws.services.ec2.model.Reservation;
+import com.amazonaws.services.ec2.model.RunInstancesRequest;
+import com.amazonaws.services.ec2.model.RunInstancesResult;
 import com.amazonaws.util.json.JSONObject;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -45,7 +53,7 @@ class Util {
         return createResponse(errorResponseObject.toString(), status);
     }
 
-    void runNewCheckstyleInstance(AmazonEC2 ec2, int minCount, int maxCount) throws NoSuchFieldException {
+    RunInstancesResult runNewCheckstyleInstance(AmazonEC2 ec2, int minCount, int maxCount) throws NoSuchFieldException {
         if (null != securityGroup && null != checkstyleImageId
                 && null != checkstyleInstanceType && null != checkstyleKeyName) {
 
@@ -97,5 +105,27 @@ class Util {
             if (instance.getImageId().equals(checkstyleImageId)) numberOfInstances++;
         }
         return numberOfInstances;
+    }
+
+    private void createDefaultAlarm(String instanceId) {
+        AmazonCloudWatchClient cloudWatch = new AmazonCloudWatchClient();
+        cloudWatch.setEndpoint("monitoring.eu-central-1.amazonaws.com");
+
+        Dimension dimension = new Dimension();
+        dimension.setName("InstanceId");
+        dimension.setValue(instanceId);
+
+        cloudWatch.putMetricAlarm(new PutMetricAlarmRequest()
+                .withAlarmName(instanceId)
+                .withStatistic(Statistic.Average)
+                .withThreshold(40.00)
+                .withPeriod(300)
+                .withMetricName("CPUUtilization")
+                .withNamespace("AWS/EC2")
+                .withComparisonOperator(ComparisonOperator.LessThanOrEqualToThreshold)
+                .withDimensions(dimension)
+                .withAlarmActions("arn:aws:automate:eu-central-1:ec2:terminate")
+                .withEvaluationPeriods(1)
+                .withActionsEnabled(true));
     }
 }
