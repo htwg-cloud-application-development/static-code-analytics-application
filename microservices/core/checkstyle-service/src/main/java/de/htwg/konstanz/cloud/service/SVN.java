@@ -96,7 +96,7 @@ public class SVN {
                         localPathn);
             } else {
                 // download file
-                downloadFile(mainURL + "/" + java.net.URLDecoder.decode(listValue.get(i), "UTF-8"), localPath + "/"
+                downloadFile(mainURL + "/" + java.net.URLDecoder.decode(listValue.get(i), "UTF-8"), localPath + sFileSeparator
                         + java.net.URLDecoder.decode(listValue.get(i), "UTF-8"), authStringEnc);
             }
         }
