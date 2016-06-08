@@ -29,6 +29,7 @@ import org.w3c.dom.Document;
 import org.w3c.dom.Element;
 import org.w3c.dom.Node;
 import org.w3c.dom.NodeList;
+import org.xml.sax.InputSource;
 import org.xml.sax.SAXException;
 import java.net.URLEncoder;
 import javax.swing.text.BadLocationException;
@@ -152,7 +153,7 @@ public class PMD {
             bSuccess = true;
         } else
         {
-            System.out.println("PMD Directory doesnt exists, Starting download");
+            System.out.println("PMD Directory does not exists, Starting download");
             oURL = new URL(sDownloadPMD);
             oReadableByteChannel = Channels.newChannel(oURL.openStream());
             oFileOutput = new FileOutputStream(sPmdDir);
@@ -212,8 +213,7 @@ public class PMD {
                 sFullPath = sFullPath.substring(0, sFullPath.length() - 5);
             }
 
-            String sPmdCommand = sStartScript + " -d " + sFullPath + ".java -f xml -rulesets " + sRuleSetPath + " -r " + sFullPath + ".xml";
-            LOG.info(sPmdCommand);
+            String sPmdCommand = sStartScript + " -d " + sFullPath + ".java -f xml -failOnViolation false -encoding UTF-8 -rulesets " + sRuleSetPath + " -r " + sFullPath + ".xml";
 
             try
             {
@@ -222,7 +222,8 @@ public class PMD {
 
                 try
                 {
-                    proc.waitFor();
+                    final int i = proc.waitFor();
+                    System.out.println(i);
                 } catch (InterruptedException e)
                 {
                 }
@@ -286,11 +287,14 @@ public class PMD {
     }
 
     public void storePmdInformation(String sXmlPath, int nClassPos, SeverityCounter oSeverityCounter) throws ParserConfigurationException, SAXException, IOException {
-        File oFileXML = new File(sXmlPath);
+        InputStream inputStream= new FileInputStream(sXmlPath);
+        Reader reader = new InputStreamReader(inputStream,"UTF-8");
+        InputSource is = new InputSource(reader);
+        is.setEncoding("UTF-8");
+
         DocumentBuilderFactory dbFactory = DocumentBuilderFactory.newInstance();
         DocumentBuilder dBuilder = dbFactory.newDocumentBuilder();
-        Document doc = dBuilder.parse(oFileXML);
-        doc.getDocumentElement().normalize();
+        Document doc = dBuilder.parse(is);
 
         NodeList nList = doc.getElementsByTagName("violation");
 

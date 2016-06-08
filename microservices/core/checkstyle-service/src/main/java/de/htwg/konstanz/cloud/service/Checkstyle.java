@@ -20,6 +20,7 @@ import org.w3c.dom.Document;
 import org.w3c.dom.Element;
 import org.w3c.dom.Node;
 import org.w3c.dom.NodeList;
+import org.xml.sax.InputSource;
 import org.xml.sax.SAXException;
 import javax.xml.parsers.DocumentBuilder;
 import javax.xml.parsers.DocumentBuilderFactory;
@@ -182,11 +183,14 @@ public class Checkstyle {
     }
 
     private void storeCheckstyleInformation(String sXmlPath, int nClassPos, SeverityCounter oSeverityCounter) throws ParserConfigurationException, SAXException, IOException {
-        File oFileXML = new File(sXmlPath);
+        InputStream inputStream= new FileInputStream(sXmlPath);
+        Reader reader = new InputStreamReader(inputStream,"UTF-8");
+        InputSource is = new InputSource(reader);
+        is.setEncoding("UTF-8");
+
         DocumentBuilderFactory dbFactory = DocumentBuilderFactory.newInstance();
         DocumentBuilder dBuilder = dbFactory.newDocumentBuilder();
-        Document doc = dBuilder.parse(oFileXML);
-        doc.getDocumentElement().normalize();
+        Document doc = dBuilder.parse(is);
 
         NodeList nList = doc.getElementsByTagName("error");
 

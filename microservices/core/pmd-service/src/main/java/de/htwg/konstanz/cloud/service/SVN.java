@@ -19,6 +19,12 @@ public class SVN {
         String local = "";
         String name = System.getenv("SVN_USER");
         String password = System.getenv("SVN_PASSWORD");
+        File dir = new File("repositories");
+
+        if(!dir.exists())
+        {
+            dir.mkdir();
+        }
 
         if((name != null)&& (password != null)) {
 
