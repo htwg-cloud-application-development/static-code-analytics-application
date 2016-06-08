@@ -87,7 +87,7 @@ public class SVN {
             if (java.net.URLDecoder.decode(listValue.get(i), "UTF-8").endsWith("/")) {
                 // String Magic
                 String[] parts = java.net.URLDecoder.decode(listValue.get(i), "UTF-8").split("\\/");
-                String localPathn = localPath + "/" + parts[parts.length - 1];
+                String localPathn = localPath + sFileSeparator + parts[parts.length - 1];
                 // Create new Dir
                 new File(localPathn).mkdir();
                 // start new logic for the located dir
