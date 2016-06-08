@@ -68,7 +68,7 @@ public class Checkstyle {
         JSONObject oJson = null;
         LOG.info("Repository URL: " + sRepoUrl);
 
-        /* SVN */
+        /* SVN Checkout */
         if(sRepoUrl.contains("141.37.122.26")){
             /* URL needs to start with HTTP:// */
             if (!sRepoUrl.startsWith("http://")){
@@ -82,7 +82,7 @@ public class Checkstyle {
             oJson = (checkStyle(generateCheckStyleServiceData(oSvn.downloadSVNRepo(sRepoUrl)), sRepoUrl,oSeverityCounter,lStartTime));
         }
 
-        /* GIT */
+        /* GIT Checkout */
         if(sRepoUrl.contains("github.com")){
             LOG.info("GIT");
             checkLocalCheckstyle();

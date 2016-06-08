@@ -51,6 +51,10 @@ public class SVN {
 
             svnCheckout(svnLink, genAuthString(name, password), local);
         }
+        else
+        {
+            LOG.info("invalid VPN credentials");
+        }
 
         return local;
     }
