@@ -78,11 +78,13 @@ public class Checkstyle {
             if (sRepoUrl.endsWith("/")){
                 sRepoUrl = sRepoUrl.substring(0, sRepoUrl.length()-1);
             }
+            LOG.info("SVN");
             oJson = (checkStyle(generateCheckStyleServiceData(oSvn.downloadSVNRepo(sRepoUrl)), sRepoUrl,oSeverityCounter,lStartTime));
         }
 
         /* GIT */
         if(sRepoUrl.contains("github.com")){
+            LOG.info("GIT");
             checkLocalCheckstyle();
             oJson = (checkStyle(generateCheckStyleServiceData(oGit.downloadGITRepo(sRepoUrl)), sRepoUrl,oSeverityCounter,lStartTime));
         }
@@ -266,25 +268,16 @@ public class Checkstyle {
     }
 
     private void formatList(List<List<String>> lRepoList) {
-        OperatingSystemCheck oOsCheck = new OperatingSystemCheck();
+        OperatingSystemCheck oOperatingSystemCheck = new OperatingSystemCheck();
 
-        for (List<String> aLRepoList : lRepoList) {
+        for (List<String> LRepoList : lRepoList) {
             Class oClass = null;
-            String sOperatingSystemSeparator = "";
 
-            for (int nClassPos = 0; nClassPos < aLRepoList.size(); nClassPos++)
+            for (int nClassPos = 0; nClassPos < LRepoList.size(); nClassPos++)
             {
-                if(oOsCheck.isWindows() == true)
-                {
-                    sOperatingSystemSeparator  = File.separatorChar + "" + File.separatorChar;
-                }
-                else if(oOsCheck.isLinux())
-                {
-                    sOperatingSystemSeparator = File.separatorChar + "";
-                }
-                String[] sFullPathSplit_a = aLRepoList.get(nClassPos).split(sOperatingSystemSeparator );
+                String[] sFullPathSplit_a = LRepoList.get(nClassPos).split(oOperatingSystemCheck.getOperatingSystemSeparator());
 
-                String sFullPath = aLRepoList.get(nClassPos);
+                String sFullPath = LRepoList.get(nClassPos);
 
                 String sTmpClassName = sFullPathSplit_a[sFullPathSplit_a.length - 1];
                 String sTmpExerciseName = sFullPathSplit_a[2];

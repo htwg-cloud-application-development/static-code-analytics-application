@@ -1,6 +1,8 @@
 package de.htwg.konstanz.cloud.service;
 
 import org.apache.commons.codec.binary.Base64;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import javax.swing.text.BadLocationException;
 import javax.swing.text.html.HTML;
@@ -14,7 +16,13 @@ import java.util.List;
 
 public class SVN {
 
+    private static final Logger LOG = LoggerFactory.getLogger(SVN.class);
+    private OperatingSystemCheck oOperatingSystemCheck = new OperatingSystemCheck();
+    private String sFileSeparator = "";
+
     public String downloadSVNRepo(String svnLink) throws IOException, BadLocationException {
+
+        sFileSeparator = oOperatingSystemCheck.getOperatingSystemSeparator();
         //Parameters to access svn
         String local = "";
         String name = System.getenv("SVN_USER");
@@ -24,25 +32,26 @@ public class SVN {
         if(!dir.exists())
         {
             dir.mkdir();
+            LOG.info("creating " + dir.toString() + " directory");
+        }
+        else
+        {
+            LOG.info(dir.toString() + " already exists");
         }
 
         if((name != null)&& (password != null)) {
 
-            // URL Proccesing
+            /* Split URL at every Slash */
             String[] parts = svnLink.split("\\/");
 
             local = local + parts[parts.length - 1];
-            local = "repositories/" + local + "_" + System.currentTimeMillis()
-                    + "/";
+            local = "repositories" + sFileSeparator + local + "_" + System.currentTimeMillis() + sFileSeparator;
             File dir1 = new File(local);
             dir1.mkdir();
 
-            svnCheckout(
-                    svnLink,
-                    genAuthString(name, password), local);
+            svnCheckout(svnLink, genAuthString(name, password), local);
         }
 
-        //Local Targetpath
         return local;
     }
 
