@@ -69,7 +69,12 @@ class Util {
                     .withMonitoring(true)
                     .withKeyName(checkstyleKeyName)
                     .withSecurityGroupIds(securityGroup);
-            ec2.runInstances(runInstancesRequest);
+            RunInstancesResult result = ec2.runInstances(runInstancesRequest);
+            for (Instance instance : result.getReservation().getInstances()) {
+                createDefaultAlarm(instance.getInstanceId());
+            }
+            return result;
+
         } else {
             throw new NoSuchFieldException("Missing Config Parameter for one of following parameter:\n " +
                     "[securityGroup=" + securityGroup +
