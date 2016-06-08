@@ -4,6 +4,8 @@ import com.amazonaws.auth.EnvironmentVariableCredentialsProvider;
 import com.amazonaws.regions.Regions;
 import com.amazonaws.services.ec2.AmazonEC2;
 import com.amazonaws.services.ec2.AmazonEC2Client;
+import com.amazonaws.services.ec2.model.Instance;
+import com.amazonaws.services.ec2.model.RunInstancesResult;
 import com.amazonaws.util.json.JSONArray;
 import com.amazonaws.util.json.JSONObject;
 import de.htwg.konstanz.cloud.model.ValidationData;
@@ -62,7 +64,11 @@ public class ValidatorService {
                 // - read number of available services (Checkstyle, etc)
                 sb.append("\nNumberOfActiveCheckstyleInstances").append(util.getNumberOfActiveCheckstyleInstances(ec2));
 
-                util.runNewCheckstyleInstance(ec2, 1, 1);
+                RunInstancesResult result = util.runNewCheckstyleInstance(ec2, 1, 1);
+                for (Instance instance : result.getReservation().getInstances()) {
+                    sb.append(instance.getInstanceId());
+                }
+
             } catch (NoSuchFieldException e) {
                 return e.getMessage();
             }
