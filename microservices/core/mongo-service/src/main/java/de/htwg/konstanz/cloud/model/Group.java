@@ -9,7 +9,6 @@ import org.springframework.data.mongodb.core.mapping.Document;
 public class Group {
 
     @Id
-    String id;
     String userid;
     String attemptnumber;
     String timecreated;

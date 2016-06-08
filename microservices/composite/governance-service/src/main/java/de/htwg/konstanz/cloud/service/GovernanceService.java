@@ -1,9 +1,11 @@
 package de.htwg.konstanz.cloud.service;
 
 
+import com.amazonaws.util.json.JSONException;
 import com.amazonaws.util.json.JSONObject;
 import com.netflix.hystrix.contrib.javanica.annotation.HystrixCommand;
-import de.htwg.konstanz.cloud.model.CourseIds;
+import de.htwg.konstanz.cloud.model.Courses;
+import de.htwg.konstanz.cloud.model.MoodleCourse;
 import de.htwg.konstanz.cloud.model.MoodleCredentials;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
@@ -84,38 +86,41 @@ public class GovernanceService {
             // get the list of all courses
             String courses = moodleService.getCourses(token);
 
-            // get the user information of the prof
-            String user = moodleService.getUserInformation(token);
-
-            // compose json for database
-            String valueToSave = "{ \"user\":" + user + ",\"courses\":" + courses + "}";
-
-            //databaseService.saveCourses(valueToSave);
-
-            return createResponse(valueToSave, HttpStatus.OK);
+            return createResponse(courses, HttpStatus.OK);
         } catch (InstantiationException e) {
             return createErrorResponse(e.getMessage(), HttpStatus.SERVICE_UNAVAILABLE);
         }
     }
 
     @RequestMapping(value = "/import/courses/{token}", method = RequestMethod.POST, produces = "application/json")
-    public ResponseEntity<String> importCoursesOfProf(@PathVariable String token, @RequestBody CourseIds courses) {
+    public ResponseEntity<String> importCoursesOfProf(@PathVariable String token, @RequestBody Courses courses) {
         try {
 
 
-            for (Integer courseid : courses.getCourses()) {
+            String user = moodleService.getUserInformation(token);
 
-                // get the submissions
-                String groups = moodleService.getSubmissionsOfCourses(courseid, token);
+            // compose json for database
+            JSONObject value = new JSONObject();
 
-                // save the submissions
-                databaseService.saveGroups(courseid, groups);
+            value.append("user", user);
+            value.append("courses", courses.getCourses());
+
+            databaseService.saveCourses(value.toString());
+
+            for (MoodleCourse course: courses.getCourses()) {
+
+                String groups = moodleService.getSubmissionsOfCourses(course.getId(), token);
+
+                databaseService.saveGroups(course.getId(), groups);
             }
+
 
 
             return createResponse("{\"ok\":true}", HttpStatus.OK);
 
         } catch (InstantiationException e) {
+            return createErrorResponse(e.getMessage(), HttpStatus.SERVICE_UNAVAILABLE);
+        } catch (JSONException e) {
             return createErrorResponse(e.getMessage(), HttpStatus.SERVICE_UNAVAILABLE);
         }
     }
