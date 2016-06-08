@@ -19,13 +19,4 @@ public class CheckstyleResults {
     private String groupId;
     private Object assignments;
 
-
-    //TODO: quark, verbessern
-  	@Override
-	public String toString() {
-		return "CheckstyleResults [id=" + id + ", repositoryUrl=" + repositoryUrl + ", numberOfErrors=" + numberOfErrors
-				+ ", numberOfWarnings=" + numberOfWarnings + ", numberOfIgnores=" + numberOfIgnores
-				+ ", totalExpendedTime=" + totalExpendedTime + ", assignments=]";
-	}
-   
 }
