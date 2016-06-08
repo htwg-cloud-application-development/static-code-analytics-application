@@ -1,5 +1,6 @@
 package de.htwg.konstanz.cloud.service;
 
+import com.amazonaws.util.json.JSONObject;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.cloud.client.loadbalancer.LoadBalancerClient;
 import org.springframework.stereotype.Service;
@@ -44,16 +45,22 @@ public class DatabaseService {
         return util.getFromService(ROUTE, "mongo");
     }
 
-    public String saveCourses(String valueToSave) throws InstantiationException {
-        return postDataBaseFor("", valueToSave); // TODO: wait for route of database
+    public String saveGroups(Integer courseid, String groups) throws InstantiationException {
+        String url = "/group/" + courseid;
+        return postDataBaseFor(url, groups);
     }
 
     private String postDataBaseFor(String route, String data) throws InstantiationException {
         return util.postToService(route, data, "mongo");
     }
 
-    public String saveGroups(Integer courseid, String groups) {
-        return null;
+    public String saveUser(JSONObject user) throws InstantiationException {
+        return postDataBaseFor("/user/add", user.toString());
+    }
+
+    public String saveCourse(Integer userId, JSONObject course) throws InstantiationException {
+        String url = "/course/" + userId;
+        return postDataBaseFor(url, course.toString());
     }
 }
 

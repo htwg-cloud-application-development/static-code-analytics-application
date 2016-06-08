@@ -4,6 +4,7 @@ package de.htwg.konstanz.cloud.service;
 import com.amazonaws.util.json.JSONException;
 import com.amazonaws.util.json.JSONObject;
 import com.netflix.hystrix.contrib.javanica.annotation.HystrixCommand;
+import com.netflix.hystrix.strategy.properties.HystrixPropertiesChainedArchaiusProperty;
 import de.htwg.konstanz.cloud.model.Courses;
 import de.htwg.konstanz.cloud.model.MoodleCourse;
 import de.htwg.konstanz.cloud.model.MoodleCredentials;
@@ -97,24 +98,29 @@ public class GovernanceService {
         try {
 
 
-            String user = moodleService.getUserInformation(token);
+            JSONObject user = new JSONObject(moodleService.getUserInformation(token));
 
-            // compose json for database
-            JSONObject value = new JSONObject();
+            // TODO: check if successful
 
-            value.append("user", user);
-            value.append("courses", courses.getCourses());
+            databaseService.saveUser(user);
 
-            databaseService.saveCourses(value.toString());
+            // TODO: check if successful
 
-            for (MoodleCourse course: courses.getCourses()) {
+            Integer userId = Integer.parseInt((String) user.get("userid"));
 
+            // iterate over courses and save them
+            for (MoodleCourse course : courses.getCourses()) {
+
+                // first save course
+                databaseService.saveCourse(userId, new JSONObject(course));
+
+                // then get submissions of course
                 String groups = moodleService.getSubmissionsOfCourses(course.getId(), token);
 
+                // finally save submissions
                 databaseService.saveGroups(course.getId(), groups);
+
             }
-
-
 
             return createResponse("{\"ok\":true}", HttpStatus.OK);
 
