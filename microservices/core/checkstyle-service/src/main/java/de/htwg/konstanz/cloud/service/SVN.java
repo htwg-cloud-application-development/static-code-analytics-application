@@ -129,20 +129,20 @@ public class SVN {
                 outputStream.write(bytes, 0, read);
             }
         } catch (IOException e) {
-            e.printStackTrace();
+            //TODO:
         } finally {
             if (is != null) {
                 try {
                     is.close();
                 } catch (IOException e) {
-                    e.printStackTrace();
+                    //TODO:
                 }
             }
             if (outputStream != null) {
                 try {
                     outputStream.close();
                 } catch (IOException e) {
-                    e.printStackTrace();
+                    //TODO:
                 }
             }
         }

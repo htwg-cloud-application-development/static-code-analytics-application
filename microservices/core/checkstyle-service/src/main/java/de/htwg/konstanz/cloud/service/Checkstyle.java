@@ -11,11 +11,14 @@ import de.htwg.konstanz.cloud.model.Class;
 import de.htwg.konstanz.cloud.model.Error;
 import de.htwg.konstanz.cloud.model.SeverityCounter;
 import org.apache.commons.io.FileUtils;
+import org.apache.commons.logging.Log;
 import org.eclipse.jgit.api.errors.GitAPIException;
 import org.eclipse.jgit.api.errors.InvalidRemoteException;
 import org.eclipse.jgit.api.errors.TransportException;
 import org.json.JSONArray;
 import org.json.JSONObject;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.w3c.dom.Document;
 import org.w3c.dom.Element;
 import org.w3c.dom.Node;
@@ -29,6 +32,7 @@ import javax.swing.text.BadLocationException;
 
 public class Checkstyle {
 
+    private static final Logger LOG = LoggerFactory.getLogger(Checkstyle.class);
     private List<Class> lFormattedClassList = new ArrayList<Class>();
     private File oRepoDir;
     private GIT oGit = new GIT();
@@ -49,10 +53,12 @@ public class Checkstyle {
         if(null == oJsonResult)
         {
             sResult = "Invalid Repository";
+            LOG.info("Error: received invalid repository and JSON file");
         }
         else
         {
             sResult = oJsonResult.toString();
+            LOG.info("Valid JSON result");
         }
 
         return sResult;
@@ -60,6 +66,7 @@ public class Checkstyle {
 
     private JSONObject determination(String sRepoUrl, SeverityCounter oSeverityCounter, long lStartTime) throws IOException, BadLocationException, InvalidRemoteException, TransportException, GitAPIException, ParserConfigurationException, SAXException {
         JSONObject oJson = null;
+        LOG.info("Repository URL: " + sRepoUrl);
 
         /* SVN */
         if(sRepoUrl.contains("141.37.122.26")){
@@ -87,14 +94,15 @@ public class Checkstyle {
         /* Generate Data for CheckstyleService */
         List<List<String>> list = new ArrayList<List<String>>();
         File mainDir;
+        LOG.info("Local Directory: " + localDirectory);
 
         /* Check if local /src-dir exists */
         if (new File(localDirectory + "/src").exists()) {
             mainDir = new File(localDirectory + "/src");
-            System.out.println("existiert");
+            LOG.info("Local SRC directory found");
         } else {
             mainDir = new File(localDirectory);
-            System.out.println("existiert nicht");
+            LOG.info("There was no local SRC directory");
         }
 
         /* List all files for CheckstyleService */
@@ -129,9 +137,9 @@ public class Checkstyle {
         URL oURL = null;
 
         if (oFile.exists()) {
-            System.out.println("Checkstyle .jar already exists!");
+            LOG.info("Checkstyle .jar already exists! (" + oFile.toString() + ")");
         } else {
-            System.out.println("Checkstyle .jar doesnt exists, Starting download");
+            LOG.info("Checkstyle .jar does not exist, starting download");
             oURL = new URL(sDownloadCheckStyleJar);
             oReadableByteChannel = Channels.newChannel(oURL.openStream());
             oFileOutput = new FileOutputStream(sCheckstyleJar);
@@ -155,7 +163,7 @@ public class Checkstyle {
             }
 
             String sCheckStyleCommand = "java -jar " + sCheckStylePath + " -c " + sRuleSetPath + " " + sFullPath + ".java -f xml -o " + sFullPath + ".xml";
-            System.out.println(sCheckStyleCommand);
+            LOG.info("Checkstyle execution path: " + sCheckStyleCommand);
 
             try {
                 Runtime runtime = Runtime.getRuntime();
@@ -302,8 +310,11 @@ public class Checkstyle {
 		/* add general information to the JSON object */
         oJsonRoot.put("repositoryUrl", sRepo);
         oJsonRoot.put("numberOfErrors", oSeverityCounter.getErrorCount());
+        LOG.info("Number of Errors: " + oSeverityCounter.getErrorCount());
         oJsonRoot.put("numberOfWarnings", oSeverityCounter.getWarningCount());
+        LOG.info("Number of Warnings: " + oSeverityCounter.getWarningCount());
         oJsonRoot.put("numberOfIgnores", oSeverityCounter.getIgnoreCount());
+        LOG.info("Number of Ignores: " + oSeverityCounter.getIgnoreCount());
         //oJsonRoot.put("groupID", nGroupID);
         //oJsonRoot.put("name", sName);
 		
@@ -380,6 +391,7 @@ public class Checkstyle {
         long lTotalTime = (lEndTime - lStartTime);
 
         oJsonRoot.put("totalExpendedTime", lTotalTime);
+        LOG.info("Total expended time: " + lTotalTime);
         oJsonRoot.put("assignments", lJsonExercises);
 
         return oJsonRoot;

@@ -4,5 +4,6 @@
 target
 *.jar
 *.xml
+*.log
 *.iml
 repositories

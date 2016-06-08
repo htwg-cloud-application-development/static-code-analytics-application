@@ -4,6 +4,8 @@ spring:
   profiles:
     active: development
 
+logging:
+  file: checkstyle-service.log
 ---
 # profile for development
 spring:

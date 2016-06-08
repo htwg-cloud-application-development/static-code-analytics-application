@@ -9,6 +9,8 @@ import org.eclipse.jgit.transport.RemoteSession;
 import org.eclipse.jgit.transport.SshSessionFactory;
 import org.eclipse.jgit.transport.URIish;
 import org.eclipse.jgit.util.FS;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import java.io.File;
 import java.io.FileNotFoundException;
@@ -19,6 +21,8 @@ import java.net.URL;
 import java.net.URLConnection;
 
 public class GIT {
+
+    private static final Logger LOG = LoggerFactory.getLogger(GIT.class);
 
     boolean isValidRepository(URIish repoUri) {
         if (repoUri.isRemote()) {
@@ -39,8 +43,6 @@ public class GIT {
 
         return result;
     }
-
-
 
     public String downloadGITRepo(String gitRepo) throws InvalidRemoteException, TransportException, GitAPIException, MalformedURLException {
         /* Checkout Git-Repo */
@@ -76,12 +78,12 @@ public class GIT {
                 ins = conn.getInputStream();
                 result = true;
             } catch (FileNotFoundException e) {
-                System.out.println("File not Foud");
+                LOG.info("URI not found: " + checkUri.toString());
                 result=false;
             } catch (IOException e) {
-                System.out.println("IOException");
+                LOG.info("IO Error: " + checkUri.toString());
                 result = false;
-                e.printStackTrace();
+                //TODO:
             } finally {
                 try {
                     ins.close();
@@ -103,7 +105,7 @@ public class GIT {
                     try {
                         exitValue = exec.exitValue();
                     } catch (Exception e) {
-                        e.printStackTrace();
+                        //TODO:
                     }
                 } while (exitValue == null);
 
