@@ -154,6 +154,7 @@ public class Checkstyle {
             }
 
             String sCheckStyleCommand = "java -jar " + sCheckStylePath + " -c " + sRuleSetPath + " " + sFullPath + ".java -f xml -o " + sFullPath + ".xml";
+            System.out.println(sCheckStyleCommand);
 
             try {
                 Runtime runtime = Runtime.getRuntime();

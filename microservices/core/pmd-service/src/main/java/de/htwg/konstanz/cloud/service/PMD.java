@@ -23,6 +23,8 @@ import org.eclipse.jgit.transport.SshSessionFactory;
 import org.eclipse.jgit.util.FS;
 import org.json.JSONArray;
 import org.json.JSONObject;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.w3c.dom.Document;
 import org.w3c.dom.Element;
 import org.w3c.dom.Node;
@@ -35,6 +37,8 @@ import javax.xml.parsers.DocumentBuilderFactory;
 import javax.xml.parsers.ParserConfigurationException;
 import net.lingala.zip4j.core.ZipFile;
 import net.lingala.zip4j.exception.ZipException;
+
+import static org.springframework.boot.Banner.Mode.LOG;
 
 
 public class PMD {
@@ -179,6 +183,8 @@ public class PMD {
         }
     }
 
+    private static final Logger LOG = LoggerFactory.getLogger(PMD.class);
+
     public JSONObject runPMD(List<List<String>> lRepoList, String gitRepository, SeverityCounter oSeverityCounter, long lStartTime) throws ParserConfigurationException, SAXException, IOException
     {
         final String sRuleSetPath = "java-basic,java-design,java-codesize";
@@ -207,6 +213,7 @@ public class PMD {
             }
 
             String sPmdCommand = sStartScript + " -d " + sFullPath + ".java -f xml -rulesets " + sRuleSetPath + " -r " + sFullPath + ".xml";
+            LOG.info(sPmdCommand);
 
             try
             {
