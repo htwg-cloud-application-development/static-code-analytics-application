@@ -11,7 +11,6 @@ import de.htwg.konstanz.cloud.model.Class;
 import de.htwg.konstanz.cloud.model.Error;
 import de.htwg.konstanz.cloud.model.SeverityCounter;
 import org.apache.commons.io.FileUtils;
-import org.apache.commons.logging.Log;
 import org.eclipse.jgit.api.errors.GitAPIException;
 import org.eclipse.jgit.api.errors.InvalidRemoteException;
 import org.eclipse.jgit.api.errors.TransportException;
@@ -45,18 +44,18 @@ public class Checkstyle {
         SeverityCounter oSeverityCounter = new SeverityCounter();
 
         oJsonResult = determination(gitRepository,oSeverityCounter,lStartTime );
-        if (oRepoDir != null)
-        {
+        if (oRepoDir != null) {
             FileUtils.deleteDirectory(oRepoDir);
         }
+        else {
+            LOG.info("Error: Local Directory is null!");
+        }
 
-        if(null == oJsonResult)
-        {
+        if(null == oJsonResult) {
             sResult = "Invalid Repository";
             LOG.info("Error: received invalid repository and JSON file");
         }
-        else
-        {
+        else {
             sResult = oJsonResult.toString();
             LOG.info("Valid JSON result");
         }
@@ -66,9 +65,12 @@ public class Checkstyle {
 
     private JSONObject determination(String sRepoUrl, SeverityCounter oSeverityCounter, long lStartTime) throws IOException, BadLocationException, InvalidRemoteException, TransportException, GitAPIException, ParserConfigurationException, SAXException {
         JSONObject oJson = null;
-        LOG.info("Repository URL: " + sRepoUrl);
+        String sLocalDir = "";
 
-        /* SVN */
+        LOG.info("Repository URL: " + sRepoUrl);
+        checkLocalCheckstyle();
+
+        /* SVN Checkout */
         if(sRepoUrl.contains("141.37.122.26")){
             /* URL needs to start with HTTP:// */
             if (!sRepoUrl.startsWith("http://")){
@@ -79,14 +81,20 @@ public class Checkstyle {
                 sRepoUrl = sRepoUrl.substring(0, sRepoUrl.length()-1);
             }
             LOG.info("SVN");
-            oJson = (checkStyle(generateCheckStyleServiceData(oSvn.downloadSVNRepo(sRepoUrl)), sRepoUrl,oSeverityCounter,lStartTime));
+            sLocalDir = oSvn.downloadSVNRepo(sRepoUrl);
+            oJson = (checkStyle(generateCheckStyleServiceData(sLocalDir), sRepoUrl,oSeverityCounter,lStartTime));
+            oRepoDir = new File(sLocalDir);
         }
-
-        /* GIT */
-        if(sRepoUrl.contains("github.com")){
+        /* GIT Checkout */
+        else if(sRepoUrl.contains("github.com")){
             LOG.info("GIT");
-            checkLocalCheckstyle();
-            oJson = (checkStyle(generateCheckStyleServiceData(oGit.downloadGITRepo(sRepoUrl)), sRepoUrl,oSeverityCounter,lStartTime));
+            sLocalDir = oGit.downloadGITRepo(sRepoUrl);
+            oJson = (checkStyle(generateCheckStyleServiceData(sLocalDir), sRepoUrl,oSeverityCounter,lStartTime));
+            oRepoDir = new File(sLocalDir);
+        }
+        else
+        {
+            LOG.info("Repository URL has no valid SVN/GIT attributes. (" + sRepoUrl + ")");
         }
 
         return oJson;
