@@ -42,7 +42,7 @@ EOM
 echo "Route traffic over pptp connection"
 cat > $ROUTE_FILE <<- EOM
 #!/bin/bash
-route add -host "$VPN_SUBNET" dev ppp0
+route add -host "$VPN_DEST" dev ppp0
 EOM
 chmod +x $ROUTE_FILE
 
