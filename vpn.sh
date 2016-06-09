@@ -1,7 +1,7 @@
 #!/bin/bash
 
 VPN_HOST=dialin.htwg-konstanz.de
-VPN_SUBNET="141.37.0.0/16"
+VPN_DEST="141.37.122.26"
 CREDENTIALS_FILE="/etc/ppp/chap-secrets"
 CONNECTION_FILE="/etc/ppp/peers/$VPN_HOST"
 ROUTE_FILE="/etc/ppp/ip-up.d/route-traffic"
@@ -42,7 +42,7 @@ EOM
 echo "Route traffic over pptp connection"
 cat > $ROUTE_FILE <<- EOM
 #!/bin/bash
-route add -net "$VPN_SUBNET" dev ppp0
+route add -host "$VPN_SUBNET" dev ppp0
 EOM
 chmod +x $ROUTE_FILE
 
