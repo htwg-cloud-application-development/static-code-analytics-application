@@ -1,6 +1,7 @@
 package de.htwg.konstanz.cloud.service;
 
 import de.htwg.konstanz.cloud.model.Class;
+import de.htwg.konstanz.cloud.model.Duplication;
 import de.htwg.konstanz.cloud.model.Error;
 import de.htwg.konstanz.cloud.model.SeverityCounter;
 import net.lingala.zip4j.core.ZipFile;
@@ -31,13 +32,11 @@ import java.net.MalformedURLException;
 import java.net.URL;
 import java.nio.channels.Channels;
 import java.nio.channels.ReadableByteChannel;
-import java.util.ArrayList;
-import java.util.List;
-
+import java.util.*;
 
 public class CPD {
 
-    private List<Class> lFormattedClassList = new ArrayList<Class>();
+    private List<Duplication> lDuplications = new ArrayList<Duplication>();
     private File oRepoDir;
     private String sOS = null;
     OperatingSystemCheck oOsCheck = new OperatingSystemCheck();
@@ -72,7 +71,7 @@ public class CPD {
     private JSONObject determination(String sRepoUrl, SeverityCounter oSeverityCounter, long lStartTime) throws IOException, BadLocationException, InvalidRemoteException, TransportException, GitAPIException, ParserConfigurationException, SAXException {
         JSONObject oJson = null;
 
-        checkLocalPMD();
+        checkLocalCPD();
 
         /* SVN */
         if(sRepoUrl.contains("141.37.122.26")){
@@ -84,20 +83,14 @@ public class CPD {
             if (sRepoUrl.endsWith("/")){
                 sRepoUrl = sRepoUrl.substring(0, sRepoUrl.length()-1);
             }
-            oJson = (runPMD(generateCheckStyleServiceData(oSvn.downloadSVNRepo(sRepoUrl)), sRepoUrl,oSeverityCounter,lStartTime));
-        }
-
-        /* GIT */
-        if(sRepoUrl.contains("github.com")){
-            oJson = (runPMD(generateCheckStyleServiceData(oGit.downloadGITRepo(sRepoUrl)), sRepoUrl,oSeverityCounter,lStartTime));
+            oJson = (runCPD(generateCPDServiceData(oSvn.downloadSVNRepo(sRepoUrl)), sRepoUrl,oSeverityCounter,lStartTime));
         }
 
         return oJson;
     }
 
-    private List<List<String>> generateCheckStyleServiceData(String localDirectory) {
+    private String generateCPDServiceData(String localDirectory) {
         /* Generate Data for CheckstyleService */
-        List<List<String>> list = new ArrayList<List<String>>();
         File mainDir;
 
         /* Check if local /src-dir exists */
@@ -107,53 +100,38 @@ public class CPD {
             mainDir = new File(localDirectory);
         }
 
-        /* List all files for CheckstyleService */
+        /* List all files for CPDService */
         if (mainDir.exists()) {
-            File[] files = mainDir.listFiles();
-
-            for (int i = 0; i < files.length; ++i) {
-
-                File[] filesSub = new File(files[i].getPath()).listFiles();
-                List<String> pathsSub = new ArrayList<String>();
-
-                for (int j = 0; j < filesSub.length; ++j) {
-                    if (filesSub[j].getPath().endsWith(".java")) {
-                        pathsSub.add(filesSub[j].getPath());
-                    }
-                }
-
-                list.add(pathsSub);
-            }
+            return mainDir.getPath();
         }
-
-        return list;
+        return null;
     }
 
-    public boolean checkLocalPMD() throws MalformedURLException, IOException, FileNotFoundException
+    public boolean checkLocalCPD() throws MalformedURLException, IOException, FileNotFoundException
     {
         boolean bSuccess = false;
-        final String sPmdDir = "pmd-bin-5.4.2.zip";
-        final String sDownloadPMD = "https://github.com/pmd/pmd/releases/download/pmd_releases%2F5.4.2/pmd-bin-5.4.2.zip";
+        final String sCPDDir = "pmd-bin-5.4.2.zip";
+        final String sDownloadCPD = "https://github.com/pmd/pmd/releases/download/pmd_releases%2F5.4.2/pmd-bin-5.4.2.zip";
 
-        File oFile = new File(sPmdDir);
+        File oFile = new File(sCPDDir);
         ReadableByteChannel oReadableByteChannel = null;
         FileOutputStream oFileOutput = null;
         URL oURL = null;
 
         if (oFile.exists())
         {
-            System.out.println("PMD Directory already exists!");
+            System.out.println("CPD Directory already exists!");
             bSuccess = true;
         } else
         {
-            System.out.println("PMD Directory doesnt exists, Starting download");
-            oURL = new URL(sDownloadPMD);
+            System.out.println("CPD Directory doesnt exists, Starting download");
+            oURL = new URL(sDownloadCPD);
             oReadableByteChannel = Channels.newChannel(oURL.openStream());
-            oFileOutput = new FileOutputStream(sPmdDir);
+            oFileOutput = new FileOutputStream(sCPDDir);
             oFileOutput.getChannel().transferFrom(oReadableByteChannel, 0,Long.MAX_VALUE);
             bSuccess = true;
 
-            unzipFile(sPmdDir);
+            unzipFile(sCPDDir);
         }
 
         return bSuccess;
@@ -179,64 +157,43 @@ public class CPD {
 
     private static final Logger LOG = LoggerFactory.getLogger(CPD.class);
 
-    public JSONObject runPMD(List<List<String>> lRepoList, String gitRepository, SeverityCounter oSeverityCounter, long lStartTime) throws ParserConfigurationException, SAXException, IOException
-    {
+    public JSONObject runCPD(String sMainPath, String gitRepository, SeverityCounter oSeverityCounter, long lStartTime) throws ParserConfigurationException, SAXException, IOException {
         final String sRuleSetPath = "java-basic,java-design,java-codesize";
         String sStartScript = "";
         JSONObject oJson = null;
 
-        if(oOsCheck.isWindows() == true)
-        {
-            sStartScript = "pmd-bin-5.4.2\\bin\\pmd.bat";
-        }
-        else if(oOsCheck.isLinux() == true)
-        {
+        if (oOsCheck.isWindows() == true) {
+            sStartScript = "pmd-bin-5.4.2\\bin\\CPD.bat";
+        } else if (oOsCheck.isLinux() == true) {
             sStartScript = "pmd-bin-5.4.2/bin/run.sh";
         }
 
-		/* Listeninhalt kuerzen, um JSON vorbereiten */
-        formatList(lRepoList);
+        String sCPDCommand = sStartScript + " --minimum-token --files " + sMainPath + " --skip-lexicial-errors --format xml > "  + sMainPath + ".xml";
+        LOG.info(sCPDCommand);
 
-        for (int nClassPos = 0; nClassPos < lFormattedClassList.size(); nClassPos++)
-        {
-            String sFullPath = lFormattedClassList.get(nClassPos).getFullPath();
+        try {
+            Runtime runtime = Runtime.getRuntime();
+            Process proc = runtime.exec(sCPDCommand);
 
-            if (sFullPath.endsWith(".java"))
-            {
-                sFullPath = sFullPath.substring(0, sFullPath.length() - 5);
+            try {
+                proc.waitFor();
+            } catch (InterruptedException e) {
             }
-
-            String sPmdCommand = sStartScript + " -d " + sFullPath + ".java -f xml -rulesets " + sRuleSetPath + " -r " + sFullPath + ".xml";
-            LOG.info(sPmdCommand);
-
-            try
-            {
-                Runtime runtime = Runtime.getRuntime();
-                Process proc = runtime.exec(sPmdCommand);
-
-                try
-                {
-                    proc.waitFor();
-                } catch (InterruptedException e)
-                {
-                }
-            } catch (IOException ex)
-            {
-            }
-
-			/* Checkstyle Informationen eintragen */
-            storePmdInformation(sFullPath + ".xml", nClassPos, oSeverityCounter);
+        } catch (IOException ex) {
         }
 
-        if (lFormattedClassList != null)
-        {
+			/* Checkstyle Informationen eintragen */
+        storeCPDInformation(sMainPath + ".xml");
+
+        if (lDuplications != null) {
 			/* Schoene einheitliche JSON erstellen */
-            oJson = buildJSON(gitRepository, oSeverityCounter, lStartTime);
+            oJson = buildJSON(sMainPath, lStartTime);
 			/* JSON an Database weitersenden */
         }
 
         return oJson;
     }
+
 
     public boolean isParsable(String input) {
         boolean bParsable = true;
@@ -250,209 +207,90 @@ public class CPD {
         return bParsable;
     }
 
-    public void formatList(List<List<String>> lRepoList) {
-        for (List<String> aLRepoList : lRepoList) {
-            Class oClass = null;
-            String sOperatingSystem = "";
-
-            for (int nClassPos = 0; nClassPos < aLRepoList.size(); nClassPos++)
-            {
-                if(oOsCheck.isWindows() == true)
-                {
-                    sOperatingSystem  = File.separatorChar + "" +File.separatorChar;
-                }
-                else if(oOsCheck.isLinux())
-                {
-                    sOperatingSystem = File.separatorChar + "";
-                }
-                String[] sFullPathSplit_a = aLRepoList.get(nClassPos).split(sOperatingSystem );
-
-                String sFullPath = aLRepoList.get(nClassPos);
-
-                String sTmpClassName = sFullPathSplit_a[sFullPathSplit_a.length - 1];
-                String sTmpExerciseName = sFullPathSplit_a[2];
-
-                oClass = new Class(sTmpClassName, sFullPath, sTmpExerciseName);
-
-                lFormattedClassList.add(oClass);
-            }
-        }
-    }
-
-    public void storePmdInformation(String sXmlPath, int nClassPos, SeverityCounter oSeverityCounter) throws ParserConfigurationException, SAXException, IOException {
+    public void storeCPDInformation(String sXmlPath) throws ParserConfigurationException, SAXException, IOException {
         File oFileXML = new File(sXmlPath);
         DocumentBuilderFactory dbFactory = DocumentBuilderFactory.newInstance();
         DocumentBuilder dBuilder = dbFactory.newDocumentBuilder();
         Document doc = dBuilder.parse(oFileXML);
         doc.getDocumentElement().normalize();
 
-        NodeList nList = doc.getElementsByTagName("violation");
+        NodeList nList = doc.getElementsByTagName("dupliaction");
 
         for (int nNodePos = 0; nNodePos < nList.getLength(); nNodePos++) {
 
             Node nNode = nList.item(nNodePos);
 
             if (nNode.getNodeType() == Node.ELEMENT_NODE) {
-                Element eElement = (Element) nNode;
+                Element eNodeElement = (Element) nNode;
 
 				/* Default Values */
-                int nLineBegin = 0;
-                int nLineEnd = 0;
-                int nColumnBegin = 0;
-                int nColumnEnd = 0;
-                int nPriority = 0;
-                String sRule = "";
-                String sClassName = "";
-                String sPackage = "";
-                String sRuleset = "";
-                String sMessage = eElement.getFirstChild().getTextContent();
+                int nLinesCount = 0;
+                int nTokens = 0;
+                List<String> lInvolvedData = new ArrayList<String>();
+                String sCodeFragment ="";
 
-                if (isParsable(eElement.getAttribute("beginline"))) {
-                    nLineBegin = Integer.parseInt(eElement.getAttribute("beginline"));
-                }
-                if (isParsable(eElement.getAttribute("endline"))) {
-                    nLineEnd = Integer.parseInt(eElement.getAttribute("endline"));
-                }
-                if (isParsable(eElement.getAttribute("begincolumn"))) {
-                    nColumnBegin = Integer.parseInt(eElement.getAttribute("begincolumn"));
-                }
-                if (isParsable(eElement.getAttribute("endcolumn"))) {
-                    nColumnEnd = Integer.parseInt(eElement.getAttribute("endcolumn"));
-                }
-                if (isParsable(eElement.getAttribute("priority"))) {
-                    nPriority = Integer.parseInt(eElement.getAttribute("priority"));
 
-                    /* Count every Error Type we have found in the XML */
-                    if(nPriority == 1)
-                    {
-                        oSeverityCounter.incIgnoreCount();
-                    }
-                    else if(nPriority == 2)
-                    {
-                        oSeverityCounter.incWarningCount();
-                    }
-                    else if(nPriority == 3)
-                    {
-                        oSeverityCounter.incErrorCount();
+                //Duplication Infos
+                if (isParsable(eNodeElement.getAttribute("lines"))) {
+                    nLinesCount = Integer.parseInt(eNodeElement.getAttribute("lines"));
+                }
+                if (isParsable(eNodeElement.getAttribute("tokens"))) {
+                    nTokens = Integer.parseInt(eNodeElement.getAttribute("tokens"));
+                }
+
+                //CheckFileNodes
+                NodeList nNodeFiles = eNodeElement.getElementsByTagName("file");
+                for (int nNodeFilePos = 0; nNodeFilePos < nNodeFiles.getLength(); nNodeFilePos++) {
+                    Node nNodeFile = nNodeFiles.item(nNodeFilePos);
+                    if (nNodeFile.getNodeType() == Node.ELEMENT_NODE) {
+                        Element eNodeFileElement = (Element) nNodeFile;
+                        if (isParsable(eNodeFileElement.getAttribute("path"))) {
+                            lInvolvedData.add(eNodeElement.getAttribute("path").toString());
+                        }
                     }
                 }
-                if (!eElement.getAttribute("class").isEmpty()) {
-                    sClassName = eElement.getAttribute("class");
-                }
-                if (!eElement.getAttribute("rule").isEmpty()) {
-                    sRule = eElement.getAttribute("rule");
-                }
-                if (!eElement.getAttribute("ruleset").isEmpty()) {
-                    sRuleset = eElement.getAttribute("ruleset");
-                }
-                if (!eElement.getAttribute("package").isEmpty()) {
-                    sPackage = eElement.getAttribute("package");
+
+                //CheckCodefragment
+                NodeList nNodeCodeFragment = eNodeElement.getElementsByTagName("codefragment");
+                if(nNodeCodeFragment!=null){
+                    sCodeFragment = nNodeCodeFragment.item(0).getFirstChild().toString();
                 }
 
-                Error oError = new Error(nLineBegin, nLineEnd, nColumnBegin, nColumnEnd, nPriority, sRule, sClassName, sPackage, sRuleset, sMessage);
-
-                lFormattedClassList.get(nClassPos).getErrorList().add(oError);
+                //Create Duplication
+                lDuplications.add(Duplication.getDupliactionInstance(nLinesCount,nTokens,lInvolvedData,sCodeFragment));
             }
         }
     }
 
-    public JSONObject buildJSON(String sRepo, SeverityCounter oSeverityCounter, long lStartTime) {
-        List<Error> lTmpErrorList = new ArrayList<Error>();
+    public JSONObject buildJSON(String sMainDir, long lStartTime) {
         JSONObject oJsonRoot = new JSONObject();
-        JSONObject oJsonExercise = new JSONObject();
-        JSONArray lJsonClasses = new JSONArray();
-        JSONArray lJsonExercises = new JSONArray();
-        String sTmpExcerciseName = "";
-        boolean bExcerciseChange = false;
-        boolean bLastRun = false;
-        boolean bExcerciseNeverChanged = true;
 
 		/* add general information to the JSON object */
-        oJsonRoot.put("repositoryUrl", sRepo);
-        oJsonRoot.put("numberOfErrors", oSeverityCounter.getErrorCount());
-        oJsonRoot.put("numberOfWarnings", oSeverityCounter.getWarningCount());
-        oJsonRoot.put("numberOfIgnores", oSeverityCounter.getIgnoreCount());
-        //oJsonRoot.put("groupID", nGroupID);
-        //oJsonRoot.put("name", sName);
+        oJsonRoot.put("duplicationCursPath", sMainDir);
 
 		/* all Classes */
-        for (int nClassPos = 0; nClassPos < lFormattedClassList.size(); nClassPos++) {
-            if (bExcerciseChange) {
-                nClassPos--;
-                bExcerciseChange = false;
+        for (Duplication oDuplaction : lDuplications) {
+            JSONObject oJsonDuplication = new JSONObject();
+
+			/* Duplication Infos*/
+            oJsonDuplication.put("duplicatedLines", oDuplaction.getsDupilcatedLine());
+            oJsonDuplication.put("tokens", oDuplaction.getsTokens());
+
+            //New Json Array with involved Paths
+            JSONArray lJsonFilePaths = new JSONArray();
+            for(String sDuplicationFilePath : oDuplaction.getlInvolvedData()){
+                lJsonFilePaths.put(new JSONObject().put("filePath", sDuplicationFilePath));
             }
-
-            String sExcerciseName = lFormattedClassList.get(nClassPos).getsExcerciseName();
-
-			/* first run the TmpName is empty */
-            if (sExcerciseName.equals(sTmpExcerciseName) || sTmpExcerciseName.equals("")) {
-                lTmpErrorList = lFormattedClassList.get(nClassPos).getErrorList();
-                JSONArray lJsonErrors = new JSONArray();
-                JSONObject oJsonClass = new JSONObject();
-
-				/* all Errors */
-                for (Error aLTmpErrorList : lTmpErrorList) {
-                    JSONObject oJsonError = new JSONObject();
-
-                    oJsonError.put("lineBegin", Integer.toString(aLTmpErrorList.getLineBegin()));
-                    oJsonError.put("lineEnd",Integer.toString(aLTmpErrorList.getLineEnd()));
-                    oJsonError.put("columnBegin", Integer.toString(aLTmpErrorList.getColumnBegin()));
-                    oJsonError.put("columnEnd",Integer.toString(aLTmpErrorList.getColumnEnd()));
-                    oJsonError.put("priority",Integer.toString(aLTmpErrorList.getPriority()));
-                    oJsonError.put("rule",aLTmpErrorList.getRule());
-                    oJsonError.put("class",aLTmpErrorList.getClassName());
-                    oJsonError.put("package", aLTmpErrorList.getPackage());
-                    oJsonError.put("ruleset",aLTmpErrorList.getRuleset());
-                    oJsonError.put("message", aLTmpErrorList.getMessage());
-
-                    lJsonErrors.put(oJsonError);
-                }
-
-                if(lJsonErrors.length() > 0)
-                {
-                    sTmpExcerciseName = sExcerciseName;
-
-                    oJsonClass.put("filepath", lFormattedClassList.get(nClassPos).getFullPath());
-                    oJsonClass.put("errors", lJsonErrors);
-                    lJsonClasses.put(oJsonClass);
-                }
-
-				/* last run if different exercises were found */
-                if (bLastRun) {
-                    oJsonExercise.put(sTmpExcerciseName, lJsonClasses);
-                    lJsonExercises.put(oJsonExercise);
-                }
-
-				/* last run if there was just one exercise */
-                if ((nClassPos + 1) == lFormattedClassList.size() && bExcerciseNeverChanged) {
-                    oJsonExercise.put(sTmpExcerciseName, lJsonClasses);
-                    lJsonExercises.put(oJsonExercise);
-                }
-            }
-			/* swap for a different exercise */
-            else {
-                oJsonExercise.put(sTmpExcerciseName, lJsonClasses);
-                lJsonExercises.put(oJsonExercise);
-                oJsonExercise = new JSONObject();
-                lJsonClasses = new JSONArray();
-                sTmpExcerciseName = lFormattedClassList.get(nClassPos).getsExcerciseName();
-                bExcerciseChange = true;
-                bExcerciseNeverChanged = false;
-
-				/* decrement the position to get the last class from the list */
-                if ((nClassPos + 1) == lFormattedClassList.size()) {
-                    nClassPos--;
-                    bExcerciseChange = false;
-                    bLastRun = true;
-                }
-            }
+            oJsonDuplication.put("filePaths", lJsonFilePaths);
+            oJsonDuplication.put("codefragment", oDuplaction.getsDuplicatedCode());
+            oJsonRoot.put("duplications", oJsonDuplication);
         }
 
         long lEndTime   = System.currentTimeMillis();
         long lTotalTime = (lEndTime - lStartTime);
 
         oJsonRoot.put("totalExpendedTime", lTotalTime);
-        oJsonRoot.put("assignments", lJsonExercises);
+        oJsonRoot.put("assignments", "Copy Paste Check for " +sMainDir);
 
         return oJsonRoot;
     }
