@@ -27,7 +27,7 @@ public class MoodleService {
         return "Moodle-Service";
     }
 
-    @RequestMapping(value = "/login", method = RequestMethod.GET)
+    @RequestMapping(value = "/login", method = RequestMethod.POST)
     public ResponseEntity<MoodleCredentials> login(@RequestBody String credentials) throws JSONException {
 
 
