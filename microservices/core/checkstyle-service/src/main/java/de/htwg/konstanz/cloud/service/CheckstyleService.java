@@ -1,20 +1,21 @@
 package de.htwg.konstanz.cloud.service;
 
-import javax.xml.parsers.ParserConfigurationException;
-import java.net.MalformedURLException;
-import java.io.FileNotFoundException;
-import java.io.IOException;
-
-import de.htwg.konstanz.cloud.model.ValidationData;
 import org.eclipse.jgit.api.errors.GitAPIException;
 import org.eclipse.jgit.api.errors.InvalidRemoteException;
 import org.eclipse.jgit.api.errors.TransportException;
-import org.xml.sax.SAXException;
-
-
+import org.json.JSONObject;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
-import org.springframework.web.bind.annotation.*;
+import org.springframework.web.bind.annotation.RequestBody;
+import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RequestMethod;
+import org.springframework.web.bind.annotation.RestController;
+import org.xml.sax.SAXException;
+
+import javax.xml.parsers.ParserConfigurationException;
+import java.io.FileNotFoundException;
+import java.io.IOException;
+import java.net.MalformedURLException;
 
 
 // to create a RESTful Controller (add Controller and ResponseBody)
@@ -22,10 +23,11 @@ import org.springframework.web.bind.annotation.*;
 public class CheckstyleService {
 
     @RequestMapping(value = "/validate", method = RequestMethod.POST, produces = "application/json", consumes = "application/json")
-    public ResponseEntity validate(@RequestBody ValidationData data) {
+    public ResponseEntity validate(@RequestBody String data) {
         try {
+            JSONObject repositoryUrl = new JSONObject(data);
             Checkstyle oCheckstyle = new Checkstyle();
-            String json = oCheckstyle.startIt(data.getRepositoryUrl());
+            String json = oCheckstyle.startIt(repositoryUrl.getString("repositoryUrl"));
             return ResponseEntity.ok(json);
         } catch (ParserConfigurationException e) {
             return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(e.getMessage());
