@@ -24,6 +24,7 @@ public class GIT {
 
     private static final Logger LOG = LoggerFactory.getLogger(GIT.class);
 
+    //TODO: Prüfen ob GIT.com antwortet oder nicht und entsprechende Log Meldung ausgeben
     boolean isValidRepository(URIish repoUri) {
         if (repoUri.isRemote()) {
             return isValidRemoteRepository(repoUri);
@@ -46,6 +47,8 @@ public class GIT {
 
     public String downloadGITRepo(String gitRepo) throws InvalidRemoteException, TransportException, GitAPIException, MalformedURLException {
         /* Checkout Git-Repo */
+        Git git = null;
+
         /* String Magic */
         String directoryName = gitRepo.substring(gitRepo.lastIndexOf("/"),
                 gitRepo.length() - 1).replace(".", "_");
@@ -55,9 +58,12 @@ public class GIT {
         /* Clone Command with jGIT */
         URL f = new URL(gitRepo);
         if (isValidRepository(new URIish(f))) {
-            Git.cloneRepository().setURI(gitRepo)
+            git = Git.cloneRepository().setURI(gitRepo)
                     .setDirectory(new File(localDirectory)).call();
         }
+
+        /* Closing Object that we can delete the whole directory later */
+        git.getRepository().close();
 
         /* Local Targetpath */
         return localDirectory;
