@@ -1,8 +1,6 @@
 package de.htwg.konstanz.cloud.service;
 
-import de.htwg.konstanz.cloud.model.Class;
 import de.htwg.konstanz.cloud.model.Duplication;
-import de.htwg.konstanz.cloud.model.Error;
 import de.htwg.konstanz.cloud.model.SeverityCounter;
 import net.lingala.zip4j.core.ZipFile;
 import net.lingala.zip4j.exception.ZipException;
@@ -50,7 +48,7 @@ public class CPD {
         String sResult = "";
         SeverityCounter oSeverityCounter = new SeverityCounter();
 
-        oJsonResult = determination(gitRepository, oSeverityCounter, lStartTime);
+        oJsonResult = determination(gitRepository, lStartTime);
         if (oRepoDir != null)
         {
             FileUtils.deleteDirectory(oRepoDir);
@@ -68,7 +66,7 @@ public class CPD {
         return sResult;
     }
 
-    private JSONObject determination(String sRepoUrl, SeverityCounter oSeverityCounter, long lStartTime) throws IOException, BadLocationException, InvalidRemoteException, TransportException, GitAPIException, ParserConfigurationException, SAXException {
+    private JSONObject determination(String sRepoUrl, long lStartTime) throws IOException, BadLocationException, InvalidRemoteException, TransportException, GitAPIException, ParserConfigurationException, SAXException {
         JSONObject oJson = null;
 
         checkLocalCPD();
@@ -83,7 +81,7 @@ public class CPD {
             if (sRepoUrl.endsWith("/")){
                 sRepoUrl = sRepoUrl.substring(0, sRepoUrl.length()-1);
             }
-            oJson = (runCPD(generateCPDServiceData(oSvn.downloadSVNRepo(sRepoUrl)), sRepoUrl,oSeverityCounter,lStartTime));
+            oJson = (runCPD(generateCPDServiceData(oSvn.downloadSVNRepo(sRepoUrl)),lStartTime));
         }
 
         return oJson;
@@ -157,7 +155,7 @@ public class CPD {
 
     private static final Logger LOG = LoggerFactory.getLogger(CPD.class);
 
-    public JSONObject runCPD(String sMainPath, String gitRepository, SeverityCounter oSeverityCounter, long lStartTime) throws ParserConfigurationException, SAXException, IOException {
+    public JSONObject runCPD(String sMainPath, long lStartTime) throws ParserConfigurationException, SAXException, IOException {
         final String sRuleSetPath = "java-basic,java-design,java-codesize";
         String sStartScript = "";
         JSONObject oJson = null;
@@ -168,7 +166,7 @@ public class CPD {
             sStartScript = "pmd-bin-5.4.2/bin/run.sh";
         }
 
-        String sCPDCommand = sStartScript + " --minimum-token --files " + sMainPath + " --skip-lexicial-errors --format xml > "  + sMainPath + ".xml";
+        String sCPDCommand = sStartScript + " --minimum-token 75 --files " + sMainPath + " --skip-lexicial-errors --format xml > "  + sMainPath + ".xml";
         LOG.info(sCPDCommand);
 
         try {
@@ -273,7 +271,7 @@ public class CPD {
             JSONObject oJsonDuplication = new JSONObject();
 
 			/* Duplication Infos*/
-            oJsonDuplication.put("duplicatedLines", oDuplaction.getsDupilcatedLine());
+            oJsonDuplication.put("duplicatedLines", oDuplaction.getsDuplicatedLine());
             oJsonDuplication.put("tokens", oDuplaction.getsTokens());
 
             //New Json Array with involved Paths
