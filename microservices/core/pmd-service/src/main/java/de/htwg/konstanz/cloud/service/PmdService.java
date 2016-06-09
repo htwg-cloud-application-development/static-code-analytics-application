@@ -6,6 +6,7 @@ import java.io.FileNotFoundException;
 import java.io.IOException;
 
 import de.htwg.konstanz.cloud.model.ValidationData;
+import lombok.Data;
 import org.eclipse.jgit.api.errors.GitAPIException;
 import org.eclipse.jgit.api.errors.InvalidRemoteException;
 import org.eclipse.jgit.api.errors.TransportException;
@@ -19,6 +20,7 @@ import org.springframework.web.bind.annotation.*;
 
 // to create a RESTful Controller (add Controller and ResponseBody)
 @RestController
+@Data
 public class PmdService {
 
     @RequestMapping(value = "/validate", method = RequestMethod.POST, produces = "application/json", consumes = "application/json")
@@ -57,7 +59,7 @@ public class PmdService {
     }
 
     @RequestMapping(value = "/copypaste", method = RequestMethod.POST, produces = "application/json", consumes = "application/json")
-    public ResponseEntity validate(@RequestBody ValidationData data) {
+    public ResponseEntity copypaste(@RequestBody ValidationData data) {
         try {
             CPD oCPD = new CPD();
             String json = oCPD.startIt(data.getRepositoryUrl());
