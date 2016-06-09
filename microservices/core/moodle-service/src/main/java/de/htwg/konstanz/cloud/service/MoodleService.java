@@ -25,8 +25,8 @@ public class MoodleService {
         return "Moodle-Service";
     }
 
-    @RequestMapping(value = "/login", method = RequestMethod.GET)
-    public ResponseEntity<MoodleCredentials> login(@Valid @RequestBody MoodleCredentials credentials) {
+    @RequestMapping(value = "/login", method = RequestMethod.POST)
+    public ResponseEntity<MoodleCredentials> login(@RequestBody MoodleCredentials credentials) {
 
         RestTemplate templ = new RestTemplate();
 
