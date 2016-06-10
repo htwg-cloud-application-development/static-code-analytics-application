@@ -25,9 +25,7 @@ public class CheckstyleService {
     @RequestMapping(value = "/validate", method = RequestMethod.POST, produces = "application/json", consumes = "application/json")
     public ResponseEntity validate(@RequestBody ValidationData data) {
         try {
-            Checkstyle oCheckstyle = new Checkstyle();
-            String json = oCheckstyle.startIt(data.getRepositoryUrl());
-            return ResponseEntity.ok(json);
+            return ResponseEntity.ok(new Checkstyle().startIt(data.getRepositoryUrl()));
         } catch (ParserConfigurationException e) {
             return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(e.getMessage());
         } catch (MalformedURLException e) {
