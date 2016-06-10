@@ -23,6 +23,11 @@ public class GroupService {
 
         System.out.println("saving group");
         System.out.println(groups);
+
+        if (groups.isEmpty()) { // don't save empty groups
+            return;
+        }
+
         Course course = courseRepo.findOne(courseId);
         if(null == course){
             throw new NoSuchFieldException("Course not found");
