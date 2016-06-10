@@ -1,8 +1,6 @@
 package de.htwg.konstanz.cloud.service;
 
 
-import com.amazonaws.util.json.JSONException;
-import com.amazonaws.util.json.JSONObject;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.netflix.hystrix.contrib.javanica.annotation.HystrixCommand;
 import de.htwg.konstanz.cloud.models.*;
@@ -28,16 +26,13 @@ public class MoodleService {
     }
 
     @RequestMapping(value = "/login", method = RequestMethod.POST)
-    public ResponseEntity<MoodleCredentials> login(@RequestBody String credentials) throws JSONException {
-
-
-        JSONObject credentialsObject = new JSONObject(credentials);
+    public ResponseEntity<MoodleCredentials> login(@RequestBody MoodleCredentials credentials) {
 
         RestTemplate templ = new RestTemplate();
 
         String url = "https://moodle.htwg-konstanz.de/moodle/login/token.php?" +
                 "moodlewsrestformat=json&service=moodle_mobile_app" +
-                "&username=" + credentialsObject.getString("username") + "&password=" + credentialsObject.getString("password");
+                "&username=" + credentials.getUsername() + "&password=" + credentials.getPassword();
 
         MoodleToken token = templ.getForObject(url, MoodleToken.class);
 
