@@ -110,7 +110,7 @@ public class GovernanceService {
 
             // TODO: check if successful
 
-            Integer userId = Integer.parseInt((String) user.get("userid"));
+            Integer userId = (Integer) user.get("userid");
 
             // iterate over courses and save them
             for (MoodleCourse course : courses.getCourses()) {
