@@ -21,9 +21,6 @@ public class GroupService {
     @RequestMapping(path = "/{courseId}", method = RequestMethod.POST, consumes = "application/json")
     public void create(@RequestBody List<Group> groups, @PathVariable String courseId)throws NoSuchFieldException {
 
-        System.out.println("saving group");
-        System.out.println(groups);
-
         if (groups.isEmpty()) { // don't save empty groups
             return;
         }
