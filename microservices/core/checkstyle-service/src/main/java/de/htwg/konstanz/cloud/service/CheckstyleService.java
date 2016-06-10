@@ -1,9 +1,9 @@
 package de.htwg.konstanz.cloud.service;
 
+import de.htwg.konstanz.cloud.model.ValidationData;
 import org.eclipse.jgit.api.errors.GitAPIException;
 import org.eclipse.jgit.api.errors.InvalidRemoteException;
 import org.eclipse.jgit.api.errors.TransportException;
-import org.json.JSONObject;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.RequestBody;
@@ -23,11 +23,10 @@ import java.net.MalformedURLException;
 public class CheckstyleService {
 
     @RequestMapping(value = "/validate", method = RequestMethod.POST, produces = "application/json", consumes = "application/json")
-    public ResponseEntity validate(@RequestBody String data) {
+    public ResponseEntity validate(@RequestBody ValidationData data) {
         try {
-            JSONObject repositoryUrl = new JSONObject(data);
             Checkstyle oCheckstyle = new Checkstyle();
-            String json = oCheckstyle.startIt(repositoryUrl.getString("repositoryUrl"));
+            String json = oCheckstyle.startIt(data.getRepositoryUrl());
             return ResponseEntity.ok(json);
         } catch (ParserConfigurationException e) {
             return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(e.getMessage());
