@@ -36,7 +36,7 @@ public class SVN {
         }
         else
         {
-            LOG.info(dir.toString() + " already exists");
+            LOG.info("Main Directory " + dir.toString() + " already exists");
         }
 
         if((name != null)&& (password != null)) {

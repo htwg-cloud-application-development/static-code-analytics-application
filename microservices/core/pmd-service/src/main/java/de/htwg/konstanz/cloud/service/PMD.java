@@ -3,7 +3,6 @@ package de.htwg.konstanz.cloud.service;
 import java.io.*;
 import java.net.MalformedURLException;
 import java.net.URL;
-import java.net.URLConnection;
 import java.nio.channels.Channels;
 import java.nio.channels.ReadableByteChannel;
 import java.util.ArrayList;
@@ -12,15 +11,9 @@ import de.htwg.konstanz.cloud.model.Class;
 import de.htwg.konstanz.cloud.model.Error;
 import de.htwg.konstanz.cloud.model.SeverityCounter;
 import org.apache.commons.io.FileUtils;
-import org.eclipse.jgit.api.Git;
 import org.eclipse.jgit.api.errors.GitAPIException;
 import org.eclipse.jgit.api.errors.InvalidRemoteException;
 import org.eclipse.jgit.api.errors.TransportException;
-import org.eclipse.jgit.internal.storage.file.FileRepository;
-import org.eclipse.jgit.transport.URIish;
-import org.eclipse.jgit.transport.RemoteSession;
-import org.eclipse.jgit.transport.SshSessionFactory;
-import org.eclipse.jgit.util.FS;
 import org.json.JSONArray;
 import org.json.JSONObject;
 import org.slf4j.Logger;
@@ -31,7 +24,7 @@ import org.w3c.dom.Node;
 import org.w3c.dom.NodeList;
 import org.xml.sax.InputSource;
 import org.xml.sax.SAXException;
-import java.net.URLEncoder;
+
 import javax.swing.text.BadLocationException;
 import javax.xml.parsers.DocumentBuilder;
 import javax.xml.parsers.DocumentBuilderFactory;
@@ -39,38 +32,42 @@ import javax.xml.parsers.ParserConfigurationException;
 import net.lingala.zip4j.core.ZipFile;
 import net.lingala.zip4j.exception.ZipException;
 
-import static org.springframework.boot.Banner.Mode.LOG;
-
 
 public class PMD {
 
-    private List<Class> lFormattedClassList = new ArrayList<Class>();
+    private static final Logger LOG = LoggerFactory.getLogger(PMD.class);
+    private List<Class> lFormattedClassList = new ArrayList<>();
     private File oRepoDir;
-    private String sOS = null;
-    OperatingSystemCheck oOsCheck = new OperatingSystemCheck();
-    GIT oGit = new GIT();
-    SVN oSvn = new SVN();
+    private GIT oGit = new GIT();
+    private SVN oSvn = new SVN();
 
     public String startIt(String gitRepository) throws IOException, ParserConfigurationException, SAXException, BadLocationException, InvalidRemoteException, TransportException, GitAPIException, MalformedURLException, NullPointerException
     {
         long lStartTime = System.currentTimeMillis();
-        JSONObject oJsonResult = null;
-        String sResult = "";
+        JSONObject oJsonResult;
+        String sResult;
         SeverityCounter oSeverityCounter = new SeverityCounter();
 
         oJsonResult = determination(gitRepository, oSeverityCounter, lStartTime);
-        if (oRepoDir != null)
-        {
+
+        /* Zum Testen der Code Paste Detection Funktion !!!!! */
+        /* CPD oCPD = new CPD(); */
+        /* oCPD.startIt(sTesto); */
+
+        if (oRepoDir != null) {
             FileUtils.deleteDirectory(oRepoDir);
         }
-
-        if(null == oJsonResult)
-        {
-            sResult = "Invalid Repository";
+        else {
+            LOG.info("Error: Local Directory is null!");
         }
-        else
-        {
+
+        if(null == oJsonResult) {
+            sResult = "Invalid Repository";
+            LOG.info("Error: received invalid repository and JSON file");
+        }
+        else {
             sResult = oJsonResult.toString();
+            LOG.info("Valid JSON result");
         }
 
         return sResult;
@@ -78,7 +75,9 @@ public class PMD {
 
     private JSONObject determination(String sRepoUrl, SeverityCounter oSeverityCounter, long lStartTime) throws IOException, BadLocationException, InvalidRemoteException, TransportException, GitAPIException, ParserConfigurationException, SAXException {
         JSONObject oJson = null;
+        String sLocalDir;
 
+        LOG.info("Repository URL: " + sRepoUrl);
         checkLocalPMD();
 
         /* SVN */
@@ -91,27 +90,49 @@ public class PMD {
             if (sRepoUrl.endsWith("/")){
                 sRepoUrl = sRepoUrl.substring(0, sRepoUrl.length()-1);
             }
-            oJson = (runPMD(generateCheckStyleServiceData(oSvn.downloadSVNRepo(sRepoUrl)), sRepoUrl,oSeverityCounter,lStartTime));
-        }
 
+            LOG.info("SVN");
+            sLocalDir = oSvn.downloadSVNRepo(sRepoUrl);
+            oJson = (runPMD(generatePMDServiceData(sLocalDir), sRepoUrl,oSeverityCounter,lStartTime));
+            oRepoDir = new File(sLocalDir);
+        }
         /* GIT */
-        if(sRepoUrl.contains("github.com")){
-            oJson = (runPMD(generateCheckStyleServiceData(oGit.downloadGITRepo(sRepoUrl)), sRepoUrl,oSeverityCounter,lStartTime));
+        else if(sRepoUrl.contains("github.com")){
+            LOG.info("GIT");
+            sLocalDir = oGit.downloadGITRepo(sRepoUrl);
+            oJson = (runPMD(generatePMDServiceData(sLocalDir), sRepoUrl,oSeverityCounter,lStartTime));
+            oRepoDir = new File(sLocalDir);
+        }
+        else {
+            LOG.info("Repository URL has no valid SVN/GIT attributes. (" + sRepoUrl + ")");
         }
 
         return oJson;
     }
 
-    private List<List<String>> generateCheckStyleServiceData(String localDirectory) {
+
+    /* TESTENNNNNNNNNNNNNNNNNNN */
+    /* String sTesto; */
+    /* TESTENNNNNNNNNNNNNNNNNNN */
+
+
+    private List<List<String>> generatePMDServiceData(String sLocalDirectory) {
         /* Generate Data for CheckstyleService */
-        List<List<String>> list = new ArrayList<List<String>>();
+        List<List<String>> list = new ArrayList<>();
         File mainDir;
+        LOG.info("Local Directory: " + sLocalDirectory);
+
+        /* TESTENNNNNNNNNNNNNNNNNNN */
+        /*    sTesto = sLocalDirectory; */
+        /* TESTENNNNNNNNNNNNNNNNNNN */
 
         /* Check if local /src-dir exists */
-        if (new File(localDirectory + "/src").exists()) {
-            mainDir = new File(localDirectory + "/src");
+        if (new File(sLocalDirectory + "/src").exists()) {
+            mainDir = new File(sLocalDirectory + "/src");
+            LOG.info("Local SRC directory found");
         } else {
-            mainDir = new File(localDirectory);
+            mainDir = new File(sLocalDirectory);
+            LOG.info("There was no local SRC directory");
         }
 
         /* List all files for CheckstyleService */
@@ -136,9 +157,8 @@ public class PMD {
         return list;
     }
 
-    public boolean checkLocalPMD() throws MalformedURLException, IOException, FileNotFoundException
-    {
-        boolean bSuccess = false;
+    private void checkLocalPMD() throws MalformedURLException, IOException, FileNotFoundException {
+        ZIP oZIP = new ZIP();
         final String sPmdDir = "pmd-bin-5.4.2.zip";
         final String sDownloadPMD = "https://github.com/pmd/pmd/releases/download/pmd_releases%2F5.4.2/pmd-bin-5.4.2.zip";
 
@@ -147,88 +167,55 @@ public class PMD {
         FileOutputStream oFileOutput = null;
         URL oURL = null;
 
-        if (oFile.exists())
-        {
-            System.out.println("PMD Directory already exists!");
-            bSuccess = true;
-        } else
-        {
-            System.out.println("PMD Directory does not exists, Starting download");
+        if (oFile.exists()) {
+            LOG.info("PMD Directory already exists!");
+        } else {
+            LOG.info("PMD Directory does not exists, Starting download");
             oURL = new URL(sDownloadPMD);
             oReadableByteChannel = Channels.newChannel(oURL.openStream());
             oFileOutput = new FileOutputStream(sPmdDir);
             oFileOutput.getChannel().transferFrom(oReadableByteChannel, 0,Long.MAX_VALUE);
-            bSuccess = true;
 
-            unzipFile(sPmdDir);
-        }
-
-        return bSuccess;
-    }
-
-    public void unzipFile(String sZipFile)
-    {
-        try
-        {
-            ZipFile oZipFile = new ZipFile(sZipFile);
-
-            if (!oZipFile.isEncrypted())
-            {
-                oZipFile.extractAll(System.getProperty("user.dir"));
-            }
-
-        }
-        catch (ZipException e)
-        {
-            e.printStackTrace();
+            oZIP.unzipFile(sPmdDir);
         }
     }
 
-    private static final Logger LOG = LoggerFactory.getLogger(PMD.class);
-
-    public JSONObject runPMD(List<List<String>> lRepoList, String gitRepository, SeverityCounter oSeverityCounter, long lStartTime) throws ParserConfigurationException, SAXException, IOException
-    {
+    private JSONObject runPMD(List<List<String>> lRepoList, String gitRepository, SeverityCounter oSeverityCounter, long lStartTime) throws ParserConfigurationException, SAXException, IOException {
+        OperatingSystemCheck oOperatingSystemCheck = new OperatingSystemCheck();
         final String sRuleSetPath = "java-basic,java-design,java-codesize";
         String sStartScript = "";
         JSONObject oJson = null;
 
-        if(oOsCheck.isWindows() == true)
-        {
+        if (oOperatingSystemCheck.isWindows()) {
             sStartScript = "pmd-bin-5.4.2\\bin\\pmd.bat";
-        }
-        else if(oOsCheck.isLinux() == true)
-        {
+        } else if (oOperatingSystemCheck.isLinux()) {
             sStartScript = "pmd-bin-5.4.2/bin/run.sh";
         }
 
 		/* Listeninhalt kuerzen, um JSON vorbereiten */
         formatList(lRepoList);
 
-        for (int nClassPos = 0; nClassPos < lFormattedClassList.size(); nClassPos++)
-        {
+        for (int nClassPos = 0; nClassPos < lFormattedClassList.size(); nClassPos++) {
             String sFullPath = lFormattedClassList.get(nClassPos).getFullPath();
 
-            if (sFullPath.endsWith(".java"))
-            {
+            if (sFullPath.endsWith(".java")) {
                 sFullPath = sFullPath.substring(0, sFullPath.length() - 5);
             }
 
             String sPmdCommand = sStartScript + " -d " + sFullPath + ".java -f xml -failOnViolation false -encoding UTF-8 -rulesets " + sRuleSetPath + " -r " + sFullPath + ".xml";
+            LOG.info("PMD execution path: " + sPmdCommand);
 
-            try
-            {
+            try {
                 Runtime runtime = Runtime.getRuntime();
                 Process proc = runtime.exec(sPmdCommand);
 
-                try
-                {
-                    final int i = proc.waitFor();
-                    System.out.println(i);
-                } catch (InterruptedException e)
-                {
+                try {
+                    proc.waitFor();
+                } catch (InterruptedException e) {
+                    //TODO
                 }
-            } catch (IOException ex)
-            {
+            } catch (IOException ex) {
+                //TODO
             }
 
 			/* Checkstyle Informationen eintragen */
@@ -245,7 +232,7 @@ public class PMD {
         return oJson;
     }
 
-    public boolean isParsable(String input) {
+    private boolean isParsable(String input) {
         boolean bParsable = true;
 
         try {
@@ -257,22 +244,14 @@ public class PMD {
         return bParsable;
     }
 
-    public void formatList(List<List<String>> lRepoList) {
+    private void formatList(List<List<String>> lRepoList) {
+        OperatingSystemCheck oOperatingSystemCheck = new OperatingSystemCheck();
+
         for (List<String> aLRepoList : lRepoList) {
             Class oClass = null;
-            String sOperatingSystem = "";
 
-            for (int nClassPos = 0; nClassPos < aLRepoList.size(); nClassPos++)
-            {
-                if(oOsCheck.isWindows() == true)
-                {
-                    sOperatingSystem  = File.separatorChar + "" +File.separatorChar;
-                }
-                else if(oOsCheck.isLinux())
-                {
-                    sOperatingSystem = File.separatorChar + "";
-                }
-                String[] sFullPathSplit_a = aLRepoList.get(nClassPos).split(sOperatingSystem );
+            for (int nClassPos = 0; nClassPos < aLRepoList.size(); nClassPos++) {
+                String[] sFullPathSplit_a = aLRepoList.get(nClassPos).split(oOperatingSystemCheck.getOperatingSystemSeparator());
 
                 String sFullPath = aLRepoList.get(nClassPos);
 
@@ -286,7 +265,7 @@ public class PMD {
         }
     }
 
-    public void storePmdInformation(String sXmlPath, int nClassPos, SeverityCounter oSeverityCounter) throws ParserConfigurationException, SAXException, IOException {
+    private void storePmdInformation(String sXmlPath, int nClassPos, SeverityCounter oSeverityCounter) throws ParserConfigurationException, SAXException, IOException {
         InputStream inputStream= new FileInputStream(sXmlPath);
         Reader reader = new InputStreamReader(inputStream,"UTF-8");
         InputSource is = new InputSource(reader);
@@ -333,16 +312,13 @@ public class PMD {
                     nPriority = Integer.parseInt(eElement.getAttribute("priority"));
 
                     /* Count every Error Type we have found in the XML */
-                    if(nPriority == 1)
-                    {
+                    if(nPriority == 1) {
                         oSeverityCounter.incIgnoreCount();
                     }
-                    else if(nPriority == 2)
-                    {
+                    else if(nPriority == 2) {
                         oSeverityCounter.incWarningCount();
                     }
-                    else if(nPriority == 3)
-                    {
+                    else if(nPriority == 3) {
                         oSeverityCounter.incErrorCount();
                     }
                 }
@@ -366,8 +342,8 @@ public class PMD {
         }
     }
 
-    public JSONObject buildJSON(String sRepo, SeverityCounter oSeverityCounter, long lStartTime) {
-        List<Error> lTmpErrorList = new ArrayList<Error>();
+    private JSONObject buildJSON(String sRepo, SeverityCounter oSeverityCounter, long lStartTime) {
+        List<Error> lTmpErrorList = new ArrayList<>();
         JSONObject oJsonRoot = new JSONObject();
         JSONObject oJsonExercise = new JSONObject();
         JSONArray lJsonClasses = new JSONArray();
@@ -418,8 +394,7 @@ public class PMD {
                     lJsonErrors.put(oJsonError);
                 }
 
-                if(lJsonErrors.length() > 0)
-                {
+                if(lJsonErrors.length() > 0) {
                     sTmpExcerciseName = sExcerciseName;
 
                     oJsonClass.put("filepath", lFormattedClassList.get(nClassPos).getFullPath());

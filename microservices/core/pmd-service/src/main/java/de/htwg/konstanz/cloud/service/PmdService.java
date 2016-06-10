@@ -58,7 +58,7 @@ public class PmdService {
         return "PMD-Service";
     }
 
-    @RequestMapping(value = "/copypaste", method = RequestMethod.POST, produces = "application/json", consumes = "application/json")
+    @RequestMapping(value = "/CPD validate", method = RequestMethod.POST, produces = "application/json", consumes = "application/json")
     public ResponseEntity copypaste(@RequestBody ValidationData data) {
         try {
             CPD oCPD = new CPD();

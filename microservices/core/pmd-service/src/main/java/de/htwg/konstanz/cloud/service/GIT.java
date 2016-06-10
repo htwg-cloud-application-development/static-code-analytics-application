@@ -9,6 +9,8 @@ import org.eclipse.jgit.transport.RemoteSession;
 import org.eclipse.jgit.transport.SshSessionFactory;
 import org.eclipse.jgit.transport.URIish;
 import org.eclipse.jgit.util.FS;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import java.io.File;
 import java.io.FileNotFoundException;
@@ -20,6 +22,9 @@ import java.net.URLConnection;
 
 public class GIT {
 
+    private static final Logger LOG = LoggerFactory.getLogger(GIT.class);
+
+    //TODO: Prüfen ob GIT.com antwortet oder nicht und entsprechende Log Meldung ausgeben
     boolean isValidRepository(URIish repoUri) {
         if (repoUri.isRemote()) {
             return isValidRemoteRepository(repoUri);
@@ -40,10 +45,10 @@ public class GIT {
         return result;
     }
 
-
-
     public String downloadGITRepo(String gitRepo) throws InvalidRemoteException, TransportException, GitAPIException, MalformedURLException {
         /* Checkout Git-Repo */
+        Git git = null;
+
         /* String Magic */
         String directoryName = gitRepo.substring(gitRepo.lastIndexOf("/"),
                 gitRepo.length() - 1).replace(".", "_");
@@ -53,9 +58,12 @@ public class GIT {
         /* Clone Command with jGIT */
         URL f = new URL(gitRepo);
         if (isValidRepository(new URIish(f))) {
-            Git.cloneRepository().setURI(gitRepo)
+            git = Git.cloneRepository().setURI(gitRepo)
                     .setDirectory(new File(localDirectory)).call();
         }
+
+        /* Closing Object that we can delete the whole directory later */
+        git.getRepository().close();
 
         /* Local Targetpath */
         return localDirectory;
@@ -76,12 +84,12 @@ public class GIT {
                 ins = conn.getInputStream();
                 result = true;
             } catch (FileNotFoundException e) {
-                System.out.println("File not Foud");
+                LOG.info("URI not found: " + checkUri.toString());
                 result=false;
             } catch (IOException e) {
-                System.out.println("IOException");
+                LOG.info("IO Error: " + checkUri.toString());
                 result = false;
-                e.printStackTrace();
+                //TODO:
             } finally {
                 try {
                     ins.close();
@@ -103,7 +111,7 @@ public class GIT {
                     try {
                         exitValue = exec.exitValue();
                     } catch (Exception e) {
-                        e.printStackTrace();
+                        //TODO:
                     }
                 } while (exitValue == null);
 
