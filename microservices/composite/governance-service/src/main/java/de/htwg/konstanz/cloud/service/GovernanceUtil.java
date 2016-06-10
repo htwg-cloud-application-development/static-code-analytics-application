@@ -3,6 +3,7 @@ package de.htwg.konstanz.cloud.service;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.cloud.client.ServiceInstance;
 import org.springframework.cloud.client.loadbalancer.LoadBalancerClient;
+import org.springframework.http.HttpEntity;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
@@ -47,9 +48,10 @@ public class GovernanceUtil {
         // Get to request url and get String (JSON)
         HttpHeaders headers = new HttpHeaders();
         headers.setContentType(MediaType.APPLICATION_JSON);
+        HttpEntity<String> entity = new HttpEntity<>(data, headers);
 
         // post to service and return response
-        return restTemplate.postForObject(requestUrl, data, String.class, headers);
+        return restTemplate.postForObject(requestUrl, entity, String.class);
 
 
     }
