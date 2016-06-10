@@ -19,21 +19,17 @@ public class GroupService {
     private CourseRepository courseRepo;
 
     @RequestMapping(path = "/{courseId}", method = RequestMethod.POST, consumes = "application/json")
-    public void create(@RequestBody Group group, @PathVariable String courseId)throws NoSuchFieldException {
+    public void create(@RequestBody List<Group> groups, @PathVariable String courseId)throws NoSuchFieldException {
 
+        System.out.println("saving group");
+        System.out.println(groups);
         Course course = courseRepo.findOne(courseId);
         if(null == course){
             throw new NoSuchFieldException("Course not found");
         }
 
-        groupRepository.save(group);
+        groupRepository.save(groups);
 
-        List<Group> groups = course.getGroups();
-        if(null == groups){
-            groups = new ArrayList<>();
-        }
-
-        groups.add(group);
         course.setGroups(groups);
         courseRepo.save(course);
     }
