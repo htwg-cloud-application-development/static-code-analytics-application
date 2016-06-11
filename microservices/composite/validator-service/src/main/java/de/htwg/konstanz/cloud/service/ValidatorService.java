@@ -109,8 +109,21 @@ public class ValidatorService {
 
     private ArrayList<JSONObject> runValidationSchedulerOnAws(JSONArray groups) throws JSONException, InstantiationException, ExecutionException, InterruptedException {
 
-        int threadNum = groups.length();
+        int numberOfExecutions = groups.length();
+        LOG.info("Number of groups: " + numberOfExecutions);
+
         List<Future<String>> taskList = new ArrayList<>();
+
+        int fullExecutionTime = 0;
+        for (int i = 0; i < groups.length(); i++) {
+            JSONObject jsonObject = (JSONObject) groups.get(i);
+            LOG.info(jsonObject.toString());
+            int executinTime = jsonObject.getInt("executiontime");
+            if (executinTime == 0) executinTime = 30000;
+            LOG.info("Executiontime for repo " + i + " is: " + executinTime);
+            fullExecutionTime += executinTime;
+        }
+        LOG.info("Full execution time: " + fullExecutionTime);
 
         // TODO:
         // - read executiontime of each repository
@@ -126,7 +139,8 @@ public class ValidatorService {
 
 
         // start execution measurement
-        long startTime = System.currentTimeMillis();
+  /*      long startTime = System.currentTimeMillis();
+        int threadNum = groups.length();
 
         for (int i = 0; i < groups.length(); i++) {
             JSONObject obj = groups.getJSONObject(i);
@@ -156,7 +170,8 @@ public class ValidatorService {
         }
 
 
-        return result;
+        return result;*/
+        return null;
     }
 
     @ApiOperation(value = "validate", nickname = "validate")
@@ -218,10 +233,10 @@ public class ValidatorService {
         try {
 
             JSONObject gitRepo1 = new JSONObject();
-            gitRepo1.put("executiontime", 60000);
+            gitRepo1.put("executiontime", 60001);
 
             JSONObject svnRepo1 = new JSONObject();
-            svnRepo1.put("executiontime", 60000);
+            svnRepo1.put("executiontime", 60001);
 
             JSONArray groups = new JSONArray();
             groups.put(gitRepo1);
