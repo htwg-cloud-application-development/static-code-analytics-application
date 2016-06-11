@@ -8,6 +8,7 @@ import com.amazonaws.services.ec2.model.Instance;
 import com.amazonaws.services.ec2.model.RunInstancesResult;
 import com.amazonaws.util.json.JSONArray;
 import com.amazonaws.util.json.JSONObject;
+import de.htwg.konstanz.cloud.model.ValidationData;
 import io.swagger.annotations.ApiOperation;
 import io.swagger.annotations.ApiResponse;
 import org.slf4j.Logger;
@@ -178,11 +179,10 @@ public class ValidatorService {
     }
 
     @RequestMapping(value = "/validate", method = RequestMethod.POST, consumes = "application/json", produces = "application/json")
-    public ResponseEntity<String> validateGroupVerify(@RequestBody String data) {
+    public ResponseEntity<String> validateGroupVerify(@RequestBody ValidationData data) {
         try {
-            JSONObject obj = new JSONObject(data);
             // Call validation asynchronous
-            Future<String> repo = validateRepositoryService.validateRepository(obj.getString("repositoryUrl"));
+            Future<String> repo = validateRepositoryService.validateRepository(data.getRepositoryUrl());
 
             // Wait until they are done
             while (!(repo.isDone())) {
