@@ -116,7 +116,6 @@ public class ValidatorService {
         int numberOfExecutions = groups.length();
         LOG.info("Number of groups: " + numberOfExecutions);
 
-        List<Future<String>> taskList = new ArrayList<>();
 
         int fullExecutionTime = 0;
         Map<Integer, List<JSONObject>> pipeline = new TreeMap<>();
@@ -154,6 +153,8 @@ public class ValidatorService {
         try {
             startInstances(numberOfInstances, ec2);
 
+            List<Future<String>> taskList = new ArrayList<>();
+            ArrayList<JSONObject> result = new ArrayList<>();
             int availableInstances = util.getNumberOfActiveCheckstyleInstances(ec2);
             int runningTasks = 0;
             int openTasks = numberOfExecutions;
@@ -166,9 +167,12 @@ public class ValidatorService {
             while (openTasks > 0) {
                 if (availableInstances > 0) {
                     JSONObject task = getTaskWithLongestDuration(pipeline, index);
-                    // TODO get longest tast from map
-                    // TODO execute task - maybe the instance which executes no job
-                    // TODO note which service executes task for specific repository
+                    if (task != null) {
+                        Future<String> future = validateRepositoryService.validateRepository(task.toString());
+                        // TODO note which service executes task for specific repository
+                        taskList.add(future);
+                    }
+                    openTasks--;
                 }
             }
 
@@ -178,13 +182,6 @@ public class ValidatorService {
         }
 
 /*
-        for (int i = 0; i < groups.length(); i++) {
-            JSONObject obj = groups.getJSONObject(i);
-            Future<String> repo = validateRepositoryService.validateRepository(obj.toString());
-            taskList.add(repo);
-        }
-
-        ArrayList<JSONObject> result = new ArrayList<>();
         int numberOfRepos = groups.length();
         int i = 0;
         while (numberOfRepos > 0) {
