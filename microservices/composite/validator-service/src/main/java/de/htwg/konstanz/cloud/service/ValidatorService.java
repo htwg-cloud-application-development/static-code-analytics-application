@@ -51,11 +51,6 @@ public class ValidatorService {
     @Value("${spring.application.name}")
     private String serviceName;
 
-    @Value("${app.aws.init.instance.duration:90000}")
-    private int initInstancetDuration;
-
-    @Value("${app.aws.init.instance.max:5}")
-    private int maxNumberOfInstancesGreaterFour;
 
 
     @RequestMapping(value = "/info", method = RequestMethod.GET, produces = "application/json")
@@ -144,7 +139,7 @@ public class ValidatorService {
 
         LOG.info("Full execution time: " + fullExecutionTime);
 
-        int numberOfInstances = magicCalculateForNumberOfIstances(numberOfExecutions, fullExecutionTime);
+        int numberOfInstances = util.magicCalculateForNumberOfIstances(numberOfExecutions, fullExecutionTime);
         LOG.info("Number of Instances to start: " + numberOfInstances);
 
 
@@ -177,6 +172,9 @@ public class ValidatorService {
                     if (task != null) {
                         Future<String> future = validateRepositoryService.validateRepository(task.toString());
                         // TODO note which service executes task for specific repository
+                        // TODO - if is available means not, that its available on eureka
+                        // TODO - hold information - which instance executes which task - from loadbalancer
+
                         taskList.add(future);
                         runningTasks++;
                         LOG.info("running tasks: " + runningTasks);
@@ -232,23 +230,7 @@ public class ValidatorService {
         }
     }
 
-    // magic calculation
-    private int magicCalculateForNumberOfIstances(int numberOfExecutions, int fullExecutionTime) {
-        int numberOfInstances;
 
-        if (fullExecutionTime < (2 * initInstancetDuration) || numberOfExecutions < 2) {
-            numberOfInstances = 1;
-        } else if (fullExecutionTime < (3 * initInstancetDuration) || numberOfExecutions < 3) {
-            numberOfInstances = 2;
-        } else if (fullExecutionTime < (4 * initInstancetDuration) || numberOfExecutions < 4) {
-            numberOfInstances = 3;
-        } else if (fullExecutionTime < (5 * initInstancetDuration) || numberOfExecutions < 5) {
-            numberOfInstances = 4;
-        } else {
-            numberOfInstances = maxNumberOfInstancesGreaterFour;
-        }
-        return numberOfInstances;
-    }
 
     @ApiOperation(value = "validate", nickname = "validate")
     @RequestMapping(value = "/groups/{groupId}/validate", method = RequestMethod.POST)
