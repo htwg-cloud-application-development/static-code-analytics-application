@@ -5,6 +5,7 @@ import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.cloud.client.ServiceInstance;
 import org.springframework.cloud.client.loadbalancer.LoadBalancerClient;
+import org.springframework.http.HttpEntity;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
@@ -44,8 +45,11 @@ public class ValidateRepositoryService {
             LOG.debug("repositoryUrl: " + repositoryUrl);
             HttpHeaders headers = new HttpHeaders();
             headers.setContentType(MediaType.APPLICATION_JSON);
-            ResponseEntity<String> entity = restTemplate.postForEntity(requestUrl, repositoryUrl, String.class, headers);
-            return new AsyncResult<String>(entity.getBody());
+            HttpEntity<String> entity = new HttpEntity<>(repositoryUrl, headers);
+
+            // post to service and return response
+            ResponseEntity<String> obj = restTemplate.postForEntity(requestUrl, entity, String.class);
+            return new AsyncResult<>(obj.getBody());
         }
         throw new InstantiationException("service is not available");
     }
