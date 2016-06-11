@@ -70,16 +70,12 @@ public class GovernanceService {
     }
 
     @RequestMapping(value = "/login", method = RequestMethod.POST, produces = "application/json")
-    public ResponseEntity<String> getToken(@RequestBody String credentialsParam) {
+    public ResponseEntity<String> getToken(@RequestBody MoodleCredentials credentials) {
 
         try {
-            JSONObject obj = new JSONObject(credentialsParam);
-            MoodleCredentials credentials = new MoodleCredentials(obj.getString("username"), obj.getString("password"));
             return createResponse(moodleService.getToken(credentials), HttpStatus.OK);
         } catch (InstantiationException e) {
             return createErrorResponse(e.getMessage(), HttpStatus.SERVICE_UNAVAILABLE);
-        } catch (JSONException e) {
-            return createErrorResponse(e.getMessage(), HttpStatus.INTERNAL_SERVER_ERROR);
         }
     }
 
@@ -96,7 +92,6 @@ public class GovernanceService {
         }
     }
 
-    // TODO fix reqeustBody
     @RequestMapping(value = "/import/courses/{token}", method = RequestMethod.POST, produces = "application/json")
     public ResponseEntity<String> importCoursesOfProf(@PathVariable String token, @RequestBody Courses courses) {
         try {

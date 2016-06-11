@@ -1,6 +1,7 @@
 package de.htwg.konstanz.cloud;
 
 import org.springframework.boot.SpringApplication;
+import org.springframework.boot.autoconfigure.EnableAutoConfiguration;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
 import org.springframework.cloud.netflix.eureka.EnableEurekaClient;
 import org.springframework.context.annotation.Bean;
@@ -15,6 +16,7 @@ import static springfox.documentation.builders.PathSelectors.regex;
 @SpringBootApplication
 @EnableEurekaClient
 @EnableSwagger2
+@EnableAutoConfiguration
 public class PmdServiceApplication {
 
     public static void main(String[] args) {

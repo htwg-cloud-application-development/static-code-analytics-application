@@ -1,21 +1,22 @@
 package de.htwg.konstanz.cloud.service;
 
-import javax.xml.parsers.ParserConfigurationException;
-import java.net.MalformedURLException;
-import java.io.FileNotFoundException;
-import java.io.IOException;
-
 import de.htwg.konstanz.cloud.model.ValidationData;
 import lombok.Data;
 import org.eclipse.jgit.api.errors.GitAPIException;
 import org.eclipse.jgit.api.errors.InvalidRemoteException;
 import org.eclipse.jgit.api.errors.TransportException;
-import org.xml.sax.SAXException;
-
-
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
-import org.springframework.web.bind.annotation.*;
+import org.springframework.web.bind.annotation.RequestBody;
+import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RequestMethod;
+import org.springframework.web.bind.annotation.RestController;
+import org.xml.sax.SAXException;
+
+import javax.xml.parsers.ParserConfigurationException;
+import java.io.FileNotFoundException;
+import java.io.IOException;
+import java.net.MalformedURLException;
 
 
 // to create a RESTful Controller (add Controller and ResponseBody)
@@ -26,9 +27,7 @@ public class PmdService {
     @RequestMapping(value = "/validate", method = RequestMethod.POST, produces = "application/json", consumes = "application/json")
     public ResponseEntity validate(@RequestBody ValidationData data) {
         try {
-            PMD oPMD = new PMD();
-            String json = oPMD.startIt(data.getRepositoryUrl());
-            return ResponseEntity.ok(json);
+            return ResponseEntity.ok(new PMD().startIt(data.getRepositoryUrl()));
         } catch (ParserConfigurationException e) {
             return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(e.getMessage());
         } catch (MalformedURLException e) {
@@ -45,7 +44,7 @@ public class PmdService {
             return ResponseEntity.status(HttpStatus.CONFLICT).body(e.getMessage());
         } catch (IOException e) {
             return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(e.getMessage());
-        } catch (NullPointerException e){
+        } catch (NullPointerException e) {
             return ResponseEntity.status(HttpStatus.NOT_FOUND).body(e.getMessage());
         } catch (Exception e) {
             e.printStackTrace();
@@ -58,12 +57,10 @@ public class PmdService {
         return "PMD-Service";
     }
 
-    @RequestMapping(value = "/CPD validate", method = RequestMethod.POST, produces = "application/json", consumes = "application/json")
+    @RequestMapping(value = "/validate/copypaste", method = RequestMethod.POST, produces = "application/json", consumes = "application/json")
     public ResponseEntity copypaste(@RequestBody ValidationData data) {
         try {
-            CPD oCPD = new CPD();
-            String json = oCPD.startIt(data.getRepositoryUrl());
-            return ResponseEntity.ok(json);
+            return ResponseEntity.ok(new CPD().startIt(data.getRepositoryUrl()));
         } catch (ParserConfigurationException e) {
             return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(e.getMessage());
         } catch (MalformedURLException e) {
@@ -80,7 +77,7 @@ public class PmdService {
             return ResponseEntity.status(HttpStatus.CONFLICT).body(e.getMessage());
         } catch (IOException e) {
             return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(e.getMessage());
-        } catch (NullPointerException e){
+        } catch (NullPointerException e) {
             return ResponseEntity.status(HttpStatus.NOT_FOUND).body(e.getMessage());
         } catch (Exception e) {
             e.printStackTrace();

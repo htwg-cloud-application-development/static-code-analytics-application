@@ -1,6 +1,6 @@
 spring:
   application:
-    name: pmd-service
+    name: pmd
   profiles:
     active: development
 
