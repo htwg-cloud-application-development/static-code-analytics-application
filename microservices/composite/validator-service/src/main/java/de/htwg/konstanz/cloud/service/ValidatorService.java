@@ -51,9 +51,12 @@ public class ValidatorService {
     @Value("${spring.application.name}")
     private String serviceName;
 
-
     @Value("${app.aws.init.instance.duration:90000}")
     private int initInstancetDuration;
+
+    @Value("${app.aws.init.instance.max:5}")
+    private int maxNumberOfInstancesGreaterFour;
+
 
     @RequestMapping(value = "/info", method = RequestMethod.GET, produces = "application/json")
     public String info() {
@@ -207,7 +210,7 @@ public class ValidatorService {
         } else if (fullExecutionTime < (5 * initInstancetDuration) || numberOfExecutions < 5) {
             numberOfInstances = 4;
         } else {
-            numberOfInstances = 5;
+            numberOfInstances = maxNumberOfInstancesGreaterFour;
         }
         return numberOfInstances;
     }
