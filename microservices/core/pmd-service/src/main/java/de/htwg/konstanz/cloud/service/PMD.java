@@ -202,7 +202,7 @@ public class PMD {
                 sFullPath = sFullPath.substring(0, sFullPath.length() - 5);
             }
 
-            String sPmdCommand = sStartScript + " -d " + sFullPath + ".java -f xml -failOnViolation false -encoding UTF-8 -rulesets " + sRuleSetPath + " -r " + sFullPath + ".xml";
+            String sPmdCommand = sStartScript + " pmd -d " + sFullPath + ".java -f xml -failOnViolation false -encoding UTF-8 -rulesets " + sRuleSetPath + " -r " + sFullPath + ".xml";
             LOG.info("PMD execution path: " + sPmdCommand);
 
             try {
