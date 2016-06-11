@@ -27,9 +27,7 @@ public class PmdService {
     @RequestMapping(value = "/validate", method = RequestMethod.POST, produces = "application/json", consumes = "application/json")
     public ResponseEntity validate(@RequestBody ValidationData data) {
         try {
-            PMD oPMD = new PMD();
-            String json = oPMD.startIt(data.getRepositoryUrl());
-            return ResponseEntity.ok(json);
+            return ResponseEntity.ok(new PMD().startIt(data.getRepositoryUrl()));
         } catch (ParserConfigurationException e) {
             return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(e.getMessage());
         } catch (MalformedURLException e) {
@@ -62,9 +60,7 @@ public class PmdService {
     @RequestMapping(value = "/validate/copypaste", method = RequestMethod.POST, produces = "application/json", consumes = "application/json")
     public ResponseEntity copypaste(@RequestBody ValidationData data) {
         try {
-            CPD oCPD = new CPD();
-            String json = oCPD.startIt(data.getRepositoryUrl());
-            return ResponseEntity.ok(json);
+            return ResponseEntity.ok(new CPD().startIt(data.getRepositoryUrl()));
         } catch (ParserConfigurationException e) {
             return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(e.getMessage());
         } catch (MalformedURLException e) {
