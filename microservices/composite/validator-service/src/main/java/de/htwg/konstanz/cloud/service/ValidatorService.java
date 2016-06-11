@@ -7,6 +7,7 @@ import com.amazonaws.services.ec2.AmazonEC2Client;
 import com.amazonaws.services.ec2.model.Instance;
 import com.amazonaws.services.ec2.model.RunInstancesResult;
 import com.amazonaws.util.json.JSONArray;
+import com.amazonaws.util.json.JSONException;
 import com.amazonaws.util.json.JSONObject;
 import de.htwg.konstanz.cloud.model.ValidationData;
 import io.swagger.annotations.ApiOperation;
@@ -26,6 +27,7 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Date;
 import java.util.List;
+import java.util.concurrent.ExecutionException;
 import java.util.concurrent.Future;
 
 @RestController
@@ -84,57 +86,15 @@ public class ValidatorService {
         try {
             String course = databaseService.getCourse(courseId);
             JSONObject jsonObj = new JSONObject(course);
-            JSONArray array = jsonObj.getJSONArray("groups");
+            JSONArray groups = jsonObj.getJSONArray("groups");
 
-            int threadNum = array.length();
-            List<Future<String>> taskList = new ArrayList<>();
-
-
-            // check if service runs on aws
-            if (environment.getActiveProfiles()[0].equals("aws")) {
-                // TODO:
-                // - read executiontime of each repository
-                // - sort repositories after execution time
-
-
-                // - calculation to get number of new instances (if necessary)
-                // - start only 1 execution at same time
-                // - note which service executes task for specific repository
-                // - loop:
-                //      - check if service free
-                //      - execute shortes repo first (greedy)
-            }
-
-
-            // start execution measurement
-            long startTime = System.currentTimeMillis();
-
-            for (int i = 0; i < array.length(); i++) {
-                JSONObject obj = array.getJSONObject(i);
-                Future<String> repo = validateRepositoryService.validateRepository(obj.toString());
-                taskList.add(repo);
-            }
 
             ArrayList<JSONObject> result = new ArrayList<>();
-            int numberOfRepos = array.length();
-            int i = 0;
-            while (numberOfRepos > 0) {
-                if (taskList.get(i).isDone()) {
-                    JSONObject obj = new JSONObject(taskList.get(i).get());
-                    obj.put("groupId", array.getJSONObject(i).getString("groupId"));
-                    obj.put("duration", (System.currentTimeMillis() - startTime));
-                    result.add(obj);
-
-                    numberOfRepos--;
-                    // TODO return error
-                    databaseService.saveResult(obj.toString());
-                }
-                i++;
-                if (i >= numberOfRepos) {
-                    i = 0;
-                }
-                Thread.sleep(100);
+            // check if service runs on aws
+            if (environment.getActiveProfiles()[0].equals("aws")) {
+                result = runValidationSchedulerOnAws(groups);
             }
+
 
             return util.createResponse(result.toString(), HttpStatus.OK);
 
@@ -145,6 +105,58 @@ public class ValidatorService {
             LOG.error(Arrays.toString(e.getStackTrace()));
             return util.createErrorResponse(e.getMessage(), HttpStatus.INTERNAL_SERVER_ERROR);
         }
+    }
+
+    private ArrayList<JSONObject> runValidationSchedulerOnAws(JSONArray groups) throws JSONException, InstantiationException, ExecutionException, InterruptedException {
+
+        int threadNum = groups.length();
+        List<Future<String>> taskList = new ArrayList<>();
+
+        // TODO:
+        // - read executiontime of each repository
+        // - sort repositories after execution time
+
+
+        // - calculation to get number of new instances (if necessary)
+        // - start only 1 execution at same time
+        // - note which service executes task for specific repository
+        // - loop:
+        //      - check if service free
+        //      - execute shortes repo first (greedy)
+
+
+        // start execution measurement
+        long startTime = System.currentTimeMillis();
+
+        for (int i = 0; i < groups.length(); i++) {
+            JSONObject obj = groups.getJSONObject(i);
+            Future<String> repo = validateRepositoryService.validateRepository(obj.toString());
+            taskList.add(repo);
+        }
+
+        ArrayList<JSONObject> result = new ArrayList<>();
+        int numberOfRepos = groups.length();
+        int i = 0;
+        while (numberOfRepos > 0) {
+            if (taskList.get(i).isDone()) {
+                JSONObject obj = new JSONObject(taskList.get(i).get());
+                obj.put("groupId", groups.getJSONObject(i).getString("groupId"));
+                obj.put("duration", (System.currentTimeMillis() - startTime));
+                result.add(obj);
+
+                numberOfRepos--;
+                // TODO return error
+                databaseService.saveResult(obj.toString());
+            }
+            i++;
+            if (i >= numberOfRepos) {
+                i = 0;
+            }
+            Thread.sleep(100);
+        }
+
+
+        return result;
     }
 
     @ApiOperation(value = "validate", nickname = "validate")
