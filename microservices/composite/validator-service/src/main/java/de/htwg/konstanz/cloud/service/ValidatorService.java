@@ -112,6 +112,7 @@ public class ValidatorService {
     }
 
     private ArrayList<JSONObject> runValidationSchedulerOnAws(JSONArray groups) throws JSONException, InstantiationException, ExecutionException, InterruptedException {
+        ArrayList<JSONObject> result = new ArrayList<>();
 
         int numberOfExecutions = groups.length();
         LOG.info("Number of groups: " + numberOfExecutions);
@@ -154,8 +155,8 @@ public class ValidatorService {
             startInstances(numberOfInstances, ec2);
 
             List<Future<String>> taskList = new ArrayList<>();
-            ArrayList<JSONObject> result = new ArrayList<>();
-            int availableInstances = util.getNumberOfActiveCheckstyleInstances(ec2);
+            int checkstyleInstances = 0;
+            int availableInstances = 0;
             int runningTasks = 0;
             int openTasks = numberOfExecutions;
             int index = 0;
@@ -165,6 +166,9 @@ public class ValidatorService {
 
 
             while (openTasks > 0) {
+                // execute
+                availableInstances = util.getNumberOfActiveCheckstyleInstances(ec2) - runningTasks;
+
                 if (availableInstances > 0) {
                     JSONObject task = getTaskWithLongestDuration(pipeline, index);
                     index++;
@@ -178,8 +182,8 @@ public class ValidatorService {
                 }
 
 
-                for(int i = 0; i < runningTasks; i++) {
-                    if(taskList.get(i).isDone()) {
+                for (int i = 0; i < runningTasks; i++) {
+                    if (taskList.get(i).isDone()) {
                         JSONObject obj = new JSONObject(taskList.get(i).get());
                         obj.put("groupId", groups.getJSONObject(i).getString("groupId"));
                         obj.put("duration", (System.currentTimeMillis() - startTime));
@@ -189,6 +193,8 @@ public class ValidatorService {
                         databaseService.saveResult(obj.toString());
                     }
                 }
+                // slepp 1 second
+                Thread.sleep(1000);
             }
 
 
@@ -196,27 +202,7 @@ public class ValidatorService {
             LOG.info(e.getMessage());
         }
 
-/*
-        while (numberOfRepos > 0) {
-            if (taskList.get(i).isDone()) {
-                JSONObject obj = new JSONObject(taskList.get(i).get());
-                obj.put("groupId", groups.getJSONObject(i).getString("groupId"));
-                obj.put("duration", (System.currentTimeMillis() - startTime));
-                result.add(obj);
-
-                numberOfRepos--;
-                // TODO return error
-                databaseService.saveResult(obj.toString());
-            }
-            i++;
-            if (i >= numberOfRepos) {
-                i = 0;
-            }
-            Thread.sleep(100);
-        }
-
-        return result;*/
-        return null;
+        return result;
     }
 
     private JSONObject getTaskWithLongestDuration(Map<Integer, List<JSONObject>> pipeline, int index) {
