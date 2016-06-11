@@ -137,16 +137,17 @@ public class CPD {
     private JSONObject runCPD(String sMainPath, long lStartTime) throws ParserConfigurationException, SAXException, IOException {
         OperatingSystemCheck oOperatingSystemCheck = new OperatingSystemCheck();
         final String sRuleSetPath = "java-basic,java-design,java-codesize";
+        final String sOutputFileName = "Duplications.xml";
         String sStartScript = "";
         JSONObject oJson = null;
 
         if (oOperatingSystemCheck.isWindows() == true) {
             sStartScript = "pmd-bin-5.4.2\\bin\\cpd.bat";
         } else if (oOperatingSystemCheck.isLinux() == true) {
-            sStartScript = "pmd-bin-5.4.2/bin/run.sh";
+            sStartScript = "pmd-bin-5.4.2/bin/run.sh cpd";
         }
 
-        String sCPDCommand = sStartScript + " --minimum-tokens 75 --files " + sMainPath + " --skip-lexical-errors --format xml > "  + sMainPath + "Duplications.xml";
+        String sCPDCommand = sStartScript + " --minimum-tokens 75 --files " + sMainPath + " --skip-lexical-errors --format xml > "  + sMainPath + sOutputFileName;
         LOG.info("CPD execution path: " + sCPDCommand);
 
         try {
@@ -161,7 +162,7 @@ public class CPD {
         }
 
         /* Checkstyle Informationen eintragen */
-        storeCPDInformation(sMainPath + "Duplications.xml");
+        storeCPDInformation(sMainPath + sOutputFileName);
 
         if (lDuplications != null) {
 			/* Schoene einheitliche JSON erstellen */
