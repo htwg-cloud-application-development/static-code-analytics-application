@@ -274,6 +274,7 @@ public class CPD {
         oJsonRoot.put("totalExpendedTime", lTotalTime);
         oJsonRoot.put("assignments", "Copy Paste Check for " +sMainDir);
 
+        LOG.debug("Code Cuplication Analysis check for: " + sMainDir);
         return oJsonRoot;
     }
 }
