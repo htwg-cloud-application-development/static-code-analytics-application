@@ -23,10 +23,7 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.scheduling.annotation.EnableAsync;
 import org.springframework.web.bind.annotation.*;
 
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.Date;
-import java.util.List;
+import java.util.*;
 import java.util.concurrent.ExecutionException;
 import java.util.concurrent.Future;
 
@@ -115,6 +112,7 @@ public class ValidatorService {
         List<Future<String>> taskList = new ArrayList<>();
 
         int fullExecutionTime = 0;
+        Map<Integer, List<JSONObject>> pipeline = new TreeMap<>();
         for (int i = 0; i < groups.length(); i++) {
             JSONObject jsonObject = (JSONObject) groups.get(i);
             LOG.info(jsonObject.toString());
@@ -122,11 +120,25 @@ public class ValidatorService {
             if (executinTime == 0) executinTime = 30000;
             LOG.info("Executiontime for repo " + i + " is: " + executinTime);
             fullExecutionTime += executinTime;
+
+            // if execution time not exists, add new key to pipeline
+            if (pipeline.get(executinTime).isEmpty()) {
+                List<JSONObject> list = new ArrayList<>();
+                list.add(jsonObject);
+
+                pipeline.put(executinTime, list);
+            } else {
+                // if execution time exists, add to object to existing list
+                List<JSONObject> list = pipeline.get(executinTime);
+                list.add(jsonObject);
+                pipeline.put(executinTime, list);
+            }
         }
+
         LOG.info("Full execution time: " + fullExecutionTime);
 
+
         // TODO:
-        // - read executiontime of each repository
         // - sort repositories after execution time
 
 
