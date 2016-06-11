@@ -84,14 +84,13 @@ public class CustomScheduler {
             startInstances(numberOfInstances, ec2);
 
             List<Future<String>> taskList = new ArrayList<>();
+            List<Long> startTime = new ArrayList<>();
             int checkstyleInstances = 0;
             int availableInstances = 0;
             int runningTasks = 0;
             int openTasks = numberOfExecutions;
             int index = 0;
 
-            // start execution measurement
-            long startTime = System.currentTimeMillis();
 
             LOG.info("start time: " + startTime);
             LOG.info("open tasks: " + openTasks);
@@ -104,6 +103,7 @@ public class CustomScheduler {
                     JSONObject task = getTaskWithLongestDuration(pipeline, index);
                     index++;
                     if (task != null) {
+                        startTime.add(System.currentTimeMillis());
                         Future<String> future = validateRepositoryService.validateRepository(task.toString());
                         // TODO note which service executes task for specific repository
                         // TODO - if is available means not, that its available on eureka
@@ -123,9 +123,10 @@ public class CustomScheduler {
                         JSONObject obj = new JSONObject(taskList.get(i).get());
                         LOG.info("Task is done: " + groups.getJSONObject(i).getString("groupId"));
                         obj.put("groupId", groups.getJSONObject(i).getString("groupId"));
-                        obj.put("duration", (System.currentTimeMillis() - startTime));
+                        obj.put("duration", (System.currentTimeMillis() - startTime.get(i)));
                         result.add(obj);
                         taskList.remove(i);
+                        startTime.remove(i);
                         runningTasks--;
                         databaseService.saveResult(obj.toString());
                     }
