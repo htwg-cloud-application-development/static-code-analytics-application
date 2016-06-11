@@ -41,10 +41,6 @@ public class CPD {
         String sResult = "";
         SeverityCounter oSeverityCounter = new SeverityCounter();
 
-        /* TESTENNNNNNNNNNNNNNNNNNN */
-        /* oJsonResult = runCPD(gitRepository, lStartTime); */
-        /* TESTENNNNNNNNNNNNNNNNNNN */
-
         oJsonResult = determination(gitRepository, lStartTime);
         if (oRepoDir != null)
         {
