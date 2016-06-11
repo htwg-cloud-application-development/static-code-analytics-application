@@ -227,7 +227,7 @@ public class ValidatorService {
     public ResponseEntity<String> validateGroupVerify(@RequestBody ValidationData data) {
         try {
             // Call validation asynchronous
-            Future<String> repo = validateRepositoryService.validateRepository(data.getRepositoryUrl());
+            Future<String> repo = validateRepositoryService.validateRepository(data.toString());
 
             // Wait until they are done
             while (!(repo.isDone())) {

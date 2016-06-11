@@ -10,6 +10,7 @@ import java.util.List;
 import de.htwg.konstanz.cloud.model.Class;
 import de.htwg.konstanz.cloud.model.Error;
 import de.htwg.konstanz.cloud.model.SeverityCounter;
+import org.apache.commons.configuration.SystemConfiguration;
 import org.apache.commons.io.FileUtils;
 import org.eclipse.jgit.api.errors.GitAPIException;
 import org.eclipse.jgit.api.errors.InvalidRemoteException;
@@ -49,10 +50,6 @@ public class PMD {
         SeverityCounter oSeverityCounter = new SeverityCounter();
 
         oJsonResult = determination(gitRepository, oSeverityCounter, lStartTime);
-
-        /* Zum Testen der Code Paste Detection Funktion !!!!! */
-        /* CPD oCPD = new CPD(); */
-        /* oCPD.startIt(sTesto); */
 
         if (oRepoDir != null) {
             FileUtils.deleteDirectory(oRepoDir);
@@ -110,21 +107,11 @@ public class PMD {
         return oJson;
     }
 
-
-    /* TESTENNNNNNNNNNNNNNNNNNN */
-    /* String sTesto; */
-    /* TESTENNNNNNNNNNNNNNNNNNN */
-
-
     private List<List<String>> generatePMDServiceData(String sLocalDirectory) {
         /* Generate Data for CheckstyleService */
         List<List<String>> list = new ArrayList<>();
         File mainDir;
         LOG.info("Local Directory: " + sLocalDirectory);
-
-        /* TESTENNNNNNNNNNNNNNNNNNN */
-        /*    sTesto = sLocalDirectory; */
-        /* TESTENNNNNNNNNNNNNNNNNNN */
 
         /* Check if local /src-dir exists */
         if (new File(sLocalDirectory + "/src").exists()) {
@@ -189,7 +176,7 @@ public class PMD {
         if (oOperatingSystemCheck.isWindows()) {
             sStartScript = "pmd-bin-5.4.2\\bin\\pmd.bat";
         } else if (oOperatingSystemCheck.isLinux()) {
-            sStartScript = "pmd-bin-5.4.2/bin/run.sh";
+            sStartScript = "pmd-bin-5.4.2/bin/run.sh pmd";
         }
 
 		/* Listeninhalt kuerzen, um JSON vorbereiten */
@@ -358,8 +345,6 @@ public class PMD {
         oJsonRoot.put("numberOfErrors", oSeverityCounter.getErrorCount());
         oJsonRoot.put("numberOfWarnings", oSeverityCounter.getWarningCount());
         oJsonRoot.put("numberOfIgnores", oSeverityCounter.getIgnoreCount());
-        //oJsonRoot.put("groupID", nGroupID);
-        //oJsonRoot.put("name", sName);
 
 		/* all Classes */
         for (int nClassPos = 0; nClassPos < lFormattedClassList.size(); nClassPos++) {
@@ -373,62 +358,67 @@ public class PMD {
 			/* first run the TmpName is empty */
             if (sExcerciseName.equals(sTmpExcerciseName) || sTmpExcerciseName.equals("")) {
                 lTmpErrorList = lFormattedClassList.get(nClassPos).getErrorList();
-                JSONArray lJsonErrors = new JSONArray();
-                JSONObject oJsonClass = new JSONObject();
 
-				/* all Errors */
-                for (Error aLTmpErrorList : lTmpErrorList) {
-                    JSONObject oJsonError = new JSONObject();
+                if(lTmpErrorList.size() > 0) {
+                    JSONArray lJsonErrors = new JSONArray();
+                    JSONObject oJsonClass = new JSONObject();
 
-                    oJsonError.put("lineBegin", Integer.toString(aLTmpErrorList.getLineBegin()));
-                    oJsonError.put("lineEnd",Integer.toString(aLTmpErrorList.getLineEnd()));
-                    oJsonError.put("columnBegin", Integer.toString(aLTmpErrorList.getColumnBegin()));
-                    oJsonError.put("columnEnd",Integer.toString(aLTmpErrorList.getColumnEnd()));
-                    oJsonError.put("priority",Integer.toString(aLTmpErrorList.getPriority()));
-                    oJsonError.put("rule",aLTmpErrorList.getRule());
-                    oJsonError.put("class",aLTmpErrorList.getClassName());
-                    oJsonError.put("package", aLTmpErrorList.getPackage());
-                    oJsonError.put("ruleset",aLTmpErrorList.getRuleset());
-                    oJsonError.put("message", aLTmpErrorList.getMessage());
+				    /* all Errors */
+                    for (Error aLTmpErrorList : lTmpErrorList) {
+                        JSONObject oJsonError = new JSONObject();
 
-                    lJsonErrors.put(oJsonError);
-                }
+                        oJsonError.put("lineBegin", Integer.toString(aLTmpErrorList.getLineBegin()));
+                        oJsonError.put("lineEnd",Integer.toString(aLTmpErrorList.getLineEnd()));
+                        oJsonError.put("columnBegin", Integer.toString(aLTmpErrorList.getColumnBegin()));
+                        oJsonError.put("columnEnd",Integer.toString(aLTmpErrorList.getColumnEnd()));
+                        oJsonError.put("priority",Integer.toString(aLTmpErrorList.getPriority()));
+                        oJsonError.put("rule",aLTmpErrorList.getRule());
+                        oJsonError.put("class",aLTmpErrorList.getClassName());
+                        oJsonError.put("package", aLTmpErrorList.getPackage());
+                        oJsonError.put("ruleset",aLTmpErrorList.getRuleset());
+                        oJsonError.put("message", aLTmpErrorList.getMessage());
 
-                if(lJsonErrors.length() > 0) {
-                    sTmpExcerciseName = sExcerciseName;
+                        lJsonErrors.put(oJsonError);
+                    }
 
-                    oJsonClass.put("filepath", lFormattedClassList.get(nClassPos).getFullPath());
-                    oJsonClass.put("errors", lJsonErrors);
-                    lJsonClasses.put(oJsonClass);
-                }
+                    if(lJsonErrors.length() > 0) {
+                        sTmpExcerciseName = sExcerciseName;
 
-				/* last run if different exercises were found */
-                if (bLastRun) {
-                    oJsonExercise.put(sTmpExcerciseName, lJsonClasses);
-                    lJsonExercises.put(oJsonExercise);
-                }
+                        oJsonClass.put("filepath", lFormattedClassList.get(nClassPos).getFullPath());
+                        oJsonClass.put("errors", lJsonErrors);
+                        lJsonClasses.put(oJsonClass);
+                    }
 
-				/* last run if there was just one exercise */
-                if ((nClassPos + 1) == lFormattedClassList.size() && bExcerciseNeverChanged) {
-                    oJsonExercise.put(sTmpExcerciseName, lJsonClasses);
-                    lJsonExercises.put(oJsonExercise);
+				    /* last run if different exercises were found */
+                    if (bLastRun) {
+                        oJsonExercise.put(sTmpExcerciseName, lJsonClasses);
+                        lJsonExercises.put(oJsonExercise);
+                    }
+
+				    /* last run if there was just one exercise */
+                    if ((nClassPos + 1) == lFormattedClassList.size() && bExcerciseNeverChanged) {
+                        oJsonExercise.put(sTmpExcerciseName, lJsonClasses);
+                        lJsonExercises.put(oJsonExercise);
+                    }
                 }
             }
 			/* swap for a different exercise */
             else {
-                oJsonExercise.put(sTmpExcerciseName, lJsonClasses);
-                lJsonExercises.put(oJsonExercise);
-                oJsonExercise = new JSONObject();
-                lJsonClasses = new JSONArray();
-                sTmpExcerciseName = lFormattedClassList.get(nClassPos).getsExcerciseName();
-                bExcerciseChange = true;
-                bExcerciseNeverChanged = false;
+                if(lFormattedClassList.get(nClassPos).getErrorList().size() > 0) {
+                    oJsonExercise.put(sTmpExcerciseName, lJsonClasses);
+                    lJsonExercises.put(oJsonExercise);
+                    oJsonExercise = new JSONObject();
+                    lJsonClasses = new JSONArray();
+                    sTmpExcerciseName = lFormattedClassList.get(nClassPos).getsExcerciseName();
+                    bExcerciseChange = true;
+                    bExcerciseNeverChanged = false;
 
 				/* decrement the position to get the last class from the list */
-                if ((nClassPos + 1) == lFormattedClassList.size()) {
-                    nClassPos--;
-                    bExcerciseChange = false;
-                    bLastRun = true;
+                    if ((nClassPos + 1) == lFormattedClassList.size()) {
+                        nClassPos--;
+                        bExcerciseChange = false;
+                        bLastRun = true;
+                    }
                 }
             }
         }
@@ -439,6 +429,7 @@ public class PMD {
         oJsonRoot.put("totalExpendedTime", lTotalTime);
         oJsonRoot.put("assignments", lJsonExercises);
 
+        LOG.debug("PMD Static Analysis check for Repo: " + sRepo);
         return oJsonRoot;
     }
 }
