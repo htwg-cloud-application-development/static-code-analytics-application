@@ -51,6 +51,10 @@ public class ValidatorService {
     @Value("${spring.application.name}")
     private String serviceName;
 
+
+    @Value("${app.aws.init.instance.duration:90000}")
+    private int initInstancetDuration;
+
     @RequestMapping(value = "/info", method = RequestMethod.GET, produces = "application/json")
     public String info() {
         StringBuilder sb = new StringBuilder();
@@ -138,15 +142,14 @@ public class ValidatorService {
         // sort
         ArrayList<Integer> keys = new ArrayList<Integer>(pipeline.keySet());
         for (int i = pipeline.size() - 1; i >= 0; i--) {
-            LOG.info("execute: " + pipeline.get(keys.get(i)     ));
+            LOG.info("execute: " + pipeline.get(keys.get(i)));
         }
 
         LOG.info("Full execution time: " + fullExecutionTime);
 
-
         // TODO:
-        // - sort repositories after execution time
 
+        int numberOfInstances = magicCalculateForNumberOfIstances(numberOfExecutions, fullExecutionTime);
 
         // - calculation to get number of new instances (if necessary)
         // - start only 1 execution at same time
@@ -187,9 +190,26 @@ public class ValidatorService {
             Thread.sleep(100);
         }
 
-
         return result;*/
         return null;
+    }
+
+    // magic calculation
+    private int magicCalculateForNumberOfIstances(int numberOfExecutions, int fullExecutionTime) {
+        int numberOfInstances;
+
+        if (fullExecutionTime < (2 * initInstancetDuration) || numberOfExecutions < 2) {
+            numberOfInstances = 1;
+        } else if (fullExecutionTime < (3 * initInstancetDuration) || numberOfExecutions < 3) {
+            numberOfInstances = 2;
+        } else if (fullExecutionTime < (4 * initInstancetDuration) || numberOfExecutions < 4) {
+            numberOfInstances = 3;
+        } else if (fullExecutionTime < (5 * initInstancetDuration) || numberOfExecutions < 5) {
+            numberOfInstances = 4;
+        } else {
+            numberOfInstances = 5;
+        }
+        return numberOfInstances;
     }
 
     @ApiOperation(value = "validate", nickname = "validate")
