@@ -164,12 +164,14 @@ public class ValidatorService {
             // start execution measurement
             long startTime = System.currentTimeMillis();
 
-
+            LOG.info("start time: " + startTime);
+            LOG.info("open tasks: " + openTasks);
             while (openTasks > 0) {
                 // execute
                 availableInstances = util.getNumberOfActiveCheckstyleInstances(ec2) - runningTasks;
 
                 if (availableInstances > 0) {
+                    LOG.info("availableInstances: " + availableInstances);
                     JSONObject task = getTaskWithLongestDuration(pipeline, index);
                     index++;
                     if (task != null) {
@@ -177,14 +179,17 @@ public class ValidatorService {
                         // TODO note which service executes task for specific repository
                         taskList.add(future);
                         runningTasks++;
+                        LOG.info("running tasks: " + runningTasks);
                     }
                     openTasks--;
+                    LOG.info("open tasks: " + openTasks);
                 }
 
 
                 for (int i = 0; i < runningTasks; i++) {
                     if (taskList.get(i).isDone()) {
                         JSONObject obj = new JSONObject(taskList.get(i).get());
+                        LOG.info("Task is done: " + groups.getJSONObject(i).getString("groupId"));
                         obj.put("groupId", groups.getJSONObject(i).getString("groupId"));
                         obj.put("duration", (System.currentTimeMillis() - startTime));
                         result.add(obj);
