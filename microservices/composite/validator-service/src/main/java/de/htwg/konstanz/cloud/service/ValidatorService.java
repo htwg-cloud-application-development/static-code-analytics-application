@@ -167,12 +167,27 @@ public class ValidatorService {
             while (openTasks > 0) {
                 if (availableInstances > 0) {
                     JSONObject task = getTaskWithLongestDuration(pipeline, index);
+                    index++;
                     if (task != null) {
                         Future<String> future = validateRepositoryService.validateRepository(task.toString());
                         // TODO note which service executes task for specific repository
                         taskList.add(future);
+                        runningTasks++;
                     }
                     openTasks--;
+                }
+
+
+                for(int i = 0; i < runningTasks; i++) {
+                    if(taskList.get(i).isDone()) {
+                        JSONObject obj = new JSONObject(taskList.get(i).get());
+                        obj.put("groupId", groups.getJSONObject(i).getString("groupId"));
+                        obj.put("duration", (System.currentTimeMillis() - startTime));
+                        result.add(obj);
+                        taskList.remove(i);
+                        runningTasks--;
+                        databaseService.saveResult(obj.toString());
+                    }
                 }
             }
 
@@ -182,8 +197,6 @@ public class ValidatorService {
         }
 
 /*
-        int numberOfRepos = groups.length();
-        int i = 0;
         while (numberOfRepos > 0) {
             if (taskList.get(i).isDone()) {
                 JSONObject obj = new JSONObject(taskList.get(i).get());
