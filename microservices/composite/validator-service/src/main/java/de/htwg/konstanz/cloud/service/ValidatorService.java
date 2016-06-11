@@ -142,12 +142,6 @@ public class ValidatorService {
             }
         }
 
-        // sort
-        ArrayList<Integer> keys = new ArrayList<Integer>(pipeline.keySet());
-        for (int i = pipeline.size() - 1; i >= 0; i--) {
-            LOG.info("execute: " + pipeline.get(keys.get(i)));
-        }
-
         LOG.info("Full execution time: " + fullExecutionTime);
 
         int numberOfInstances = magicCalculateForNumberOfIstances(numberOfExecutions, fullExecutionTime);
@@ -159,22 +153,31 @@ public class ValidatorService {
 
         try {
             startInstances(numberOfInstances, ec2);
+
+            int availableInstances = util.getNumberOfActiveCheckstyleInstances(ec2);
+            int runningTasks = 0;
+            int openTasks = numberOfExecutions;
+            int index = 0;
+
+            // start execution measurement
+            long startTime = System.currentTimeMillis();
+
+
+            while (openTasks > 0) {
+                if (availableInstances > 0) {
+                    JSONObject task = getTaskWithLongestDuration(pipeline, index);
+                    // TODO get longest tast from map
+                    // TODO execute task - maybe the instance which executes no job
+                    // TODO note which service executes task for specific repository
+                }
+            }
+
+
         } catch (NoSuchFieldException e) {
             LOG.info(e.getMessage());
         }
 
-
-        // - start only 1 execution at same time
-        // - note which service executes task for specific repository
-        // - loop:
-        //      - check if service free
-        //      - execute shortes repo first (greedy)
-
-
-        // start execution measurement
-  /*      long startTime = System.currentTimeMillis();
-        int threadNum = groups.length();
-
+/*
         for (int i = 0; i < groups.length(); i++) {
             JSONObject obj = groups.getJSONObject(i);
             Future<String> repo = validateRepositoryService.validateRepository(obj.toString());
@@ -205,6 +208,22 @@ public class ValidatorService {
         return result;*/
         return null;
     }
+
+    private JSONObject getTaskWithLongestDuration(Map<Integer, List<JSONObject>> pipeline, int index) {
+        int j = 0;
+        ArrayList<Integer> keys = new ArrayList<Integer>(pipeline.keySet());
+        for (int i = pipeline.size() - 1; i >= 0; i--) {
+            List<JSONObject> list = pipeline.get(keys.get(i));
+            for (JSONObject obj : list) {
+                if (j == index) {
+                    return obj;
+                }
+                j++;
+            }
+        }
+        return null;
+    }
+
 
     private void startInstances(int numberOfInstances, AmazonEC2 ec2) throws NoSuchFieldException {
         if (util.getNumberOfActiveCheckstyleInstances(ec2) < numberOfInstances) {
