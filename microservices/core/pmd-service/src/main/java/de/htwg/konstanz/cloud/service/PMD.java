@@ -429,6 +429,7 @@ public class PMD {
         oJsonRoot.put("totalExpendedTime", lTotalTime);
         oJsonRoot.put("assignments", lJsonExercises);
 
+        LOG.debug("PMD Static Analysis check for Repo: " + sRepo);
         return oJsonRoot;
     }
 }

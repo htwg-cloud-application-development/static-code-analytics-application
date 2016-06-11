@@ -4,6 +4,9 @@ spring:
   profiles:
     active: development
 
+logging:
+  file: pmd-service.log
+
 ---
 # profile for development
 spring:
