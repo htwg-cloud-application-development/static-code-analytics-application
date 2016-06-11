@@ -150,11 +150,20 @@ public class ValidatorService {
 
         LOG.info("Full execution time: " + fullExecutionTime);
 
-        // TODO:
-
         int numberOfInstances = magicCalculateForNumberOfIstances(numberOfExecutions, fullExecutionTime);
+        LOG.info("Number of Instances to start: " + numberOfInstances);
 
-        // - calculation to get number of new instances (if necessary)
+
+        AmazonEC2 ec2 = new AmazonEC2Client(new EnvironmentVariableCredentialsProvider());
+        ec2.setRegion(com.amazonaws.regions.Region.getRegion(Regions.EU_CENTRAL_1));
+
+        try {
+            startInstances(numberOfInstances, ec2);
+        } catch (NoSuchFieldException e) {
+            LOG.info(e.getMessage());
+        }
+
+
         // - start only 1 execution at same time
         // - note which service executes task for specific repository
         // - loop:
@@ -195,6 +204,12 @@ public class ValidatorService {
 
         return result;*/
         return null;
+    }
+
+    private void startInstances(int numberOfInstances, AmazonEC2 ec2) throws NoSuchFieldException {
+        if (util.getNumberOfActiveCheckstyleInstances(ec2) < numberOfInstances) {
+            util.runNewCheckstyleInstance(ec2, numberOfInstances, numberOfInstances);
+        }
     }
 
     // magic calculation
