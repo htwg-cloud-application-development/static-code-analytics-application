@@ -212,4 +212,37 @@ public class ValidatorService {
             return util.createErrorResponse(e.getMessage(), HttpStatus.INTERNAL_SERVER_ERROR);
         }
     }
+
+    @RequestMapping(value = "/scheduler", method = RequestMethod.GET, produces = "application/json")
+    public String schedulerTest() {
+        try {
+
+            JSONObject gitRepo1 = new JSONObject();
+            gitRepo1.put("executiontime", 60000);
+
+            JSONObject svnRepo1 = new JSONObject();
+            svnRepo1.put("executiontime", 60000);
+
+            JSONArray groups = new JSONArray();
+            groups.put(gitRepo1);
+            groups.put(svnRepo1);
+
+            runValidationSchedulerOnAws(groups);
+        } catch (JSONException e) {
+            e.printStackTrace();
+            return e.getMessage();
+        } catch (InstantiationException e) {
+            e.printStackTrace();
+            return e.getMessage();
+        } catch (ExecutionException e) {
+            e.printStackTrace();
+            return e.getMessage();
+        } catch (InterruptedException e) {
+            e.printStackTrace();
+            return e.getMessage();
+        }
+        return "{\"timestamp\":\"" + new Date() + "\",\"serviceId\":\"" + "\"}";
+    }
+
+
 }
