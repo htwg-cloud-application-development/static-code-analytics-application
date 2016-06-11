@@ -3,7 +3,7 @@ spring:
     name: edge
 
 server:
-  port: 1111
+  port: 2222
 
 zuul:
   prefix: /apiv1
@@ -35,12 +35,13 @@ spring:
 
 eureka:
   instance:
-    hostname: localhost
+    instance-id: ${vcap.application.instance_id:${spring.application.name}:${spring.application.instance_id:${random.value}}}
+    leaseRenewalIntervalInSeconds: 10
   client:
+    registryFetchIntervalSeconds: 5
     registerWithEureka: true
     fetchRegistry: true
-    serviceUrl:
-      defaultZone: http://${eureka.instance.hostname}:${server.port}/eureka/
+
 ---
 
 spring:
