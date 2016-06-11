@@ -121,18 +121,24 @@ public class ValidatorService {
             LOG.info("Executiontime for repo " + i + " is: " + executinTime);
             fullExecutionTime += executinTime;
 
-            // if execution time not exists, add new key to pipeline
-            if (pipeline.get(executinTime).isEmpty()) {
-                List<JSONObject> list = new ArrayList<>();
-                list.add(jsonObject);
 
-                pipeline.put(executinTime, list);
-            } else {
+            // if execution time not exists, add new key to pipeline
+            if (pipeline.containsKey(executinTime)) {
                 // if execution time exists, add to object to existing list
                 List<JSONObject> list = pipeline.get(executinTime);
                 list.add(jsonObject);
                 pipeline.put(executinTime, list);
+            } else {
+                List<JSONObject> list = new ArrayList<>();
+                list.add(jsonObject);
+                pipeline.put(executinTime, list);
             }
+        }
+
+        // sort
+        ArrayList<Integer> keys = new ArrayList<Integer>(pipeline.keySet());
+        for (int i = pipeline.size() - 1; i >= 0; i--) {
+            LOG.info("execute: " + pipeline.get(keys.get(i)     ));
         }
 
         LOG.info("Full execution time: " + fullExecutionTime);
@@ -247,11 +253,15 @@ public class ValidatorService {
             JSONObject gitRepo1 = new JSONObject();
             gitRepo1.put("executiontime", 60001);
 
+            JSONObject gitRepo2 = new JSONObject();
+            gitRepo2.put("executiontime", 20000);
+
             JSONObject svnRepo1 = new JSONObject();
             svnRepo1.put("executiontime", 60001);
 
             JSONArray groups = new JSONArray();
             groups.put(gitRepo1);
+            groups.put(gitRepo2);
             groups.put(svnRepo1);
 
             runValidationSchedulerOnAws(groups);
