@@ -7,11 +7,4 @@ public class MoodleCredentials {
 
     String username;
     String password;
-
-
-    public MoodleCredentials(String username, String password) {
-        this.username = username;
-        this.password = password;
-    }
-
 }
