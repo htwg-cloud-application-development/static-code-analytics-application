@@ -14,6 +14,7 @@ import org.springframework.stereotype.Service;
 import org.springframework.web.client.RestTemplate;
 
 import javax.annotation.PostConstruct;
+import java.net.URI;
 import java.util.concurrent.Future;
 
 @Service
@@ -33,22 +34,38 @@ public class ValidateRepositoryService {
     @Async
     public Future<String> validateRepository(String repositoryUrlJsonObj) throws InstantiationException {
         String VALIDATE_ROUTE = "/validate";
-        System.out.println("Validate " + repositoryUrlJsonObj);
+        LOG.info("Validate " + repositoryUrlJsonObj);
 
         // get checkstyle service instance
         ServiceInstance instance = loadBalancer.choose("checkstyle");
+        return postForValidation(repositoryUrlJsonObj, instance, VALIDATE_ROUTE);
+    }
+
+    @Async
+    public Future<String> validateRepository(String repositoryUrlJsonObj, URI requestUri) throws InstantiationException {
+        String VALIDATE_ROUTE = "/validate";
+        LOG.info("Validate " + repositoryUrlJsonObj);
+        return executePostRequest(repositoryUrlJsonObj, requestUri + VALIDATE_ROUTE);
+    }
+
+
+    private Future<String> postForValidation(String repositoryUrlJsonObj, ServiceInstance instance, String VALIDATE_ROUTE) throws InstantiationException {
         if (null != instance) {
             // build request url
             String requestUrl = instance.getUri() + VALIDATE_ROUTE;
             // POST to request url and get String (JSON)
             LOG.debug("repositoryUrl: " + repositoryUrlJsonObj);
-            HttpHeaders headers = new HttpHeaders();
-            headers.setContentType(MediaType.APPLICATION_JSON);
-            HttpEntity<String> entity = new HttpEntity<>(repositoryUrlJsonObj, headers);
-            // post to service and return response
-            return new AsyncResult<String>(restTemplate.postForObject(requestUrl, entity, String.class));
+            return executePostRequest(repositoryUrlJsonObj, requestUrl);
         }
         throw new InstantiationException("service is not available");
+    }
+
+    private Future<String> executePostRequest(String repositoryUrlJsonObj, String requestUrl) {
+        HttpHeaders headers = new HttpHeaders();
+        headers.setContentType(MediaType.APPLICATION_JSON);
+        HttpEntity<String> entity = new HttpEntity<>(repositoryUrlJsonObj, headers);
+        // post to service and return response
+        return new AsyncResult<String>(restTemplate.postForObject(requestUrl, entity, String.class));
     }
 
 }
