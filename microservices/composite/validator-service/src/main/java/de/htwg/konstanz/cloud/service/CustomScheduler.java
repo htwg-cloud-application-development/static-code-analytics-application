@@ -7,16 +7,17 @@ import com.amazonaws.services.ec2.AmazonEC2Client;
 import com.amazonaws.util.json.JSONArray;
 import com.amazonaws.util.json.JSONException;
 import com.amazonaws.util.json.JSONObject;
+import de.htwg.konstanz.cloud.model.ValidationData;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
+import org.springframework.cloud.client.ServiceInstance;
+import org.springframework.cloud.client.loadbalancer.LoadBalancerClient;
 import org.springframework.stereotype.Component;
 
-import java.util.ArrayList;
-import java.util.List;
-import java.util.Map;
-import java.util.TreeMap;
+import java.net.URI;
+import java.util.*;
 import java.util.concurrent.ExecutionException;
 import java.util.concurrent.Future;
 
@@ -31,6 +32,9 @@ public class CustomScheduler {
     @Autowired
     ValidateRepositoryService validateRepositoryService;
 
+    @Autowired
+    private LoadBalancerClient loadBalancer;
+
     @Value("${app.aws.init.instance.duration:90000}")
     private int initInstancetDuration;
 
@@ -41,22 +45,18 @@ public class CustomScheduler {
     DatabaseService databaseService;
 
     ArrayList<JSONObject> runValidationSchedulerOnAws(JSONArray groups) throws JSONException, InstantiationException, ExecutionException, InterruptedException {
-        ArrayList<JSONObject> result = new ArrayList<>();
-
-        int numberOfExecutions = groups.length();
-        LOG.info("Number of groups: " + numberOfExecutions);
 
 
         int fullExecutionTime = 0;
         Map<Integer, List<JSONObject>> pipeline = new TreeMap<>();
         for (int i = 0; i < groups.length(); i++) {
             JSONObject jsonObject = (JSONObject) groups.get(i);
-            LOG.info(jsonObject.toString());
             int executinTime = jsonObject.getInt("executiontime");
             if (executinTime == 0) executinTime = 30000;
-            LOG.info("Executiontime for repo " + i + " is: " + executinTime);
             fullExecutionTime += executinTime;
 
+            LOG.info(jsonObject.toString());
+            LOG.info("Executiontime for repo " + i + " is: " + executinTime);
 
             // if execution time not exists, add new key to pipeline
             if (pipeline.containsKey(executinTime)) {
@@ -71,62 +71,88 @@ public class CustomScheduler {
             }
         }
 
-        LOG.info("Full execution time: " + fullExecutionTime);
-
-        int numberOfInstances = magicCalculateForNumberOfIstances(numberOfExecutions, fullExecutionTime);
-        LOG.info("Number of Instances to start: " + numberOfInstances);
-
-
         AmazonEC2 ec2 = new AmazonEC2Client(new EnvironmentVariableCredentialsProvider());
         ec2.setRegion(com.amazonaws.regions.Region.getRegion(Regions.EU_CENTRAL_1));
 
+
+        List<Future<String>> taskList = new ArrayList<>();
+        List<Long> startTimeList = new ArrayList<>();
+        List<URI> availableInstancesList = new ArrayList<>();
+        Map<URI, String> blockedInstancesList = new HashMap<>();
+        ArrayList<JSONObject> resultList = new ArrayList<>();
+
+        int openTasks = groups.length();
+        int numberOfInstancesToStart = magicCalculateForNumberOfIstances(openTasks, fullExecutionTime);
+        int availableInstances;
+        int runningTasks = 0;
+        int indexOfNextTask = 0;
+
+        LOG.info("Full execution time: " + fullExecutionTime);
+        LOG.info("Number of Instances to start: " + numberOfInstancesToStart);
+        LOG.info("open tasks: " + openTasks);
+
         try {
-            startInstances(numberOfInstances, ec2);
+            startInstances(numberOfInstancesToStart, ec2);
 
-            List<Future<String>> taskList = new ArrayList<>();
-            List<Long> startTime = new ArrayList<>();
-            int checkstyleInstances = 0;
-            int availableInstances = 0;
-            int runningTasks = 0;
-            int openTasks = numberOfExecutions;
-            int index = 0;
-
-
-            LOG.info("start time: " + startTime);
-            LOG.info("open tasks: " + openTasks);
+            // while execution not finished
             while (openTasks > 0) {
-                // execute
+
+                // check if new instance available and free
                 availableInstances = util.getNumberOfActiveCheckstyleInstances(ec2) - runningTasks;
 
                 if (availableInstances > 0) {
                     LOG.info("availableInstances: " + availableInstances);
-                    JSONObject task = getTaskWithLongestDuration(pipeline, index);
-                    index++;
+                    JSONObject task = getTaskWithLongestDuration(pipeline, indexOfNextTask);
                     if (task != null) {
-                        startTime.add(System.currentTimeMillis());
-                        Future<String> future = validateRepositoryService.validateRepository(task.toString());
-                        // TODO note which service executes task for specific repository
-                        // TODO - if is available means not, that its available on eureka
-                        // TODO - hold information - which instance executes which task - from loadbalancer
+                        boolean isExecute = false;
+                        if (availableInstancesList.isEmpty()) {
+                            ServiceInstance instance = loadBalancer.choose("checkstyle");
+                            if (!blockedInstancesList.containsKey(instance.getUri())) {
+                                Future<String> future = validateRepositoryService.validateRepository(task.toString(), instance.getUri());
+                                blockedInstancesList.put(instance.getUri(), task.toString());
+                                taskList.add(future);
+                                isExecute = true;
+                            }
+                        } else {
+                            Future<String> future = validateRepositoryService.validateRepository(task.toString(), availableInstancesList.get(0));
+                            blockedInstancesList.put(availableInstancesList.remove(0), task.toString());
+                            taskList.add(future);
+                            isExecute = true;
+                        }
 
-                        taskList.add(future);
-                        runningTasks++;
-                        LOG.info("running tasks: " + runningTasks);
+                        // update status of task execution
+                        if (isExecute) {
+                            startTimeList.add(System.currentTimeMillis());
+                            runningTasks++;
+                            indexOfNextTask++;
+                            openTasks--;
+
+                            LOG.info("running tasks: " + runningTasks);
+                            LOG.info("open tasks: " + openTasks);
+                            LOG.info("index of next task: " + indexOfNextTask);
+                        }
                     }
-                    openTasks--;
-                    LOG.info("open tasks: " + openTasks);
                 }
 
 
                 for (int i = 0; i < runningTasks; i++) {
                     if (taskList.get(i).isDone()) {
                         JSONObject obj = new JSONObject(taskList.get(i).get());
+                        // TODO validate parameter - groupId exists?
                         LOG.info("Task is done: " + groups.getJSONObject(i).getString("groupId"));
                         obj.put("groupId", groups.getJSONObject(i).getString("groupId"));
-                        obj.put("duration", (System.currentTimeMillis() - startTime.get(i)));
-                        result.add(obj);
+                        obj.put("duration", (System.currentTimeMillis() - startTimeList.get(i)));
+
+                        // TODO VALIDATE!!! - remove entry from blocked instance and add to available
+                        ValidationData data = new ValidationData();
+                        data.setRepositoryUrl(groups.getJSONObject(i).getString("repositoryUrl"));
+                        URI availableUri = getUriWithValue(blockedInstancesList, data.toString());
+                        availableInstancesList.add(availableUri);
+                        blockedInstancesList.remove(availableUri);
+
+                        resultList.add(obj);
                         taskList.remove(i);
-                        startTime.remove(i);
+                        startTimeList.remove(i);
                         runningTasks--;
                         databaseService.saveResult(obj.toString());
                     }
@@ -140,19 +166,29 @@ public class CustomScheduler {
             LOG.info(e.getMessage());
         }
 
-        return result;
+        return resultList;
     }
 
-    void startInstances(int numberOfInstances, AmazonEC2 ec2) throws NoSuchFieldException {
+    private URI getUriWithValue(Map<URI, String> blockedInstancesList, String s) {
+        ArrayList<URI> keys = new ArrayList<>(blockedInstancesList.keySet());
+        for (int i = 0; i < blockedInstancesList.size(); i++) {
+            if (blockedInstancesList.get(keys.get(i)).equals(s)) {
+                return keys.get(i);
+            }
+        }
+        return null;
+    }
+
+    private void startInstances(int numberOfInstances, AmazonEC2 ec2) throws NoSuchFieldException {
         if (util.getNumberOfActiveCheckstyleInstances(ec2) < numberOfInstances) {
             util.runNewCheckstyleInstance(ec2, numberOfInstances, numberOfInstances);
         }
     }
 
 
-    JSONObject getTaskWithLongestDuration(Map<Integer, List<JSONObject>> pipeline, int index) {
+    private JSONObject getTaskWithLongestDuration(Map<Integer, List<JSONObject>> pipeline, int index) {
         int j = 0;
-        ArrayList<Integer> keys = new ArrayList<Integer>(pipeline.keySet());
+        ArrayList<Integer> keys = new ArrayList<>(pipeline.keySet());
         for (int i = pipeline.size() - 1; i >= 0; i--) {
             List<JSONObject> list = pipeline.get(keys.get(i));
             for (JSONObject obj : list) {
@@ -166,7 +202,7 @@ public class CustomScheduler {
     }
 
     // magic calculation
-    int magicCalculateForNumberOfIstances(int numberOfExecutions, int fullExecutionTime) {
+    private int magicCalculateForNumberOfIstances(int numberOfExecutions, int fullExecutionTime) {
         int numberOfInstances;
 
         if (fullExecutionTime < (2 * initInstancetDuration) || numberOfExecutions < 2) {
