@@ -16,6 +16,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
+import org.springframework.cloud.client.ServiceInstance;
 import org.springframework.cloud.client.loadbalancer.LoadBalancerClient;
 import org.springframework.core.env.Environment;
 import org.springframework.http.HttpStatus;
@@ -109,8 +110,6 @@ public class ValidatorService {
     }
 
 
-
-
     @ApiOperation(value = "validate", nickname = "validate")
     @RequestMapping(value = "/groups/{groupId}/validate", method = RequestMethod.POST)
     @ApiResponse(code = 200, message = "Success", response = String.class)
@@ -145,16 +144,30 @@ public class ValidatorService {
     @RequestMapping(value = "/validate", method = RequestMethod.POST, consumes = "application/json", produces = "application/json")
     public ResponseEntity<String> validateGroupVerify(@RequestBody ValidationData data) {
         try {
-            // Call validation asynchronous
-            Future<String> repo = validateRepositoryService.validateRepository(data.toString());
+            ServiceInstance checkstyleInstance = loadBalancer.choose("checkstyle");
+            ServiceInstance pmdInstance = loadBalancer.choose("pmd");
 
+            // Call validation asynchronous
+            Future<String> checkstyleRepo = validateRepositoryService.validateRepository(data.toString(), checkstyleInstance.getUri());
+            Future<String> pmdRepo = validateRepositoryService.validateRepository(data.toString(), pmdInstance.getUri());
+
+            boolean run = true;
             // Wait until they are done
-            while (!(repo.isDone())) {
+            while (run) {
+                if (checkstyleRepo.isDone() && pmdRepo.isDone()) {
+                    run = false;
+                }
                 //10-millisecond pause between each check
-                Thread.sleep(10);
+                Thread.sleep(500);
             }
 
-            return util.createResponse(repo.get(), HttpStatus.OK);
+            // TODO validate strucutre of result with team
+            JSONObject jsonObject = new JSONObject();
+            jsonObject.put("structure", "TODO");
+            jsonObject.put("checkstyle", checkstyleRepo.get());
+            jsonObject.put("pmd", pmdRepo.get());
+
+            return util.createResponse(jsonObject.toString(), HttpStatus.OK);
         } catch (InstantiationException e) {
             LOG.error(e.getMessage());
             return util.createErrorResponse(e.getMessage(), HttpStatus.SERVICE_UNAVAILABLE);
