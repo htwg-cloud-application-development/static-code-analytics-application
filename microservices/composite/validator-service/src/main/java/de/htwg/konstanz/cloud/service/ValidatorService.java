@@ -116,22 +116,40 @@ public class ValidatorService {
     public ResponseEntity<String> validateGroup(@PathVariable String userId) {
         try {
             String group = databaseService.getGroup(userId);
+            JSONObject jsonObject = new JSONObject(group);
             // start execution measurement
-            long startTime = System.currentTimeMillis();
-            Future<String> repo = validateRepositoryService.validateRepository(group);
+            ServiceInstance checkstyleInstance = loadBalancer.choose("checkstyle");
+            ServiceInstance pmdInstance = loadBalancer.choose("pmd");
 
+            long startTime = System.currentTimeMillis();
+            Future<String> checkstyleRepo = validateRepositoryService.validateRepository(jsonObject.getString("repositoryUrl"), checkstyleInstance.getUri());
+            Future<String> pmdRepo = validateRepositoryService.validateRepository(jsonObject.getString("repositoryUrl"), pmdInstance.getUri());
+
+            boolean run = true;
             // Wait until they are done
-            while (!(repo.isDone())) {
+            while (run) {
+                if (checkstyleRepo.isDone() && pmdRepo.isDone()) {
+                    run = false;
+                }
                 //10-millisecond pause between each check
-                Thread.sleep(10);
+                Thread.sleep(500);
             }
 
-            JSONObject result = new JSONObject(repo.get());
-            result.put("userId", userId);
-            result.put("duration", (System.currentTimeMillis() - startTime));
+            JSONObject checkstyleResult = new JSONObject(checkstyleRepo.get());
+            checkstyleResult.put("userId", userId);
+            checkstyleResult.put("duration", (System.currentTimeMillis() - startTime));
 
-            Future<String> save = databaseService.saveResult(result.toString());
-            return util.createResponse(result.toString(), HttpStatus.OK);
+            JSONObject pmdResult = new JSONObject(pmdRepo.get());
+            pmdResult.put("userId", userId);
+            pmdResult.put("duration", (System.currentTimeMillis() - startTime));
+
+            Future<String> savePmd = databaseService.saveResult(pmdResult.toString());
+            Future<String> saveCheckstyle = databaseService.saveResult(checkstyleResult.toString());
+
+            jsonObject.put("checkstyle", checkstyleResult);
+            jsonObject.put("pmd", pmdResult);
+
+            return util.createResponse(jsonObject.toString(), HttpStatus.OK);
         } catch (InstantiationException e) {
             LOG.error(e.getMessage());
             return util.createErrorResponse(e.getMessage(), HttpStatus.SERVICE_UNAVAILABLE);
