@@ -117,6 +117,7 @@ public class ValidatorService {
         try {
             String group = databaseService.getGroup(userId);
             JSONObject jsonObject = new JSONObject(group);
+            LOG.info("Validate: " + jsonObject.toString());
             // start execution measurement
             ServiceInstance checkstyleInstance = loadBalancer.choose("checkstyle");
             ServiceInstance pmdInstance = loadBalancer.choose("pmd");
