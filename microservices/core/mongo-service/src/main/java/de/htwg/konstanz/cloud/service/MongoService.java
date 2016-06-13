@@ -29,8 +29,13 @@ public class MongoService {
 
     @RequestMapping(value = "/addCheckstyleEntry", method = RequestMethod.POST, consumes = "application/json")
     public void addCheckstyleEntry(@RequestBody CheckstyleResults checkstyleResults) {
+
+
         checkstyleResults.setTimestamp(String.valueOf(new Date().getTime()));
         checkstyleRepo.save(checkstyleResults);
+
+        //find group and add dbref
+
     }
 
     @RequestMapping(value = "/addPMDEntry", method = RequestMethod.POST, consumes = "application/json")
