@@ -22,7 +22,7 @@ public class GroupService {
 
         System.out.println(groups);
         if (groups.isEmpty()) { // don't save empty groups
-            System.out.println("no groups, retun");
+            System.out.println("no groups, return");
             return;
         }
 
