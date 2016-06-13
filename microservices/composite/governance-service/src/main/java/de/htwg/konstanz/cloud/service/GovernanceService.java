@@ -99,12 +99,10 @@ public class GovernanceService {
 
             JSONObject user = new JSONObject(moodleService.getUserInformation(token));
 
-            if (null == user) {
+            if (user.isNull("userid")) {
                 return createErrorResponse("No User information found for token: " + token, HttpStatus.BAD_REQUEST);
             }
-
-            // TODO: check if successful
-
+            
             databaseService.saveUser(user);
 
             // TODO: check if successful
