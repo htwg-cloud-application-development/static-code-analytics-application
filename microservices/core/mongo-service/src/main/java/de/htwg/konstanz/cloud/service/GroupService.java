@@ -47,9 +47,9 @@ public class GroupService {
     }
 
 
-    @RequestMapping(value = "{groupId}", method = RequestMethod.GET)
-    public Group getGroup(@PathVariable String groupId) {
+    @RequestMapping(value = "{userId}", method = RequestMethod.GET)
+    public Group getGroup(@PathVariable String userId) {
 
-        return groupRepository.findOne(groupId);
+        return groupRepository.findOne(userId);
     }
 }

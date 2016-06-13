@@ -4,8 +4,6 @@ import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.node.ObjectNode;
 import com.google.gson.Gson;
-import com.google.gson.JsonObject;
-import com.mongodb.util.JSON;
 import de.htwg.konstanz.cloud.model.CheckstyleResults;
 import de.htwg.konstanz.cloud.model.Course;
 import de.htwg.konstanz.cloud.model.Group;
@@ -54,9 +52,9 @@ public class CourseService {
         userRepo.save(user);
     }
 
+    //gson dependency added
     @RequestMapping(value = "/{courseId}", method = RequestMethod.GET)
     public Course getCourse(@PathVariable String courseId){
-
 
         return courseRepo.findOne(courseId);
     }
