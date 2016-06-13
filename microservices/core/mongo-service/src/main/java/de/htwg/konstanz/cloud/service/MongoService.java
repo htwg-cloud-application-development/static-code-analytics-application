@@ -42,18 +42,18 @@ public class MongoService {
     @RequestMapping(value = "/findLastCheckstyleResult", method = RequestMethod.GET)
     public
     @ResponseBody
-    CheckstyleResults getLastCheckstyleGroupResult(@RequestParam("groupId") String groupId) {
+    CheckstyleResults getLastCheckstyleGroupResult(@RequestParam("userId") String groupId) {
 
-        List<CheckstyleResults> userReps = mongo.find(Query.query(Criteria.where("groupId").is(groupId)).with(new Sort(Sort.Direction.DESC, "timestamp")).limit(1), CheckstyleResults.class);
+        List<CheckstyleResults> userReps = mongo.find(Query.query(Criteria.where("userId").is(groupId)).with(new Sort(Sort.Direction.DESC, "timestamp")).limit(1), CheckstyleResults.class);
         return userReps.get(0);
     }
 
     @RequestMapping(value = "/findLastPMDResult", method = RequestMethod.GET)
     public
     @ResponseBody
-    PMDResults getLastPMDGroupResult(@RequestParam("groupId") String groupId) {
+    PMDResults getLastPMDGroupResult(@RequestParam("userId") String groupId) {
 
-        List<PMDResults> pmdResults = mongo.find(Query.query(Criteria.where("groupId").is(groupId)).with(new Sort(Sort.Direction.DESC, "timestamp")).limit(1), PMDResults.class);
+        List<PMDResults> pmdResults = mongo.find(Query.query(Criteria.where("userId").is(groupId)).with(new Sort(Sort.Direction.DESC, "timestamp")).limit(1), PMDResults.class);
         return pmdResults.get(0);
     }
 }

@@ -1,17 +1,33 @@
 package de.htwg.konstanz.cloud.service;
 
+import com.fasterxml.jackson.databind.JsonNode;
+import com.fasterxml.jackson.databind.ObjectMapper;
+import com.fasterxml.jackson.databind.node.ObjectNode;
+import com.google.gson.Gson;
+import com.google.gson.JsonObject;
+import com.mongodb.util.JSON;
+import de.htwg.konstanz.cloud.model.CheckstyleResults;
 import de.htwg.konstanz.cloud.model.Course;
 import de.htwg.konstanz.cloud.model.Group;
 import de.htwg.konstanz.cloud.model.User;
+import org.json.JSONObject;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.data.domain.Sort;
+import org.springframework.data.mongodb.core.MongoOperations;
+import org.springframework.data.mongodb.core.query.Criteria;
+import org.springframework.data.mongodb.core.query.Query;
 import org.springframework.web.bind.annotation.*;
 
+import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
 
 @RestController
 @RequestMapping("/course")
 public class CourseService {
+
+    @Autowired
+    private MongoOperations mongo;
 
     @Autowired
     private UserRepository userRepo;
@@ -40,6 +56,7 @@ public class CourseService {
 
     @RequestMapping(value = "/{courseId}", method = RequestMethod.GET)
     public Course getCourse(@PathVariable String courseId){
+
 
         return courseRepo.findOne(courseId);
     }

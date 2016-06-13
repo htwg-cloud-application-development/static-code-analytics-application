@@ -16,7 +16,7 @@ public class CheckstyleResults {
     private String numberOfIgnores;
     private String totalExpendedTime;
     private String timestamp;
-    private String groupId;
+    private String userId;
     private Object assignments;
 
 }
