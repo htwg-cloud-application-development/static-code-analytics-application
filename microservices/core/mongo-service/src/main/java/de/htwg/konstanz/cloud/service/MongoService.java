@@ -1,6 +1,7 @@
 package de.htwg.konstanz.cloud.service;
 
 import de.htwg.konstanz.cloud.model.CheckstyleResults;
+import de.htwg.konstanz.cloud.model.Group;
 import de.htwg.konstanz.cloud.model.PMDResults;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Sort;
@@ -27,6 +28,9 @@ public class MongoService {
     @Autowired
     PMDResultsRepository pmdRepo;
 
+    @Autowired
+    GroupRepository groupRepo;
+
     @RequestMapping(value = "/addCheckstyleEntry", method = RequestMethod.POST, consumes = "application/json")
     public void addCheckstyleEntry(@RequestBody CheckstyleResults checkstyleResults) {
 
@@ -34,8 +38,11 @@ public class MongoService {
         checkstyleResults.setTimestamp(String.valueOf(new Date().getTime()));
         checkstyleRepo.save(checkstyleResults);
 
-        //find group and add dbref
-
+        //Find Group for checkstyle entry and add DBRef pointing to this entry
+        String userId = checkstyleResults.getUserId();
+        Group group = mongo.findOne(Query.query(Criteria.where("userId").is(userId)), Group.class);
+        group.setCheckstyleId(userId);
+        groupRepo.save(group);
     }
 
     @RequestMapping(value = "/addPMDEntry", method = RequestMethod.POST, consumes = "application/json")
@@ -61,4 +68,5 @@ public class MongoService {
         List<PMDResults> pmdResults = mongo.find(Query.query(Criteria.where("userId").is(groupId)).with(new Sort(Sort.Direction.DESC, "timestamp")).limit(1), PMDResults.class);
         return pmdResults.get(0);
     }
+
 }
