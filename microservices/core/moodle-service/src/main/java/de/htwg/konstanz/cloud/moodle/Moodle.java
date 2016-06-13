@@ -4,6 +4,7 @@ import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import de.htwg.konstanz.cloud.models.*;
+import org.jsoup.Jsoup;
 import org.springframework.web.client.RestTemplate;
 
 import java.util.ArrayList;
@@ -148,7 +149,7 @@ public class Moodle {
                     JsonNode actualSubmit = field.findPath("text");
 
                     if (!actualSubmit.isMissingNode()) {
-                        return actualSubmit.asText();  // TODO: fix html shit
+                        return Jsoup.parse(actualSubmit.asText()).text();
                     }
                 }
 
