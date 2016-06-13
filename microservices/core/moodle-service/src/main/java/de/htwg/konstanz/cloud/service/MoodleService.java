@@ -36,6 +36,8 @@ public class MoodleService {
 
         MoodleToken token = templ.getForObject(url, MoodleToken.class);
 
+        System.out.println("Moodle Token for user " + credentials.getUsername() + ": " + token.getToken());
+
         return new ResponseEntity(token, HttpStatus.OK);
 
     }

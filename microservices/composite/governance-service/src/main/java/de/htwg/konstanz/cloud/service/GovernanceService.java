@@ -99,6 +99,10 @@ public class GovernanceService {
 
             JSONObject user = new JSONObject(moodleService.getUserInformation(token));
 
+            if (null == user) {
+                return createErrorResponse("No User information found for token: " + token, HttpStatus.BAD_REQUEST);
+            }
+
             // TODO: check if successful
 
             databaseService.saveUser(user);
@@ -115,6 +119,10 @@ public class GovernanceService {
 
                 // then get submissions of course
                 String groups = moodleService.getSubmissionsOfCourses(course.getId(), token);
+
+                if ("[]".equals(groups)) {
+                    continue;
+                }
 
                 // finally save submissions
                 databaseService.saveGroups(course.getId(), groups);

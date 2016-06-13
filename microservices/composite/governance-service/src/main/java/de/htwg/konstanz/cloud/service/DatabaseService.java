@@ -25,7 +25,7 @@ public class DatabaseService {
     }
 
     public String getAllCourses() throws InstantiationException {
-        return callDatabaseFor("/courses");
+        return callDatabaseFor("/course/courses");
     }
 
     public String getCourseWithId(String courseId) throws InstantiationException {

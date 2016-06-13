@@ -5,7 +5,6 @@ import de.htwg.konstanz.cloud.model.Group;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.*;
 
-import java.util.ArrayList;
 import java.util.List;
 
 @RestController
@@ -19,16 +18,22 @@ public class GroupService {
     private CourseRepository courseRepo;
 
     @RequestMapping(path = "/{courseId}", method = RequestMethod.POST, consumes = "application/json")
-    public void create(@RequestBody List<Group> groups, @PathVariable String courseId)throws NoSuchFieldException {
+    public void create(@RequestBody List<Group> groups, @PathVariable String courseId) throws NoSuchFieldException {
 
+        System.out.println(groups);
         if (groups.isEmpty()) { // don't save empty groups
+            System.out.println("no groups, retun");
             return;
         }
 
+
         Course course = courseRepo.findOne(courseId);
-        if(null == course){
+        if (null == course) {
             throw new NoSuchFieldException("Course not found");
         }
+
+        //delete groups
+        groupRepository.delete(course.getGroups());
 
         groupRepository.save(groups);
 
