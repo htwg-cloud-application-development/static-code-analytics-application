@@ -145,7 +145,7 @@ public class CustomScheduler {
 
                         // TODO VALIDATE!!! - remove entry from blocked instance and add to available
                         ValidationData data = new ValidationData();
-                        data.setRepositoryUrl(groups.getJSONObject(i).getString("repositoryUrl"));
+                        data.setRepository(groups.getJSONObject(i).getString("repository"));
                         URI availableUri = getUriWithValue(blockedInstancesList, data.toString());
                         availableInstancesList.add(availableUri);
                         blockedInstancesList.remove(availableUri);

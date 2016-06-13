@@ -122,8 +122,8 @@ public class ValidatorService {
             ServiceInstance pmdInstance = loadBalancer.choose("pmd");
 
             long startTime = System.currentTimeMillis();
-            Future<String> checkstyleRepo = validateRepositoryService.validateRepository(jsonObject.getString("repositoryUrl"), checkstyleInstance.getUri());
-            Future<String> pmdRepo = validateRepositoryService.validateRepository(jsonObject.getString("repositoryUrl"), pmdInstance.getUri());
+            Future<String> checkstyleRepo = validateRepositoryService.validateRepository(jsonObject.getString("repository"), checkstyleInstance.getUri());
+            Future<String> pmdRepo = validateRepositoryService.validateRepository(jsonObject.getString("repository"), pmdInstance.getUri());
 
             boolean run = true;
             // Wait until they are done

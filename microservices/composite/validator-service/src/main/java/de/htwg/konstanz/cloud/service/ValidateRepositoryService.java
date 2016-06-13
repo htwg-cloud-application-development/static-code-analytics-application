@@ -54,7 +54,7 @@ public class ValidateRepositoryService {
             // build request url
             String requestUrl = instance.getUri() + VALIDATE_ROUTE;
             // POST to request url and get String (JSON)
-            LOG.debug("repositoryUrl: " + repositoryUrlJsonObj);
+            LOG.debug("repository: " + repositoryUrlJsonObj);
             return executePostRequest(repositoryUrlJsonObj, requestUrl);
         }
         throw new InstantiationException("service is not available");
