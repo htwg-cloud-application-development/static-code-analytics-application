@@ -111,11 +111,11 @@ public class ValidatorService {
 
 
     @ApiOperation(value = "validate", nickname = "validate")
-    @RequestMapping(value = "/groups/{groupId}/validate", method = RequestMethod.POST)
+    @RequestMapping(value = "/groups/{userId}/validate", method = RequestMethod.POST)
     @ApiResponse(code = 200, message = "Success", response = String.class)
-    public ResponseEntity<String> validateGroup(@PathVariable String groupId) {
+    public ResponseEntity<String> validateGroup(@PathVariable String userId) {
         try {
-            String group = databaseService.getGroup(groupId);
+            String group = databaseService.getGroup(userId);
             // start execution measurement
             long startTime = System.currentTimeMillis();
             Future<String> repo = validateRepositoryService.validateRepository(group);
@@ -127,7 +127,7 @@ public class ValidatorService {
             }
 
             JSONObject result = new JSONObject(repo.get());
-            result.put("groupId", groupId);
+            result.put("userId", userId);
             result.put("duration", (System.currentTimeMillis() - startTime));
 
             Future<String> save = databaseService.saveResult(result.toString());
