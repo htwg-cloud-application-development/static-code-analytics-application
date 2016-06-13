@@ -19,6 +19,6 @@ public class Group {
     @DBRef
     String pmdId;
     @DBRef
-    String checkstyleId;
+    CheckstyleResults checkstyleId;
 
 }

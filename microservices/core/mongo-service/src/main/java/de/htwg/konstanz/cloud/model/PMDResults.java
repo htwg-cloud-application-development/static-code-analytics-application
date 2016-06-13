@@ -6,7 +6,7 @@ import org.springframework.data.mongodb.core.mapping.Document;
 
 @Data
 @Document
-public class PMDResults extends Result{
+public class PMDResults {
     @Id
     private String id;
     private String repositoryUrl;
