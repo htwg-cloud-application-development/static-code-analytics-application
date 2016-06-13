@@ -116,6 +116,10 @@ public class GovernanceService {
                 // then get submissions of course
                 String groups = moodleService.getSubmissionsOfCourses(course.getId(), token);
 
+                if ("[]".equals(groups)) {
+                    continue;
+                }
+                
                 // finally save submissions
                 databaseService.saveGroups(course.getId(), groups);
 
