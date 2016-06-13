@@ -7,10 +7,12 @@ import java.nio.channels.Channels;
 import java.nio.channels.ReadableByteChannel;
 import java.util.ArrayList;
 import java.util.List;
+
 import de.htwg.konstanz.cloud.model.Class;
 import de.htwg.konstanz.cloud.model.Error;
 import de.htwg.konstanz.cloud.model.SeverityCounter;
 import org.apache.commons.io.FileUtils;
+import org.apache.commons.lang3.StringUtils;
 import org.eclipse.jgit.api.errors.GitAPIException;
 import org.eclipse.jgit.api.errors.InvalidRemoteException;
 import org.eclipse.jgit.api.errors.TransportException;
@@ -24,6 +26,7 @@ import org.w3c.dom.Node;
 import org.w3c.dom.NodeList;
 import org.xml.sax.InputSource;
 import org.xml.sax.SAXException;
+
 import javax.xml.parsers.DocumentBuilder;
 import javax.xml.parsers.DocumentBuilderFactory;
 import javax.xml.parsers.ParserConfigurationException;
@@ -32,6 +35,7 @@ import javax.swing.text.BadLocationException;
 public class Checkstyle {
 
     private static final Logger LOG = LoggerFactory.getLogger(Checkstyle.class);
+    private OperatingSystemCheck oOperatingSystemCheck = new OperatingSystemCheck();
     private List<Class> lFormattedClassList = new ArrayList<Class>();
     private File oRepoDir;
     private GIT oGit = new GIT();
@@ -43,19 +47,17 @@ public class Checkstyle {
         String sResult = "";
         SeverityCounter oSeverityCounter = new SeverityCounter();
 
-        oJsonResult = determination(gitRepository,oSeverityCounter,lStartTime );
+        oJsonResult = determination(gitRepository, oSeverityCounter, lStartTime);
         if (oRepoDir != null) {
             FileUtils.deleteDirectory(oRepoDir);
-        }
-        else {
+        } else {
             LOG.info("Error: Local Directory is null!");
         }
 
-        if(null == oJsonResult) {
+        if (null == oJsonResult) {
             sResult = "Invalid Repository";
             LOG.info("Error: received invalid repository and JSON file");
-        }
-        else {
+        } else {
             sResult = oJsonResult.toString();
             LOG.info("Valid JSON result");
         }
@@ -71,29 +73,27 @@ public class Checkstyle {
         checkLocalCheckstyle();
 
         /* SVN Checkout */
-        if(sRepoUrl.contains("141.37.122.26")){
+        if (sRepoUrl.contains("141.37.122.26")) {
             /* URL needs to start with HTTP:// */
-            if (!sRepoUrl.startsWith("http://")){
-                sRepoUrl = "http://"+ sRepoUrl;
+            if (!sRepoUrl.startsWith("http://")) {
+                sRepoUrl = "http://" + sRepoUrl;
             }
             /* remove the last / */
-            if (sRepoUrl.endsWith("/")){
-                sRepoUrl = sRepoUrl.substring(0, sRepoUrl.length()-1);
+            if (sRepoUrl.endsWith("/")) {
+                sRepoUrl = sRepoUrl.substring(0, sRepoUrl.length() - 1);
             }
             LOG.info("SVN");
             sLocalDir = oSvn.downloadSVNRepo(sRepoUrl);
-            oJson = (checkStyle(generateCheckStyleServiceData(sLocalDir), sRepoUrl,oSeverityCounter,lStartTime));
+            oJson = (checkStyle(generateCheckStyleServiceData(sLocalDir), sRepoUrl, oSeverityCounter, lStartTime));
             oRepoDir = new File(sLocalDir);
         }
         /* GIT Checkout */
-        else if(sRepoUrl.contains("github.com")){
+        else if (sRepoUrl.contains("github.com")) {
             LOG.info("GIT");
             sLocalDir = oGit.downloadGITRepo(sRepoUrl);
-            oJson = (checkStyle(generateCheckStyleServiceData(sLocalDir), sRepoUrl,oSeverityCounter,lStartTime));
+            oJson = (checkStyle(generateCheckStyleServiceData(sLocalDir), sRepoUrl, oSeverityCounter, lStartTime));
             oRepoDir = new File(sLocalDir);
-        }
-        else
-        {
+        } else {
             LOG.info("Repository URL has no valid SVN/GIT attributes. (" + sRepoUrl + ")");
         }
 
@@ -193,7 +193,7 @@ public class Checkstyle {
         }
 
         if (null != lFormattedClassList) {
-			/* generate JSON File */
+            /* generate JSON File */
             oJson = buildJSON(gitRepository, oSeverityCounter, lStartTime);
         }
 
@@ -201,8 +201,8 @@ public class Checkstyle {
     }
 
     private void storeCheckstyleInformation(String sXmlPath, int nClassPos, SeverityCounter oSeverityCounter) throws ParserConfigurationException, SAXException, IOException {
-        InputStream inputStream= new FileInputStream(sXmlPath);
-        Reader reader = new InputStreamReader(inputStream,"UTF-8");
+        InputStream inputStream = new FileInputStream(sXmlPath);
+        Reader reader = new InputStreamReader(inputStream, "UTF-8");
         InputSource is = new InputSource(reader);
         is.setEncoding("UTF-8");
 
@@ -236,16 +236,11 @@ public class Checkstyle {
                     sSeverity = eElement.getAttribute("severity");
                     
                     /* Count every Error Type we have found in the XML */
-                    if(sSeverity.toLowerCase().equals("error"))
-                    {
+                    if (sSeverity.toLowerCase().equals("error")) {
                         oSeverityCounter.incErrorCount();
-                    }
-                    else if(sSeverity.toLowerCase().equals("warning"))
-                    {
+                    } else if (sSeverity.toLowerCase().equals("warning")) {
                         oSeverityCounter.incWarningCount();
-                    }
-                    else if(sSeverity.toLowerCase().equals("ignore"))
-                    {
+                    } else if (sSeverity.toLowerCase().equals("ignore")) {
                         oSeverityCounter.incIgnoreCount();
                     }
                 }
@@ -276,13 +271,11 @@ public class Checkstyle {
     }
 
     private void formatList(List<List<String>> lRepoList) {
-        OperatingSystemCheck oOperatingSystemCheck = new OperatingSystemCheck();
 
         for (List<String> LRepoList : lRepoList) {
             Class oClass = null;
 
-            for (int nClassPos = 0; nClassPos < LRepoList.size(); nClassPos++)
-            {
+            for (int nClassPos = 0; nClassPos < LRepoList.size(); nClassPos++) {
                 String[] sFullPathSplit_a = LRepoList.get(nClassPos).split(oOperatingSystemCheck.getOperatingSystemSeparator());
 
                 String sFullPath = LRepoList.get(nClassPos);
@@ -352,8 +345,9 @@ public class Checkstyle {
                 }
 
                 sTmpExcerciseName = sExcerciseName;
+                String sFilePath = removeUnnecessaryPathParts(lFormattedClassList.get(nClassPos).getFullPath());
 
-                oJsonClass.put("filepath", lFormattedClassList.get(nClassPos).getFullPath());
+                oJsonClass.put("filepath", sFilePath);
                 oJsonClass.put("errors", lJsonErrors);
                 lJsonClasses.put(oJsonClass);
 				
@@ -388,7 +382,7 @@ public class Checkstyle {
             }
         }
 
-        long lEndTime   = System.currentTimeMillis();
+        long lEndTime = System.currentTimeMillis();
         long lTotalTime = (lEndTime - lStartTime);
 
         oJsonRoot.put("totalExpendedTime", lTotalTime);
@@ -396,5 +390,22 @@ public class Checkstyle {
         oJsonRoot.put("assignments", lJsonExercises);
 
         return oJsonRoot;
+    }
+
+    private String removeUnnecessaryPathParts(String sFilePath)
+    {
+        String[] sFilePathSplit_a = sFilePath.split(oOperatingSystemCheck.getOperatingSystemSeparator());
+        String sShortenPath = "";
+        for(int nPathPos = 2; nPathPos < sFilePathSplit_a.length; nPathPos++) {
+            if(nPathPos+1 == sFilePathSplit_a.length) {
+                        /* last Part of the Path */
+                sShortenPath += sFilePathSplit_a[nPathPos];
+            }
+            else {
+                sShortenPath += sFilePathSplit_a[nPathPos] + "\\";
+            }
+        }
+
+        return sShortenPath;
     }
 }

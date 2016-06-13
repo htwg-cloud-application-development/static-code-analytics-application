@@ -37,6 +37,7 @@ import net.lingala.zip4j.exception.ZipException;
 public class PMD {
 
     private static final Logger LOG = LoggerFactory.getLogger(PMD.class);
+    private OperatingSystemCheck oOperatingSystemCheck = new OperatingSystemCheck();
     private List<Class> lFormattedClassList = new ArrayList<>();
     private File oRepoDir;
     private GIT oGit = new GIT();
@@ -168,7 +169,6 @@ public class PMD {
     }
 
     private JSONObject runPMD(List<List<String>> lRepoList, String gitRepository, SeverityCounter oSeverityCounter, long lStartTime) throws ParserConfigurationException, SAXException, IOException {
-        OperatingSystemCheck oOperatingSystemCheck = new OperatingSystemCheck();
         final String sRuleSetPath = "java-basic,java-design,java-codesize";
         String sStartScript = "";
         JSONObject oJson = null;
@@ -384,7 +384,8 @@ public class PMD {
                     if(lJsonErrors.length() > 0) {
                         sTmpExcerciseName = sExcerciseName;
 
-                        oJsonClass.put("filepath", lFormattedClassList.get(nClassPos).getFullPath());
+                        String sFilePath = removeUnnecessaryPathParts(lFormattedClassList.get(nClassPos).getFullPath());
+                        oJsonClass.put("filepath", sFilePath);
                         oJsonClass.put("errors", lJsonErrors);
                         lJsonClasses.put(oJsonClass);
                     }
@@ -431,5 +432,22 @@ public class PMD {
 
         LOG.debug("PMD Static Analysis check for Repo: " + sRepo);
         return oJsonRoot;
+    }
+
+    private String removeUnnecessaryPathParts(String sFilePath)
+    {
+        String[] sFilePathSplit_a = sFilePath.split(oOperatingSystemCheck.getOperatingSystemSeparator());
+        String sShortenPath = "";
+        for(int nPathPos = 2; nPathPos < sFilePathSplit_a.length; nPathPos++) {
+            if(nPathPos+1 == sFilePathSplit_a.length) {
+                        /* last Part of the Path */
+                sShortenPath += sFilePathSplit_a[nPathPos];
+            }
+            else {
+                sShortenPath += sFilePathSplit_a[nPathPos] + "\\";
+            }
+        }
+
+        return sShortenPath;
     }
 }
