@@ -52,7 +52,6 @@ public class CourseService {
         userRepo.save(user);
     }
 
-    //gson dependency added
     @RequestMapping(value = "/{courseId}", method = RequestMethod.GET)
     public Course getCourse(@PathVariable String courseId){
 

@@ -1,7 +1,9 @@
 package de.htwg.konstanz.cloud.service;
 
 import de.htwg.konstanz.cloud.model.CheckstyleResults;
+import de.htwg.konstanz.cloud.model.Group;
 import de.htwg.konstanz.cloud.model.PMDResults;
+import de.htwg.konstanz.cloud.model.Result;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Sort;
 import org.springframework.data.mongodb.core.MongoOperations;
@@ -27,10 +29,18 @@ public class MongoService {
     @Autowired
     PMDResultsRepository pmdRepo;
 
+    @Autowired
+    GroupRepository groupRepo;
+
     @RequestMapping(value = "/addCheckstyleEntry", method = RequestMethod.POST, consumes = "application/json")
     public void addCheckstyleEntry(@RequestBody CheckstyleResults checkstyleResults) {
+
+
         checkstyleResults.setTimestamp(String.valueOf(new Date().getTime()));
         checkstyleRepo.save(checkstyleResults);
+
+        //Find Group for checkstyle entry and add DBRef pointing to this entry
+        addDBRefForResult(checkstyleResults);
     }
 
     @RequestMapping(value = "/addPMDEntry", method = RequestMethod.POST, consumes = "application/json")
@@ -56,4 +66,21 @@ public class MongoService {
         List<PMDResults> pmdResults = mongo.find(Query.query(Criteria.where("userId").is(groupId)).with(new Sort(Sort.Direction.DESC, "timestamp")).limit(1), PMDResults.class);
         return pmdResults.get(0);
     }
+
+    public void addDBRefForResult(Result result){
+
+        String userId = result.getUserId();
+
+        Group group = mongo.findOne(Query.query(Criteria.where("userId").is(userId)), Group.class);
+
+        Class resultClass = result.getClass();
+        if (resultClass == CheckstyleResults.class) {
+            group.setCheckstyleId(userId);
+        } else if (resultClass == PMDResults.class) {
+            group.setPmdId(userId);
+        }
+
+        groupRepo.save(group);
+    }
+
 }
