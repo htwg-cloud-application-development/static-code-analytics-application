@@ -6,7 +6,7 @@ import org.springframework.data.mongodb.core.mapping.Document;
 
 @Data
 @Document
-public class CheckstyleResults {
+public class CheckstyleResults extends Result{
 
     @Id
     private String id;
