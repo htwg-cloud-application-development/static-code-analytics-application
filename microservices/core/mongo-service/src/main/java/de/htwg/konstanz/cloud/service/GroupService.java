@@ -33,6 +33,7 @@ public class GroupService {
         }
 
         //delete groups
+        groupRepository.delete(course.getGroups());
 
         groupRepository.save(groups);
 
