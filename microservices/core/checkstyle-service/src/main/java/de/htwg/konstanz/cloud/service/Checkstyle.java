@@ -1,18 +1,9 @@
 package de.htwg.konstanz.cloud.service;
 
-import java.io.*;
-import java.net.MalformedURLException;
-import java.net.URL;
-import java.nio.channels.Channels;
-import java.nio.channels.ReadableByteChannel;
-import java.util.ArrayList;
-import java.util.List;
-
 import de.htwg.konstanz.cloud.model.Class;
 import de.htwg.konstanz.cloud.model.Error;
 import de.htwg.konstanz.cloud.model.SeverityCounter;
 import org.apache.commons.io.FileUtils;
-import org.apache.commons.lang3.StringUtils;
 import org.eclipse.jgit.api.errors.GitAPIException;
 import org.eclipse.jgit.api.errors.InvalidRemoteException;
 import org.eclipse.jgit.api.errors.TransportException;
@@ -27,10 +18,17 @@ import org.w3c.dom.NodeList;
 import org.xml.sax.InputSource;
 import org.xml.sax.SAXException;
 
+import javax.swing.text.BadLocationException;
 import javax.xml.parsers.DocumentBuilder;
 import javax.xml.parsers.DocumentBuilderFactory;
 import javax.xml.parsers.ParserConfigurationException;
-import javax.swing.text.BadLocationException;
+import java.io.*;
+import java.net.MalformedURLException;
+import java.net.URL;
+import java.nio.channels.Channels;
+import java.nio.channels.ReadableByteChannel;
+import java.util.ArrayList;
+import java.util.List;
 
 public class Checkstyle {
 
@@ -302,7 +300,7 @@ public class Checkstyle {
         boolean bExcerciseNeverChanged = true;
 		
 		/* add general information to the JSON object */
-        oJsonRoot.put("repositoryUrl", sRepo);
+        oJsonRoot.put("repository", sRepo);
         oJsonRoot.put("numberOfErrors", oSeverityCounter.getErrorCount());
         LOG.info("Number of Errors: " + oSeverityCounter.getErrorCount());
         oJsonRoot.put("numberOfWarnings", oSeverityCounter.getWarningCount());
