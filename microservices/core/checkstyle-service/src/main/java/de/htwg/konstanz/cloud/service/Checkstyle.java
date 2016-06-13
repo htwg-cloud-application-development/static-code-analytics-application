@@ -392,7 +392,7 @@ public class Checkstyle {
         return oJsonRoot;
     }
 
-    public String removeUnnecessaryPathParts(String sFilePath)
+    private String removeUnnecessaryPathParts(String sFilePath)
     {
         String[] sFilePathSplit_a = sFilePath.split(oOperatingSystemCheck.getOperatingSystemSeparator());
         String sShortenPath = "";
