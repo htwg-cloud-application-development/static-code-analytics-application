@@ -1,5 +1,6 @@
 package de.htwg.konstanz.cloud.service;
 
+import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.node.ObjectNode;
@@ -53,8 +54,24 @@ public class CourseService {
     }
 
     @RequestMapping(value = "/{courseId}", method = RequestMethod.GET)
-    public Course getCourse(@PathVariable String courseId){
+    public Course getCourse(@PathVariable String courseId) throws IOException {
 
+        Course course = courseRepo.findOne(courseId);
+
+/*
+        ObjectMapper mapper = new ObjectMapper();
+        String courseString = mapper.writeValueAsString(course);
+        JsonNode node = mapper.readTree(courseString);
+
+        JsonNode groups = node.get("groups");
+        JsonNode checkstyle = groups.get("checkstyleId");
+        System.out.println(checkstyle);
+
+        ((ObjectNode) checkstyle).remove("assignments");
+
+
+        System.out.println(node);
+*/
         return courseRepo.findOne(courseId);
     }
 
