@@ -10,16 +10,16 @@ import javax.validation.constraints.NotNull;
 public class ValidationData {
 
     @NotNull
-    private String repositoryUrl;
+    private String repository;
 
     @Override
     public String toString(){
         JSONObject json = new JSONObject();
         try {
-            json.put("repositoryUrl", repositoryUrl);
+            json.put("repository", repository);
             return json.toString();
         } catch (JSONException e) {
-            return repositoryUrl;
+            return repository;
         }
     }
 }

@@ -1,16 +1,8 @@
 package de.htwg.konstanz.cloud.service;
 
-import java.io.*;
-import java.net.MalformedURLException;
-import java.net.URL;
-import java.nio.channels.Channels;
-import java.nio.channels.ReadableByteChannel;
-import java.util.ArrayList;
-import java.util.List;
 import de.htwg.konstanz.cloud.model.Class;
 import de.htwg.konstanz.cloud.model.Error;
 import de.htwg.konstanz.cloud.model.SeverityCounter;
-import org.apache.commons.configuration.SystemConfiguration;
 import org.apache.commons.io.FileUtils;
 import org.eclipse.jgit.api.errors.GitAPIException;
 import org.eclipse.jgit.api.errors.InvalidRemoteException;
@@ -30,8 +22,13 @@ import javax.swing.text.BadLocationException;
 import javax.xml.parsers.DocumentBuilder;
 import javax.xml.parsers.DocumentBuilderFactory;
 import javax.xml.parsers.ParserConfigurationException;
-import net.lingala.zip4j.core.ZipFile;
-import net.lingala.zip4j.exception.ZipException;
+import java.io.*;
+import java.net.MalformedURLException;
+import java.net.URL;
+import java.nio.channels.Channels;
+import java.nio.channels.ReadableByteChannel;
+import java.util.ArrayList;
+import java.util.List;
 
 
 public class PMD {
@@ -341,7 +338,7 @@ public class PMD {
         boolean bExcerciseNeverChanged = true;
 
 		/* add general information to the JSON object */
-        oJsonRoot.put("repositoryUrl", sRepo);
+        oJsonRoot.put("repository", sRepo);
         oJsonRoot.put("numberOfErrors", oSeverityCounter.getErrorCount());
         oJsonRoot.put("numberOfWarnings", oSeverityCounter.getWarningCount());
         oJsonRoot.put("numberOfIgnores", oSeverityCounter.getIgnoreCount());
