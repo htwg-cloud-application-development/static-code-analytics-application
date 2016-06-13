@@ -51,7 +51,7 @@ public class CustomScheduler {
         Map<Integer, List<JSONObject>> pipeline = new TreeMap<>();
         for (int i = 0; i < groups.length(); i++) {
             JSONObject jsonObject = (JSONObject) groups.get(i);
-            int executinTime = jsonObject.getInt("executiontime");
+            int executinTime = jsonObject.optInt("executiontime", 60000);
             if (executinTime == 0) executinTime = 30000;
             fullExecutionTime += executinTime;
 
