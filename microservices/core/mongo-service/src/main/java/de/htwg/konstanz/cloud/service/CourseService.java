@@ -57,8 +57,14 @@ public class CourseService {
     public Course getCourse(@PathVariable String courseId) throws IOException {
 
         Course course = courseRepo.findOne(courseId);
-
 /*
+        JSONObject jcourse = new JSONObject(course);
+        JSONObject groups = jcourse.getJSONObject("groups");
+        groups.getJSONObject("checkstyle").remove("assignments");
+
+        System.out.println(groups);
+
+        /*
         ObjectMapper mapper = new ObjectMapper();
         String courseString = mapper.writeValueAsString(course);
         JsonNode node = mapper.readTree(courseString);
