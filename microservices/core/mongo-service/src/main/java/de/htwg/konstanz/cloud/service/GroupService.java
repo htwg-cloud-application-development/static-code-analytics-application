@@ -5,7 +5,6 @@ import de.htwg.konstanz.cloud.model.Group;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.*;
 
-import java.util.ArrayList;
 import java.util.List;
 
 @RestController
@@ -27,10 +26,13 @@ public class GroupService {
             return;
         }
 
+
         Course course = courseRepo.findOne(courseId);
         if (null == course) {
             throw new NoSuchFieldException("Course not found");
         }
+
+        //delete groups
 
         groupRepository.save(groups);
 

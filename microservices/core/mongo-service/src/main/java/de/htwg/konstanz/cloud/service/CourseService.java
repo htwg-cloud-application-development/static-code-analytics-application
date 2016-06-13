@@ -44,6 +44,13 @@ public class CourseService {
         return courseRepo.findOne(courseId);
     }
 
+    //Returns all courses
+    @RequestMapping(value = "/courses", method = RequestMethod.GET)
+    public List<Course> getAllCourses(){
+
+        return courseRepo.findAll();
+    }
+
     //Returns all groups to matching courseId
     @RequestMapping(value = "/groups/{courseId}", method = RequestMethod.GET)
     public List<Group> getGroups(@PathVariable String courseId) throws NoSuchFieldException{
