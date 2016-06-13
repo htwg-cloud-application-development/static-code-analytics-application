@@ -32,8 +32,13 @@ public class GroupService {
             throw new NoSuchFieldException("Course not found");
         }
 
-        //delete groups
-        groupRepository.delete(course.getGroups());
+        List<Group> dbGroups = course.getGroups();
+
+        if (null != dbGroups) {
+            //delete groups
+            groupRepository.delete(dbGroups);
+
+        }
 
         groupRepository.save(groups);
 
