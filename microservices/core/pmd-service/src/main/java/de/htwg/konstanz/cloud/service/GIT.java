@@ -34,35 +34,6 @@ public class GIT {
         }
     }
 
-    public boolean downloadGITRepo(List<String> gitList)
-            throws InvalidRemoteException, TransportException, GitAPIException,
-            MalformedURLException, FileNotFoundException {
-        // Checkout Git-Repo
-        String directoryName = "";
-        String localDirectory = "";
-
-        if (gitList != null) {
-            for (int i = 0; i < gitList.size(); i++) {
-                // String Magic
-                directoryName = gitList.get(i).substring(
-                        gitList.get(i).lastIndexOf("/"), gitList.get(i).length() - 1)
-                        .replace(".", "_");
-                localDirectory = "repositoriesCPD/" + directoryName
-                        + "_" + System.currentTimeMillis() + "/";
-
-                // Clone Command with jGIT
-                URL f = new URL(gitList.get(i));
-                if (isValidRepository(new URIish(f))) {
-                    Git.cloneRepository().setURI(gitList.get(i))
-                            .setDirectory(new File(localDirectory)).call();
-                }
-                directoryName= "";
-                localDirectory = "";
-            }
-        }
-        // if all checkouts complete
-        return true;
-    }
 
     boolean isValidLocalRepository(URIish repoUri) {
         boolean result;
