@@ -102,10 +102,10 @@ public class GovernanceService {
             if (user.isNull("userid")) {
                 return createErrorResponse("No User information found for token: " + token, HttpStatus.BAD_REQUEST);
             }
-
             // TODO: check if user is a prof.
             String name = user.get("lastname").toString().toLowerCase();
-            if (!name.equals("langweg") || !name.equals("gorenflo")) {
+
+            if (!"langweg".equals(name) && !"gorenflo".equals(name)) {
                 return createErrorResponse("User is not allowed", HttpStatus.BAD_REQUEST);
             }
 
