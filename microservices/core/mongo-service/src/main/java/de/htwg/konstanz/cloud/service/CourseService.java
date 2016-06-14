@@ -7,7 +7,6 @@ import de.htwg.konstanz.cloud.model.User;
 import org.json.JSONArray;
 import org.json.JSONObject;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.data.mongodb.core.MongoOperations;
 import org.springframework.web.bind.annotation.*;
 
 import java.io.IOException;
@@ -17,9 +16,6 @@ import java.util.List;
 @RestController
 @RequestMapping("/course")
 public class CourseService {
-
-    @Autowired
-    private MongoOperations mongo;
 
     @Autowired
     private UserRepository userRepo;
@@ -50,7 +46,6 @@ public class CourseService {
     public String getCourse(@PathVariable String courseId) throws IOException {
 
         Course course = courseRepo.findOne(courseId);
-
 
         //Remove assignments from checkstyle and pmd
         JSONObject jCourse = new JSONObject(course);
