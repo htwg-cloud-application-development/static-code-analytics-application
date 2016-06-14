@@ -65,6 +65,10 @@ public class DatabaseService {
         return callDatabaseRoute("/courses/" + userId + "/findLastCheckstyleResult");
     }
 
+    public String getLastPmdResult(String userId) throws InstantiationException {
+        return callDatabaseRoute("/courses/" + userId + "/findLastPmdResult");
+    }
+
 
     private String callDatabaseRoute(String serviceRoute) throws InstantiationException {
         ServiceInstance instance = loadBalancer.choose("mongo");
