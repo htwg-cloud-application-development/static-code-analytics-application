@@ -241,4 +241,13 @@ public class ValidatorService {
             return util.createErrorResponse(e.getMessage(), HttpStatus.INTERNAL_SERVER_ERROR);
         }
     }
+
+    @RequestMapping(value = "/groups/{userId}/pmd/last-result", method = RequestMethod.GET, produces = "application/json")
+    public ResponseEntity<String> getLastPmdResult(@PathVariable String userId) {
+        try {
+            return util.createResponse(databaseService.getLastPmdResult(userId), HttpStatus.OK);
+        } catch (InstantiationException e) {
+            return util.createErrorResponse(e.getMessage(), HttpStatus.INTERNAL_SERVER_ERROR);
+        }
+    }
 }
