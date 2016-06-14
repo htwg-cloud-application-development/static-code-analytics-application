@@ -19,6 +19,7 @@ import java.io.InputStream;
 import java.net.MalformedURLException;
 import java.net.URL;
 import java.net.URLConnection;
+import java.util.List;
 
 public class GIT {
 
@@ -32,6 +33,7 @@ public class GIT {
             return isValidLocalRepository(repoUri);
         }
     }
+
 
     boolean isValidLocalRepository(URIish repoUri) {
         boolean result;

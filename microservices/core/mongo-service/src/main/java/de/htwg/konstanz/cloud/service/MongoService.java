@@ -42,17 +42,23 @@ public class MongoService {
         String userId = checkstyleResults.getUserId();
         Group group = mongo.findOne(Query.query(Criteria.where("userId").is(userId)), Group.class);
 
-        System.out.println(group.toString());
-
-        System.out.println("USERID______" + userId);
-        group.setCheckstyleId(checkstyleResults);
+        group.setCheckstyle(checkstyleResults);
         groupRepo.save(group);
+        System.out.println(group);
     }
 
     @RequestMapping(value = "/addPMDEntry", method = RequestMethod.POST, consumes = "application/json")
     public void addPMDEntry(@RequestBody PMDResults pmdResults) {
         pmdResults.setTimestamp(String.valueOf(new Date().getTime()));
         pmdRepo.save(pmdResults);
+
+        String userId = pmdResults.getUserId();
+        Group group = mongo.findOne(Query.query(Criteria.where("userId").is(userId)), Group.class);
+
+        group.setPmd(pmdResults);
+        groupRepo.save(group);
+        System.out.println(group);
+
     }
 
     @RequestMapping(value = "/courses/{userId}/findLastCheckstyleResult", method = RequestMethod.GET)

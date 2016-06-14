@@ -20,6 +20,7 @@ public class SVN {
     private OperatingSystemCheck oOperatingSystemCheck = new OperatingSystemCheck();
     private String sFileSeparator = "";
 
+
     public String downloadSVNRepo(String svnLink) throws IOException, BadLocationException {
 
         sFileSeparator = oOperatingSystemCheck.getOperatingSystemSeparator();
