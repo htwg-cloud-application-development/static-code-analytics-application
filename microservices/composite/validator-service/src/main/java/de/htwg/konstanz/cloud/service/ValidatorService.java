@@ -144,8 +144,8 @@ public class ValidatorService {
             pmdResult.put("userId", userId);
             pmdResult.put("duration", (System.currentTimeMillis() - startTime));
 
-            Future<String> savePmd = databaseService.saveResult(pmdResult.toString());
-            Future<String> saveCheckstyle = databaseService.saveResult(checkstyleResult.toString());
+            Future<String> savePmd = databaseService.savePmdResult(pmdResult.toString());
+            Future<String> saveCheckstyle = databaseService.saveCheckstleResult(checkstyleResult.toString());
 
             jsonObject.put("checkstyle", checkstyleResult);
             jsonObject.put("pmd", pmdResult);
