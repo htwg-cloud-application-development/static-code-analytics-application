@@ -33,9 +33,25 @@ public class DatabaseService {
 
     @Async
     public Future<String> saveResult(String result) throws InstantiationException {
-        // TODO refactor to util class
         String SAVE_ROUTE = "/addEntry";
+        return addResultToDatabase(result, SAVE_ROUTE);
+    }
 
+    @Async
+    public Future<String> saveCheckstleResult(String result) throws InstantiationException {
+        String SAVE_ROUTE = "/addCheckstyleEntry";
+        return addResultToDatabase(result, SAVE_ROUTE);
+    }
+
+    @Async
+    public Future<String> savePmdResult(String result) throws InstantiationException {
+        String SAVE_ROUTE = "/addPMDEntry";
+        return addResultToDatabase(result, SAVE_ROUTE);
+
+
+    }
+
+    private Future<String> addResultToDatabase(String result, String SAVE_ROUTE) throws InstantiationException {
         // get database service instance
         ServiceInstance instance = loadBalancer.choose("mongo");
         if (null != instance) {
