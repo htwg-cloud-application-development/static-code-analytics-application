@@ -1,20 +1,13 @@
 package de.htwg.konstanz.cloud.service;
 
-import com.fasterxml.jackson.core.JsonProcessingException;
-import com.fasterxml.jackson.databind.JsonNode;
-import com.fasterxml.jackson.databind.ObjectMapper;
-import com.fasterxml.jackson.databind.node.ObjectNode;
-import com.google.gson.Gson;
-import de.htwg.konstanz.cloud.model.CheckstyleResults;
+
 import de.htwg.konstanz.cloud.model.Course;
 import de.htwg.konstanz.cloud.model.Group;
 import de.htwg.konstanz.cloud.model.User;
+import org.json.JSONArray;
 import org.json.JSONObject;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.data.domain.Sort;
 import org.springframework.data.mongodb.core.MongoOperations;
-import org.springframework.data.mongodb.core.query.Criteria;
-import org.springframework.data.mongodb.core.query.Query;
 import org.springframework.web.bind.annotation.*;
 
 import java.io.IOException;
@@ -54,31 +47,35 @@ public class CourseService {
     }
 
     @RequestMapping(value = "/{courseId}", method = RequestMethod.GET)
-    public Course getCourse(@PathVariable String courseId) throws IOException {
+    public String getCourse(@PathVariable String courseId) throws IOException {
 
         Course course = courseRepo.findOne(courseId);
-/*
-        JSONObject jcourse = new JSONObject(course);
-        JSONObject groups = jcourse.getJSONObject("groups");
-        groups.getJSONObject("checkstyle").remove("assignments");
-
-        System.out.println(groups);
-
-        /*
-        ObjectMapper mapper = new ObjectMapper();
-        String courseString = mapper.writeValueAsString(course);
-        JsonNode node = mapper.readTree(courseString);
-
-        JsonNode groups = node.get("groups");
-        JsonNode checkstyle = groups.get("checkstyleId");
-        System.out.println(checkstyle);
-
-        ((ObjectNode) checkstyle).remove("assignments");
 
 
-        System.out.println(node);
-*/
-        return courseRepo.findOne(courseId);
+        //Remove assignments from checkstyle and pmd
+        JSONObject jCourse = new JSONObject(course);
+        JSONArray groups = jCourse.getJSONArray("groups");
+
+        for(int i = 0; i < groups.length() - 1; i++){
+
+            JSONObject group = groups.getJSONObject(i);
+
+            if(group.has("pmd")){
+                JSONObject pmd = group.getJSONObject("pmd");
+                if(pmd.has("assignments")){
+                    pmd.remove("assignments");
+                }
+            }
+
+            if(group.has("checkstyle")){
+                JSONObject checkstyle = group.getJSONObject("checkstyle");
+                if(checkstyle.has("assignments")){
+                    checkstyle.remove("assignments");
+                }
+            }
+        }
+
+        return jCourse.toString();
     }
 
     //Returns all courses
