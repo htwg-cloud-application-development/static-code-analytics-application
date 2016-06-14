@@ -38,7 +38,6 @@ public class MongoService {
         checkstyleResults.setTimestamp(String.valueOf(new Date().getTime()));
         checkstyleRepo.save(checkstyleResults);
 
-
         String userId = checkstyleResults.getUserId();
         Group group = mongo.findOne(Query.query(Criteria.where("userId").is(userId)), Group.class);
 
