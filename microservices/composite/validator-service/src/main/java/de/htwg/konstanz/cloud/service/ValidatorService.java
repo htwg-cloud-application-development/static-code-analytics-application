@@ -233,4 +233,12 @@ public class ValidatorService {
     }
 
 
+    @RequestMapping(value = "/groups/{userId}/checkstyle/last-result", method = RequestMethod.GET, produces = "application/json")
+    public ResponseEntity<String> getLastCheckstyleResult(@PathVariable String userId) {
+        try {
+            return util.createResponse(databaseService.getLastCheckstyleResult(userId), HttpStatus.OK);
+        } catch (InstantiationException e) {
+            return util.createErrorResponse(e.getMessage(), HttpStatus.INTERNAL_SERVER_ERROR);
+        }
+    }
 }
