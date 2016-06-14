@@ -1,20 +1,12 @@
 package de.htwg.konstanz.cloud.service;
 
-import com.fasterxml.jackson.core.JsonProcessingException;
-import com.fasterxml.jackson.databind.JsonNode;
-import com.fasterxml.jackson.databind.ObjectMapper;
-import com.fasterxml.jackson.databind.node.ObjectNode;
-import com.google.gson.Gson;
-import de.htwg.konstanz.cloud.model.CheckstyleResults;
+
 import de.htwg.konstanz.cloud.model.Course;
 import de.htwg.konstanz.cloud.model.Group;
 import de.htwg.konstanz.cloud.model.User;
+import org.json.JSONArray;
 import org.json.JSONObject;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.data.domain.Sort;
-import org.springframework.data.mongodb.core.MongoOperations;
-import org.springframework.data.mongodb.core.query.Criteria;
-import org.springframework.data.mongodb.core.query.Query;
 import org.springframework.web.bind.annotation.*;
 
 import java.io.IOException;
@@ -24,9 +16,6 @@ import java.util.List;
 @RestController
 @RequestMapping("/course")
 public class CourseService {
-
-    @Autowired
-    private MongoOperations mongo;
 
     @Autowired
     private UserRepository userRepo;
@@ -54,25 +43,34 @@ public class CourseService {
     }
 
     @RequestMapping(value = "/{courseId}", method = RequestMethod.GET)
-    public Course getCourse(@PathVariable String courseId) throws IOException {
+    public String getCourse(@PathVariable String courseId) throws IOException {
 
         Course course = courseRepo.findOne(courseId);
 
-/*
-        ObjectMapper mapper = new ObjectMapper();
-        String courseString = mapper.writeValueAsString(course);
-        JsonNode node = mapper.readTree(courseString);
+        //Remove assignments from checkstyle and pmd
+        JSONObject jCourse = new JSONObject(course);
+        JSONArray groups = jCourse.getJSONArray("groups");
 
-        JsonNode groups = node.get("groups");
-        JsonNode checkstyle = groups.get("checkstyleId");
-        System.out.println(checkstyle);
+        for(int i = 0; i < groups.length() - 1; i++){
 
-        ((ObjectNode) checkstyle).remove("assignments");
+            JSONObject group = groups.getJSONObject(i);
 
+            if(group.has("pmd")){
+                JSONObject pmd = group.getJSONObject("pmd");
+                if(pmd.has("assignments")){
+                    pmd.remove("assignments");
+                }
+            }
 
-        System.out.println(node);
-*/
-        return courseRepo.findOne(courseId);
+            if(group.has("checkstyle")){
+                JSONObject checkstyle = group.getJSONObject("checkstyle");
+                if(checkstyle.has("assignments")){
+                    checkstyle.remove("assignments");
+                }
+            }
+        }
+
+        return jCourse.toString();
     }
 
     //Returns all courses
