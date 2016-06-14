@@ -24,7 +24,6 @@ public class GIT {
 
     private static final Logger LOG = LoggerFactory.getLogger(GIT.class);
 
-    //TODO: Prüfen ob GIT.com antwortet oder nicht und entsprechende Log Meldung ausgeben
     boolean isValidRepository(URIish repoUri) {
         if (repoUri.isRemote()) {
             return isValidRemoteRepository(repoUri);
@@ -60,6 +59,8 @@ public class GIT {
         if (isValidRepository(new URIish(f))) {
             git = Git.cloneRepository().setURI(gitRepo)
                     .setDirectory(new File(localDirectory)).call();
+        }else{
+            LOG.info("Git-Server unreachable");
         }
 
         /* Closing Object that we can delete the whole directory later */

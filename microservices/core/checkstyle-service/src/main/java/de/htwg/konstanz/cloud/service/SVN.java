@@ -59,6 +59,36 @@ public class SVN {
         return local;
     }
 
+    public boolean downloadSVNRepo(List<String> list) throws IOException,
+            BadLocationException {
+        // Parameters to access svn
+        String name = System.getenv("SVN_USER");
+        String password = System.getenv("SVN_PASSWORD");
+        String local = "";
+        String svnLink = "";
+        File dir = new File("repositoriesCPD");
+        if (!dir.exists()) {
+            dir.mkdir();
+        }
+        if (list != null) {
+            // URL Proccesing
+            for (int i = 0; i < list.size(); i++) {
+                svnLink = list.get(i);
+                String[] parts = list.get(i).split("\\/");
+
+                local = local + parts[parts.length - 1];
+                local = "repositoriesCPD/" + local + "_"
+                        + System.currentTimeMillis() + "/";
+                File dir1 = new File(local);
+                dir1.mkdir();
+                svnCheckout(svnLink, genAuthString(name, password), local);
+                local = "";
+            }
+        }
+        // Checkouts complete
+        return true;
+    }
+
     public String genAuthString(String name, String pass) {
         // HTTP Authentication
         String authString = name + ":" + pass;
