@@ -34,7 +34,7 @@ public class DatabaseService {
 
 
     public String saveGroups(Integer courseid, String groups) throws InstantiationException {
-        String url = "/group/" + courseid;
+        String url = "/groups/" + courseid;
         return postDataBaseFor(url, groups);
     }
 
