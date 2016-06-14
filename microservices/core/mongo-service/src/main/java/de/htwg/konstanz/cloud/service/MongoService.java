@@ -56,16 +56,18 @@ public class MongoService {
     }
 
     @RequestMapping(value = "/courses/{userId}/findLastCheckstyleResult", method = RequestMethod.GET)
+    public
     @ResponseBody
-    public CheckstyleResults getLastCheckstyleGroupResult(@PathVariable("userId") String userId) {
+    CheckstyleResults getLastCheckstyleGroupResult(@PathVariable("userId") String userId) {
 
         List<CheckstyleResults> userReps = mongo.find(Query.query(Criteria.where("userId").is(userId)).with(new Sort(Sort.Direction.DESC, "timestamp")).limit(1), CheckstyleResults.class);
         return userReps.get(0);
     }
 
     @RequestMapping(value = "/courses/{userId}/findLastPMDResult", method = RequestMethod.GET)
+    public
     @ResponseBody
-    public PMDResults getLastPMDGroupResult(@PathVariable("userId") String userId) {
+    PMDResults getLastPMDGroupResult(@PathVariable("userId") String userId) {
 
         List<PMDResults> pmdResults = mongo.find(Query.query(Criteria.where("userId").is(userId)).with(new Sort(Sort.Direction.DESC, "timestamp")).limit(1), PMDResults.class);
         return pmdResults.get(0);
