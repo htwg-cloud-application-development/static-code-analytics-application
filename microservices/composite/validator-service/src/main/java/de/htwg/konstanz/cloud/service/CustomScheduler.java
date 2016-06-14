@@ -154,7 +154,7 @@ public class CustomScheduler {
                         taskList.remove(i);
                         startTimeList.remove(i);
                         runningTasks--;
-                        databaseService.saveResult(obj.toString());
+                        databaseService.saveCheckstleResult(obj.toString());
                     }
                 }
                 // slepp 1 second
