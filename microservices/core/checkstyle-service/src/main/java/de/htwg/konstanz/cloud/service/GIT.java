@@ -19,12 +19,12 @@ import java.io.InputStream;
 import java.net.MalformedURLException;
 import java.net.URL;
 import java.net.URLConnection;
+import java.util.List;
 
 public class GIT {
 
     private static final Logger LOG = LoggerFactory.getLogger(GIT.class);
 
-    //TODO: Prüfen ob GIT.com antwortet oder nicht und entsprechende Log Meldung ausgeben
     boolean isValidRepository(URIish repoUri) {
         if (repoUri.isRemote()) {
             return isValidRemoteRepository(repoUri);
@@ -45,6 +45,36 @@ public class GIT {
         return result;
     }
 
+    public boolean downloadGITRepo(List<String> gitList)
+            throws InvalidRemoteException, TransportException, GitAPIException,
+            MalformedURLException, FileNotFoundException {
+        // Checkout Git-Repo
+        String directoryName = "";
+        String localDirectory = "";
+
+        if (gitList != null) {
+            for (int i = 0; i < gitList.size(); i++) {
+                // String Magic
+                directoryName = gitList.get(i).substring(
+                        gitList.get(i).lastIndexOf("/"), gitList.get(i).length() - 1)
+                        .replace(".", "_");
+                localDirectory = "repositoriesCPD/" + directoryName
+                        + "_" + System.currentTimeMillis() + "/";
+
+                // Clone Command with jGIT
+                URL f = new URL(gitList.get(i));
+                if (isValidRepository(new URIish(f))) {
+                    Git.cloneRepository().setURI(gitList.get(i))
+                            .setDirectory(new File(localDirectory)).call();
+                }
+                directoryName= "";
+                localDirectory = "";
+            }
+        }
+        // if all checkouts complete
+        return true;
+    }
+
     public String downloadGITRepo(String gitRepo) throws InvalidRemoteException, TransportException, GitAPIException, MalformedURLException {
         /* Checkout Git-Repo */
         Git git = null;
@@ -60,6 +90,8 @@ public class GIT {
         if (isValidRepository(new URIish(f))) {
             git = Git.cloneRepository().setURI(gitRepo)
                     .setDirectory(new File(localDirectory)).call();
+        }else{
+            LOG.info("Git-Server unreachable");
         }
 
         /* Closing Object that we can delete the whole directory later */
