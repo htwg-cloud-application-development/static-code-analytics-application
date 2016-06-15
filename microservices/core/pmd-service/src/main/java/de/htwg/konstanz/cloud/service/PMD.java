@@ -106,41 +106,81 @@ public class PMD {
     }
 
     private List<List<String>> generatePMDServiceData(String sLocalDirectory) {
-        /* Generate Data for CheckstyleService */
-        List<List<String>> list = new ArrayList<>();
-        File mainDir;
-        LOG.info("Local Directory: " + sLocalDirectory);
+        /* Generate Data for PMDService */
+
+            ArrayList<List<String>>  list = new ArrayList<List<String>>();
+            File mainDir;
+            LOG.info("Local Directory: " + sLocalDirectory);
+
+        /* Structure according to the specifications  */
 
         /* Check if local /src-dir exists */
-        if (new File(sLocalDirectory + "/src").exists()) {
-            mainDir = new File(sLocalDirectory + "/src");
-            LOG.info("Local SRC directory found");
-        } else {
-            mainDir = new File(sLocalDirectory);
-            LOG.info("There was no local SRC directory");
-        }
+            if (new File(sLocalDirectory + "/src").exists()) {
+                mainDir = new File(sLocalDirectory + "/src");
+                LOG.info("Local SRC directory found");
+            } else {
+                mainDir = new File(sLocalDirectory);
+                LOG.info("There was no local SRC directory");
+            }
 
         /* List all files for CheckstyleService */
-        if (mainDir.exists()) {
-            File[] files = mainDir.listFiles();
+            if (mainDir.exists()) {
+                File[] files = mainDir.listFiles();
 
-            for (int i = 0; i < files.length; ++i) {
+                for (int i = 0; i < files.length; ++i) {
+                    File[] filesSub = new File(files[i].getPath()).listFiles();
 
-                File[] filesSub = new File(files[i].getPath()).listFiles();
-                List<String> pathsSub = new ArrayList<String>();
+                    List<String> pathsSub = new ArrayList<String>();
+                    if(filesSub!=null) {
+                        for (int j = 0; j < filesSub.length; ++j) {
 
-                for (int j = 0; j < filesSub.length; ++j) {
-                    if (filesSub[j].getPath().endsWith(".java")) {
-                        pathsSub.add(filesSub[j].getPath());
+                            if (filesSub[j].getPath().endsWith(".java")) {
+                                pathsSub.add(filesSub[j].getPath());
+
+                            }
+                        }
+                    }
+                    if(!pathsSub.isEmpty()) {
+                        list.add(pathsSub);
                     }
                 }
-
-                list.add(pathsSub);
             }
+        /* Other Structure Workaround */
+            if(list.isEmpty()){
+                LOG.info("EMPTY");
+                try {
+                    List<String> javaFiles=new ArrayList<>();
+                    list.add(walk(sLocalDirectory,javaFiles));
+                } catch (FileNotFoundException e) {
+                    e.printStackTrace();
+                }
+            }
+            return list;
         }
 
-        return list;
-    }
+
+        public List<String> walk(String path, List<String> javaFiles) throws FileNotFoundException {
+
+            File root = new File(path);
+            File[] list = root.listFiles();
+            if (list != null) {
+
+                for (File f : list) {
+                    if (f.isDirectory()) {
+                        if (!f.getPath().contains(".git")) {
+
+                            walk(f.getPath(),javaFiles);
+                        }
+                    } else {
+                        if(f.getPath().endsWith(".java")) {
+                            javaFiles.add(f.getPath());
+                            LOG.info(f.getPath());
+                        }
+                    }
+                }
+            }
+            return javaFiles;
+        }
 
     private void checkLocalPMD() throws MalformedURLException, IOException, FileNotFoundException {
         ZIP oZIP = new ZIP();
