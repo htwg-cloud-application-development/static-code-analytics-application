@@ -44,7 +44,7 @@ public class CustomScheduler {
     @Autowired
     DatabaseService databaseService;
 
-    ArrayList<JSONObject> runValidationSchedulerOnAws(JSONArray groups) throws JSONException, InstantiationException, ExecutionException, InterruptedException {
+    ArrayList<JSONObject> runValidationSchedulerOnAws(JSONArray groups) throws JSONException, InstantiationException, ExecutionException, InterruptedException, NoSuchFieldException {
 
 
         int fullExecutionTime = 0;
@@ -94,15 +94,14 @@ public class CustomScheduler {
         LOG.info("Number of Instances to start: " + numberOfInstancesToStart);
         LOG.info("open tasks: " + openTasks);
 
-        //            startInstances(numberOfInstancesToStart, ec2);
-
+        startInstances(numberOfInstancesToStart, ec2);
 
         boolean noFinished = true;
         // while execution not finished
         while (openTasks > 0 || noFinished) {
 
             // check if new instance available and free
-            availableInstances = 2;
+            availableInstances = util.getNumberOfActiveCheckstyleInstances(ec2) - runningTasks;
 
             if (availableInstances > 0) {
                 LOG.info("availableInstances: " + availableInstances);
@@ -132,7 +131,7 @@ public class CustomScheduler {
 
                         // remove first element of available Instance list
                         Iterator<URI> it = availableInstancesList.iterator();
-                        if(it.hasNext()) {
+                        if (it.hasNext()) {
                             it.next();
                             it.remove();
                         }
@@ -160,15 +159,9 @@ public class CustomScheduler {
 
             for (int i = 0; i < runningTasks; i++) {
                 LOG.info("check running task nr: " + i);
-
-
                 if (taskList.get(i) != null) {
-
-
                     if (taskList.get(i).isDone()) {
                         LOG.info("task is done");
-                        LOG.info("Laenge der taskliste" + taskList.size());
-
 
                         JSONObject obj = new JSONObject(taskList.get(i).get());
                         JSONObject result = new JSONObject();
@@ -176,7 +169,6 @@ public class CustomScheduler {
                         result.put("userId", repoUserInformationMap.get(obj.getString("repository")));
                         result.put("duration", (System.currentTimeMillis() - startTimeList.get(i)));
 
-                        // TODO VALIDATE!!! - remove entry from blocked instance and add to available
                         ValidationData data = new ValidationData();
                         data.setRepository(obj.getString("repository"));
                         URI availableUri = getUriWithValue(blockedInstancesList, data.toString());
@@ -197,7 +189,6 @@ public class CustomScheduler {
 
                         toDelete.add(i);
                         databaseService.saveCheckstleResult(obj.toString());
-                        LOG.info("hhhhhhhh");
                     }
                 }
             }
@@ -224,8 +215,6 @@ public class CustomScheduler {
             // slepp 1 second
             Thread.sleep(1000);
         }
-
-
         return resultList;
     }
 
