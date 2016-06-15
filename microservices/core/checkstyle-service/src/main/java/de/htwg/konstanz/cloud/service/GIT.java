@@ -52,7 +52,7 @@ public class GIT {
 
         /* String Magic */
         String directoryName = gitRepo.substring(gitRepo.lastIndexOf("/"),
-                gitRepo.length() - 1).replace(".", "_");
+                gitRepo.length()).replace(".", "_");
         String localDirectory = "repositories/" + directoryName + "_"
                 + System.currentTimeMillis() + "/";
 

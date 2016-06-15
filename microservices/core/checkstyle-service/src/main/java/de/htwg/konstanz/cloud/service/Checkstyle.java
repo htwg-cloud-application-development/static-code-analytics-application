@@ -100,9 +100,12 @@ public class Checkstyle {
 
     private List<List<String>> generateCheckStyleServiceData(String localDirectory) {
         /* Generate Data for CheckstyleService */
-        List<List<String>> list = new ArrayList<List<String>>();
+
+        ArrayList<List<String>>  list = new ArrayList<List<String>>();
         File mainDir;
         LOG.info("Local Directory: " + localDirectory);
+
+        /* Structure according to the specifications  */
 
         /* Check if local /src-dir exists */
         if (new File(localDirectory + "/src").exists()) {
@@ -118,21 +121,58 @@ public class Checkstyle {
             File[] files = mainDir.listFiles();
 
             for (int i = 0; i < files.length; ++i) {
-
                 File[] filesSub = new File(files[i].getPath()).listFiles();
-                List<String> pathsSub = new ArrayList<String>();
 
-                for (int j = 0; j < filesSub.length; ++j) {
-                    if (filesSub[j].getPath().endsWith(".java")) {
-                        pathsSub.add(filesSub[j].getPath());
+                List<String> pathsSub = new ArrayList<String>();
+                if(filesSub!=null) {
+                    for (int j = 0; j < filesSub.length; ++j) {
+
+                        if (filesSub[j].getPath().endsWith(".java")) {
+                            pathsSub.add(filesSub[j].getPath());
+
+                        }
                     }
                 }
+                if(!pathsSub.isEmpty()) {
+                    list.add(pathsSub);
+                }
+            }
+            }
+        /* Other Structure Workaround */
+        if(list.isEmpty()){
+            LOG.info("EMPTY");
+        try {
+            List<String> javaFiles=new ArrayList<>();
+            list.add(walk(localDirectory,javaFiles));
+        } catch (FileNotFoundException e) {
+            e.printStackTrace();
+        }
+        }
+        return list;
+    }
 
-                list.add(pathsSub);
+
+    public List<String> walk(String path, List<String> javaFiles) throws FileNotFoundException {
+
+        File root = new File(path);
+        File[] list = root.listFiles();
+        if (list != null) {
+
+            for (File f : list) {
+                if (f.isDirectory()) {
+                    if (!f.getPath().contains(".git")) {
+
+                            walk(f.getPath(),javaFiles);
+                    }
+                } else {
+                    if(f.getPath().endsWith(".java")) {
+                        javaFiles.add(f.getPath());
+                        LOG.info(f.getPath());
+                    }
+                }
             }
         }
-
-        return list;
+        return javaFiles;
     }
 
     private void checkLocalCheckstyle() throws IOException {

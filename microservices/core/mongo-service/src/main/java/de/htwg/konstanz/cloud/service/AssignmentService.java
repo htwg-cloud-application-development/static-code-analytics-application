@@ -18,18 +18,18 @@ public class AssignmentService {
     @Autowired
     AssignmentRepository assignmentRepo;
 
-    @RequestMapping(path ="/{courseId}", method = RequestMethod.POST, consumes = "application/json")
-    public void create(@PathVariable String courseId, @RequestBody Assignment assignment) throws NoSuchFieldException{
+    @RequestMapping(path = "/{courseId}", method = RequestMethod.POST, consumes = "application/json")
+    public void create(@PathVariable String courseId, @RequestBody Assignment assignment) throws NoSuchFieldException {
 
         Course course = courseRepo.findOne(courseId);
-        if(null == course){
+        if (null == course) {
             throw new NoSuchFieldException("Course not found");
         }
 
         assignmentRepo.save(assignment);
 
         List<Assignment> assignments = course.getAssignments();
-        if(null == assignments){
+        if (null == assignments) {
             assignments = new ArrayList<>();
         }
 
@@ -39,7 +39,7 @@ public class AssignmentService {
     }
 
     @RequestMapping(path = "/{assignmentId}", method = RequestMethod.GET)
-    public Assignment getAssignment(@PathVariable String assignmentId){
+    public Assignment getAssignment(@PathVariable String assignmentId) {
         return assignmentRepo.findOne(assignmentId);
     }
 }
