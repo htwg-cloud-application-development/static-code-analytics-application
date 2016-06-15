@@ -102,7 +102,7 @@ public class CustomScheduler {
         while (openTasks > 0 || noFinished) {
 
             // check if new instance available and free
-            availableInstances = 1;
+            availableInstances = 2;
 
             if (availableInstances > 0) {
                 LOG.info("availableInstances: " + availableInstances);
@@ -171,11 +171,10 @@ public class CustomScheduler {
 
 
                         JSONObject obj = new JSONObject(taskList.get(i).get());
-                        // TODO validate parameter - groupId exists?
-
-                        LOG.info("OBJECT");
-                        obj.put("userId", repoUserInformationMap.get(obj.getString("repository")));
-                        obj.put("duration", (System.currentTimeMillis() - startTimeList.get(i)));
+                        JSONObject result = new JSONObject();
+                        result.put("checkstyle", obj);
+                        result.put("userId", repoUserInformationMap.get(obj.getString("repository")));
+                        result.put("duration", (System.currentTimeMillis() - startTimeList.get(i)));
 
                         // TODO VALIDATE!!! - remove entry from blocked instance and add to available
                         ValidationData data = new ValidationData();
@@ -190,7 +189,7 @@ public class CustomScheduler {
                                 it.remove();
                             }
                         }
-                        resultList.add(obj);
+                        resultList.add(result);
 
                         if (resultList.size() == groups.length()) {
                             noFinished = false;
