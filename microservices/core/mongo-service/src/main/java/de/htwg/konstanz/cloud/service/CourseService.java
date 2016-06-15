@@ -14,7 +14,7 @@ import java.util.LinkedList;
 import java.util.List;
 
 @RestController
-@RequestMapping("/course")
+@RequestMapping("/courses")
 public class CourseService {
 
     @Autowired
