@@ -108,13 +108,13 @@ public class CustomScheduler {
                         if (availableInstancesList.isEmpty()) {
                             ServiceInstance instance = loadBalancer.choose("checkstyle");
                             if (!blockedInstancesList.containsKey(instance.getUri())) {
-                                Future<String> future = validateRepositoryService.validateRepository(task.toString(), instance.getUri());
+                                Future<String> future = validateRepositoryService.validateRepository(task.toString(), instance.getUri().toString());
                                 blockedInstancesList.put(instance.getUri(), task.toString());
                                 taskList.add(future);
                                 isExecute = true;
                             }
                         } else {
-                            Future<String> future = validateRepositoryService.validateRepository(task.toString(), availableInstancesList.get(0));
+                            Future<String> future = validateRepositoryService.validateRepository(task.toString(), availableInstancesList.get(0).toString());
                             blockedInstancesList.put(availableInstancesList.remove(0), task.toString());
                             taskList.add(future);
                             isExecute = true;

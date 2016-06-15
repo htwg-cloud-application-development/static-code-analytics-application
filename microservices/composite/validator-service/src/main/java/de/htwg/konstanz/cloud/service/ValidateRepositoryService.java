@@ -14,7 +14,6 @@ import org.springframework.stereotype.Service;
 import org.springframework.web.client.RestTemplate;
 
 import javax.annotation.PostConstruct;
-import java.net.URI;
 import java.util.concurrent.Future;
 
 @Service
@@ -42,7 +41,7 @@ public class ValidateRepositoryService {
     }
 
     @Async
-    public Future<String> validateRepository(String repositoryUrlJsonObj, URI requestUri) throws InstantiationException {
+    public Future<String> validateRepository(String repositoryUrlJsonObj, String requestUri) throws InstantiationException {
         String VALIDATE_ROUTE = "/validate";
         LOG.info("Validate " + repositoryUrlJsonObj);
         return executePostRequest(repositoryUrlJsonObj, requestUri + VALIDATE_ROUTE);
