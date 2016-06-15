@@ -101,7 +101,7 @@ public class CustomScheduler {
         while (openTasks > 0 || noFinished) {
 
             // check if new instance available and free
-            availableInstances = util.getNumberOfActiveCheckstyleInstances(ec2) - runningTasks;
+            availableInstances = util.getNumberOfActiveCheckstyleInstances(ec2) - runningTask;
 
             if (availableInstances > 0) {
                 LOG.info("availableInstances: " + availableInstances);
@@ -118,6 +118,7 @@ public class CustomScheduler {
                             LOG.info("blabla: " + task.toString());
                             Future<String> future = validateRepositoryService.validateRepository(task.toString(), instance.getUri());
                             blockedInstancesList.put(instance.getUri(), task.toString());
+
                             taskList.add(future);
                             isExecute = true;
                         }
@@ -168,11 +169,15 @@ public class CustomScheduler {
                         result.put("checkstyle", obj);
                         result.put("userId", repoUserInformationMap.get(obj.getString("repository")));
                         result.put("duration", (System.currentTimeMillis() - startTimeList.get(i)));
-
+			result.put("repository", obj.getSTring("repository"));
                         ValidationData data = new ValidationData();
                         data.setRepository(obj.getString("repository"));
+
+LOG.info("1");
                         URI availableUri = getUriWithValue(blockedInstancesList, data.toString());
-                        availableInstancesList.add(availableUri);
+ 
+			System.out.println(availableUri);
+                       availableInstancesList.add(availableUri);
 
                         // remove entry from blocked instance list
                         for (Iterator<Map.Entry<URI, String>> it = blockedInstancesList.entrySet().iterator(); it.hasNext(); ) {
@@ -223,7 +228,19 @@ public class CustomScheduler {
         JSONObject sObject = new JSONObject(s);
         for (int i = 0; i < blockedInstancesList.size(); i++) {
             JSONObject jsonObject = new JSONObject(blockedInstancesList.get(keys.get(i)));
-            if (jsonObject.getString("repository").equals(sObject.getString("repository"))) {
+
+String repoUrl = jsonObject.getString("repository");
+if(repoUrl.endsWith("/")){
+	repoUrl = repoUrl.substring(0, repoUrl.length() -1);
+}
+
+String repoUrl2 = sObject.getString("repository");
+if(repoUrl2.endsWith("/")){
+	repoUrl2 = repoUrl2.substring(0, repoUrl2.length() -1);
+}
+
+            if (repoUrl.equals(repoUrl2)) {
+		LOG.info("key: " + keys.get(i));
                 return keys.get(i);
             }
         }
