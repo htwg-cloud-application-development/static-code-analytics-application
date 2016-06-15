@@ -139,8 +139,8 @@ public class CustomScheduler {
                     if (taskList.get(i).isDone()) {
                         JSONObject obj = new JSONObject(taskList.get(i).get());
                         // TODO validate parameter - groupId exists?
-                        LOG.info("Task is done: " + groups.getJSONObject(i).getString("groupId"));
-                        obj.put("groupId", groups.getJSONObject(i).getString("groupId"));
+                        LOG.info("Task is done: " + groups.getJSONObject(i).getString("userId"));
+                        obj.put("userId", groups.getJSONObject(i).getString("userId"));
                         obj.put("duration", (System.currentTimeMillis() - startTimeList.get(i)));
 
                         // TODO VALIDATE!!! - remove entry from blocked instance and add to available
