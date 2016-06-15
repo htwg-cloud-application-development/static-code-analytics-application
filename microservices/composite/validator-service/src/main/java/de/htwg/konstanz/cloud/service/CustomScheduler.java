@@ -49,6 +49,8 @@ public class CustomScheduler {
 
         int fullExecutionTime = 0;
         Map<Integer, List<JSONObject>> pipeline = new TreeMap<>();
+        Map<String, String> repoUserInformationMap = new HashMap<>();
+
         for (int i = 0; i < groups.length(); i++) {
             JSONObject jsonObject = (JSONObject) groups.get(i);
             int executinTime = jsonObject.optInt("executiontime", 60000);
@@ -69,6 +71,7 @@ public class CustomScheduler {
                 list.add(jsonObject);
                 pipeline.put(executinTime, list);
             }
+            repoUserInformationMap.put(jsonObject.getString("repository"), jsonObject.getString("userId"));
         }
 
         AmazonEC2 ec2 = new AmazonEC2Client(new EnvironmentVariableCredentialsProvider());
@@ -91,129 +94,148 @@ public class CustomScheduler {
         LOG.info("Number of Instances to start: " + numberOfInstancesToStart);
         LOG.info("open tasks: " + openTasks);
 
-        try {
-            startInstances(numberOfInstancesToStart, ec2);
+        //            startInstances(numberOfInstancesToStart, ec2);
 
-            // while execution not finished
-            while (openTasks > 0) {
 
-                // check if new instance available and free
-                availableInstances = util.getNumberOfActiveCheckstyleInstances(ec2) - runningTasks;
+        boolean noFinished = true;
+        // while execution not finished
+        while (openTasks > 0 || noFinished) {
 
-                if (availableInstances > 0) {
-                    LOG.info("availableInstances: " + availableInstances);
-                    JSONObject task = getTaskWithLongestDuration(pipeline, indexOfNextTask);
-                    if (task != null) {
-                        boolean isExecute = false;
-                        if (availableInstancesList.isEmpty()) {
-                            ServiceInstance instance = loadBalancer.choose("checkstyle");
+            // check if new instance available and free
+            availableInstances = 1;
 
-LOG.info("instanceurl: "+instance.getUri());
-                            if (!blockedInstancesList.containsKey(instance.getUri())) {
+            if (availableInstances > 0) {
+                LOG.info("availableInstances: " + availableInstances);
+                JSONObject task = getTaskWithLongestDuration(pipeline, indexOfNextTask);
+                if (task != null) {
+                    boolean isExecute = false;
+                    if (availableInstancesList.isEmpty()) {
+                        ServiceInstance instance = loadBalancer.choose("checkstyle");
 
-LOG.info("validate: " + instance.getUri());
-LOG.info("blabla: " + task.toString());
-                                Future<String> future = validateRepositoryService.validateRepository(task.toString(), instance.getUri());
-                                blockedInstancesList.put(instance.getUri(), task.toString());
-                                taskList.add(future);
-                                isExecute = true;
-                            }
-                        } else {
- 
-LOG.info("HIER KRACHT ES!!! wegen availbaleInstancesList");
-                           Future<String> future = validateRepositoryService.validateRepository(task.toString(), availableInstancesList.get(0));
-                            blockedInstancesList.put(availableInstancesList.remove(0), task.toString());
+                        LOG.info("instanceurl: " + instance.getUri());
+                        if (!blockedInstancesList.containsKey(instance.getUri())) {
+
+                            LOG.info("validate: " + instance.getUri());
+                            LOG.info("blabla: " + task.toString());
+                            Future<String> future = validateRepositoryService.validateRepository(task.toString(), instance.getUri());
+                            blockedInstancesList.put(instance.getUri(), task.toString());
                             taskList.add(future);
                             isExecute = true;
                         }
+                    } else {
 
-                        // update status of task execution
-                        if (isExecute) {
-                            startTimeList.add(System.currentTimeMillis());
-                            runningTasks++;
-                            indexOfNextTask++;
-                            openTasks--;
+                        LOG.info("HIER KRACHT ES!!! wegen availbaleInstancesList");
+                        Future<String> future = validateRepositoryService.validateRepository(task.toString(), availableInstancesList.get(0));
 
-                            LOG.info("running tasks: " + runningTasks);
-                            LOG.info("open tasks: " + openTasks);
-                            LOG.info("index of next task: " + indexOfNextTask);
+
+                        blockedInstancesList.put(availableInstancesList.remove(0), task.toString());
+
+                        // remove first element of available Instance list
+                        Iterator<URI> it = availableInstancesList.iterator();
+                        if(it.hasNext()) {
+                            it.next();
+                            it.remove();
                         }
+
+                        taskList.add(future);
+                        isExecute = true;
+                    }
+
+                    // update status of task execution
+                    if (isExecute) {
+                        startTimeList.add(System.currentTimeMillis());
+                        runningTasks++;
+                        indexOfNextTask++;
+                        openTasks--;
+
+                        LOG.info("running tasks: " + runningTasks);
+                        LOG.info("open tasks: " + openTasks);
+                        LOG.info("index of next task: " + indexOfNextTask);
                     }
                 }
+            }
 
 
+            ArrayList<Integer> toDelete = new ArrayList<>();
 
-ArrayList<Integer> tmp = new ArrayList<>();
-
-                for (int i = 0; i < runningTasks; i++) {
-LOG.info("check running task nr: " + i);
-
+            for (int i = 0; i < runningTasks; i++) {
+                LOG.info("check running task nr: " + i);
 
 
-                    if (taskList.get(i) != null) {
+                if (taskList.get(i) != null) {
 
 
-if(taskList.get(i).isDone()) {
-LOG.info("task is done");
-LOG.info("Laenge der taskliste" + taskList.size());
+                    if (taskList.get(i).isDone()) {
+                        LOG.info("task is done");
+                        LOG.info("Laenge der taskliste" + taskList.size());
 
 
                         JSONObject obj = new JSONObject(taskList.get(i).get());
                         // TODO validate parameter - groupId exists?
 
-//LOG.info(obj.toString());
-LOG.info("OBJECT");
-//                        LOG.info("Task is done: " + obj.getString("userId"));
-//                        obj.put("userId", obj.getString("userId"));
+                        LOG.info("OBJECT");
+                        obj.put("userId", repoUserInformationMap.get(obj.getString("repository")));
                         obj.put("duration", (System.currentTimeMillis() - startTimeList.get(i)));
 
                         // TODO VALIDATE!!! - remove entry from blocked instance and add to available
                         ValidationData data = new ValidationData();
-LOG.info("huhu");
                         data.setRepository(obj.getString("repository"));
                         URI availableUri = getUriWithValue(blockedInstancesList, data.toString());
                         availableInstancesList.add(availableUri);
-LOG.info("Finished!");
-                        blockedInstancesList.remove(availableUri);
 
+                        // remove entry from blocked instance list
+                        for (Iterator<Map.Entry<URI, String>> it = blockedInstancesList.entrySet().iterator(); it.hasNext(); ) {
+                            Map.Entry<URI, String> entry = it.next();
+                            if (entry.getKey().equals(availableUri)) {
+                                it.remove();
+                            }
+                        }
                         resultList.add(obj);
 
-tmp.add(i);
-//                        taskList.remove(i);
-//                        startTimeList.remove(i);
-//                        runningTasks--;
+                        if (resultList.size() == groups.length()) {
+                            noFinished = false;
+                        }
+
+                        toDelete.add(i);
                         databaseService.saveCheckstleResult(obj.toString());
-LOG.info("hhhhhhhh");
-                    }}
+                        LOG.info("hhhhhhhh");
+                    }
                 }
-  
-
-for(int i = 0; i < tmp.size(); i++) {
-
-LOG.info("remove task: "+ tmp.get(i));	
-	taskList.set(tmp.get(i), null);
-LOG.info("task liste länge: " + taskList.size());	
-startTimeList.remove(tmp.get(i));
-	runningTasks--;
-LOG.info("neu running tasks: " + runningTasks);
-}
-
-              // slepp 1 second
-                Thread.sleep(1000);
             }
 
 
-        } catch (NoSuchFieldException e) {
-            LOG.info(e.getMessage());
+            if (!toDelete.isEmpty()) {
+                Iterator<Future<String>> it = taskList.listIterator();
+                Iterator<Long> itTime = startTimeList.iterator();
+                int j = 0;
+                while (it.hasNext()) {
+                    it.next();
+                    itTime.next();
+                    if (toDelete.contains(j)) {
+                        it.remove();
+                        itTime.remove();
+                        runningTasks--;
+                    }
+                    j++;
+                }
+                toDelete.clear();
+            }
+
+
+            // slepp 1 second
+            Thread.sleep(1000);
         }
+
 
         return resultList;
     }
 
-    private URI getUriWithValue(Map<URI, String> blockedInstancesList, String s) {
+    private URI getUriWithValue(Map<URI, String> blockedInstancesList, String s) throws JSONException {
         ArrayList<URI> keys = new ArrayList<>(blockedInstancesList.keySet());
+        JSONObject sObject = new JSONObject(s);
         for (int i = 0; i < blockedInstancesList.size(); i++) {
-            if (blockedInstancesList.get(keys.get(i)).equals(s)) {
+            JSONObject jsonObject = new JSONObject(blockedInstancesList.get(keys.get(i)));
+            if (jsonObject.getString("repository").equals(sObject.getString("repository"))) {
                 return keys.get(i);
             }
         }
