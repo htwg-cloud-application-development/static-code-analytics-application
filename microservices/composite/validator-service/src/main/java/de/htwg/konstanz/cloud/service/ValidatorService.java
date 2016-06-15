@@ -7,7 +7,6 @@ import com.amazonaws.services.ec2.AmazonEC2Client;
 import com.amazonaws.services.ec2.model.Instance;
 import com.amazonaws.services.ec2.model.RunInstancesResult;
 import com.amazonaws.util.json.JSONArray;
-import com.amazonaws.util.json.JSONException;
 import com.amazonaws.util.json.JSONObject;
 import de.htwg.konstanz.cloud.model.ValidationData;
 import io.swagger.annotations.ApiOperation;
@@ -24,8 +23,9 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.scheduling.annotation.EnableAsync;
 import org.springframework.web.bind.annotation.*;
 
-import java.util.*;
-import java.util.concurrent.ExecutionException;
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.Date;
 import java.util.concurrent.Future;
 
 @RestController
@@ -150,11 +150,6 @@ public class ValidatorService {
             jsonObject.put("checkstyle", checkstyleResult);
             jsonObject.put("pmd", pmdResult);
 
-
-	while(savePmd.isDone()){
-Thread.sleep(50);
-}
-LOG.info(savePmd.get());
             return util.createResponse(jsonObject.toString(), HttpStatus.OK);
         } catch (InstantiationException e) {
             LOG.error(e.getMessage());
@@ -201,42 +196,6 @@ LOG.info(savePmd.get());
             return util.createErrorResponse(e.getMessage(), HttpStatus.INTERNAL_SERVER_ERROR);
         }
     }
-
-    @RequestMapping(value = "/scheduler", method = RequestMethod.GET, produces = "application/json")
-    public String schedulerTest() {
-        try {
-
-            JSONObject gitRepo1 = new JSONObject();
-            gitRepo1.put("executiontime", 60001);
-
-            JSONObject gitRepo2 = new JSONObject();
-            gitRepo2.put("executiontime", 20000);
-
-            JSONObject svnRepo1 = new JSONObject();
-            svnRepo1.put("executiontime", 60001);
-
-            JSONArray groups = new JSONArray();
-            groups.put(gitRepo1);
-            groups.put(gitRepo2);
-            groups.put(svnRepo1);
-
-            customScheduler.runValidationSchedulerOnAws(groups);
-        } catch (JSONException e) {
-            e.printStackTrace();
-            return e.getMessage();
-        } catch (InstantiationException e) {
-            e.printStackTrace();
-            return e.getMessage();
-        } catch (ExecutionException e) {
-            e.printStackTrace();
-            return e.getMessage();
-        } catch (InterruptedException e) {
-            e.printStackTrace();
-            return e.getMessage();
-        }
-        return "{\"timestamp\":\"" + new Date() + "\",\"serviceId\":\"" + "\"}";
-    }
-
 
     @RequestMapping(value = "/groups/{userId}/checkstyle/last-result", method = RequestMethod.GET, produces = "application/json")
     public ResponseEntity<String> getLastCheckstyleResult(@PathVariable String userId) {
