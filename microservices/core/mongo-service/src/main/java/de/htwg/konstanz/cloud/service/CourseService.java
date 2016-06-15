@@ -51,7 +51,7 @@ public class CourseService {
     }
 
     //Returns all courses without assingments of pmd and checkstyle
-    @RequestMapping(value = "/courses", method = RequestMethod.GET)
+    @RequestMapping(method = RequestMethod.GET)
     public String getAllCourses(){
 
         List<Course> courses = courseRepo.findAll();
