@@ -107,14 +107,21 @@ public class CustomScheduler {
                         boolean isExecute = false;
                         if (availableInstancesList.isEmpty()) {
                             ServiceInstance instance = loadBalancer.choose("checkstyle");
+
+LOG.info("instanceurl: "+instance.getUri());
                             if (!blockedInstancesList.containsKey(instance.getUri())) {
+
+LOG.info("validate: " + instance.getUri());
+LOG.info("blabla: " + task.toString());
                                 Future<String> future = validateRepositoryService.validateRepository(task.toString(), instance.getUri());
                                 blockedInstancesList.put(instance.getUri(), task.toString());
                                 taskList.add(future);
                                 isExecute = true;
                             }
                         } else {
-                            Future<String> future = validateRepositoryService.validateRepository(task.toString(), availableInstancesList.get(0));
+ 
+LOG.info("HIER KRACHT ES!!! wegen availbaleInstancesList");
+                           Future<String> future = validateRepositoryService.validateRepository(task.toString(), availableInstancesList.get(0));
                             blockedInstancesList.put(availableInstancesList.remove(0), task.toString());
                             taskList.add(future);
                             isExecute = true;
@@ -135,29 +142,63 @@ public class CustomScheduler {
                 }
 
 
+
+ArrayList<Integer> tmp = new ArrayList<>();
+
                 for (int i = 0; i < runningTasks; i++) {
-                    if (taskList.get(i).isDone()) {
+LOG.info("check running task nr: " + i);
+
+
+
+                    if (taskList.get(i) != null) {
+
+
+if(taskList.get(i).isDone()) {
+LOG.info("task is done");
+LOG.info("Laenge der taskliste" + taskList.size());
+
+
                         JSONObject obj = new JSONObject(taskList.get(i).get());
                         // TODO validate parameter - groupId exists?
-                        LOG.info("Task is done: " + groups.getJSONObject(i).getString("userId"));
-                        obj.put("userId", groups.getJSONObject(i).getString("userId"));
+
+//LOG.info(obj.toString());
+LOG.info("OBJECT");
+//                        LOG.info("Task is done: " + obj.getString("userId"));
+//                        obj.put("userId", obj.getString("userId"));
                         obj.put("duration", (System.currentTimeMillis() - startTimeList.get(i)));
 
                         // TODO VALIDATE!!! - remove entry from blocked instance and add to available
                         ValidationData data = new ValidationData();
-                        data.setRepository(groups.getJSONObject(i).getString("repository"));
+LOG.info("huhu");
+                        data.setRepository(obj.getString("repository"));
                         URI availableUri = getUriWithValue(blockedInstancesList, data.toString());
                         availableInstancesList.add(availableUri);
+LOG.info("Finished!");
                         blockedInstancesList.remove(availableUri);
 
                         resultList.add(obj);
-                        taskList.remove(i);
-                        startTimeList.remove(i);
-                        runningTasks--;
+
+tmp.add(i);
+//                        taskList.remove(i);
+//                        startTimeList.remove(i);
+//                        runningTasks--;
                         databaseService.saveCheckstleResult(obj.toString());
-                    }
+LOG.info("hhhhhhhh");
+                    }}
                 }
-                // slepp 1 second
+  
+
+for(int i = 0; i < tmp.size(); i++) {
+
+LOG.info("remove task: "+ tmp.get(i));	
+	taskList.set(tmp.get(i), null);
+LOG.info("task liste länge: " + taskList.size());	
+startTimeList.remove(tmp.get(i));
+	runningTasks--;
+LOG.info("neu running tasks: " + runningTasks);
+}
+
+              // slepp 1 second
                 Thread.sleep(1000);
             }
 

@@ -150,6 +150,11 @@ public class ValidatorService {
             jsonObject.put("checkstyle", checkstyleResult);
             jsonObject.put("pmd", pmdResult);
 
+
+	while(savePmd.isDone()){
+Thread.sleep(50);
+}
+LOG.info(savePmd.get());
             return util.createResponse(jsonObject.toString(), HttpStatus.OK);
         } catch (InstantiationException e) {
             LOG.error(e.getMessage());
