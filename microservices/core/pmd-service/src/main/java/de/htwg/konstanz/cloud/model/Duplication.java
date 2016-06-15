@@ -3,16 +3,13 @@ package de.htwg.konstanz.cloud.model;
 import java.util.ArrayList;
 import java.util.List;
 
-/**
- * Created by Nexoc on 09.06.2016.
- */
 public class Duplication {
     private final int sDuplicatedLine;
     private final int sTokens;
     private final List<String> lInvolvedData;
     private final String sDuplicatedCode;
 
-    private Duplication(int sDupilcatedLine, int sTokens, List<String> lInvolvedData, String sDuplicatedCode){
+    public Duplication(int sDupilcatedLine, int sTokens, List<String> lInvolvedData, String sDuplicatedCode){
         this.sDuplicatedLine = sDupilcatedLine;
         this.sTokens = sTokens;
         this.lInvolvedData = lInvolvedData;

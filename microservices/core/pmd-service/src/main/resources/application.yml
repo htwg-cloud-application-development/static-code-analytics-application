@@ -7,6 +7,12 @@ spring:
 logging:
   file: pmd-service.log
 
+penis:
+  klein: 141.37.122.26
+app:
+  config:
+    svn:
+      server: '141.37.122.26'
 ---
 # profile for development
 spring:

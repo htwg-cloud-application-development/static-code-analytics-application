@@ -8,7 +8,7 @@ public class OperatingSystemCheck {
     {
         String sOS = "";
 
-        if(sOS.equals(""))
+        if("".equals(sOS))
         {
             sOS = System.getProperty("os.name");
         }
