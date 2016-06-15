@@ -105,7 +105,7 @@ public class PMD {
         return oJson;
     }
 
-    private List<List<String>> generatePMDServiceData(String sLocalDirectory) {
+    private List<List<String>> generatePMDServiceData(String sLocalDirectory) throws FileNotFoundException {
         /* Generate Data for CheckstyleService */
         List<List<String>> list = new ArrayList<>();
         File mainDir;
@@ -122,17 +122,52 @@ public class PMD {
                 File[] filesSub = new File(file.getPath()).listFiles();
                 List<String> pathsSub = new ArrayList<>();
 
-                for (File aFilesSub : filesSub) {
-                    if (aFilesSub.getPath().endsWith(".java")) {
-                        pathsSub.add(aFilesSub.getPath());
+                if(filesSub!=null) {
+                    for (File aFilesSub : filesSub) {
+                        if (aFilesSub.getPath().endsWith(".java")) {
+                            pathsSub.add(aFilesSub.getPath());
+                        }
                     }
                 }
 
-                list.add(pathsSub);
+                if(!pathsSub.isEmpty()) {
+                    list.add(pathsSub);
+                }
             }
         }
 
+        /* Other Structure Workaround */
+        if(list.isEmpty()){
+            LOG.info("divergent repository");
+            List<String> javaFiles=new ArrayList<>();
+            list.add(walk(sLocalDirectory,javaFiles));
+        }
+
         return list;
+    }
+
+    private List<String> walk(String path, List<String> javaFiles) throws FileNotFoundException {
+        File root = new File(path);
+        File[] list = root.listFiles();
+        
+        if (list != null) {
+
+            for (File f : list) {
+                if (f.isDirectory()) {
+                    if (!f.getPath().contains(".git")) {
+
+                        walk(f.getPath(),javaFiles);
+                    }
+                } else {
+                    if(f.getPath().endsWith(".java")) {
+                        javaFiles.add(f.getPath());
+                        LOG.info(f.getPath());
+                    }
+                }
+            }
+        }
+
+        return javaFiles;
     }
 
     private void checkLocalPMD() throws MalformedURLException, IOException, FileNotFoundException {
