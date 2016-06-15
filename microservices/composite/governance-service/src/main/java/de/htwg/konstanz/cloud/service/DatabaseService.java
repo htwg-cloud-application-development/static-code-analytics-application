@@ -2,11 +2,7 @@ package de.htwg.konstanz.cloud.service;
 
 import com.amazonaws.util.json.JSONObject;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.cloud.client.loadbalancer.LoadBalancerClient;
 import org.springframework.stereotype.Service;
-import org.springframework.web.client.RestTemplate;
-
-import javax.annotation.PostConstruct;
 
 @Service
 public class DatabaseService {
@@ -25,7 +21,7 @@ public class DatabaseService {
     }
 
     public String getAllCourses() throws InstantiationException {
-        return callDatabaseFor("/course/courses");
+        return callDatabaseFor("/courses");
     }
 
     public String getCourseWithId(String courseId) throws InstantiationException {
