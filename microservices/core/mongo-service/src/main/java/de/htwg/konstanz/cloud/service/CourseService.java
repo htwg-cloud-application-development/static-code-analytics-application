@@ -24,16 +24,16 @@ public class CourseService {
     private CourseRepository courseRepo;
 
     @RequestMapping(path = "/{userId}", method = RequestMethod.POST, consumes = "application/json")
-    public void create(@RequestBody Course course, @PathVariable String userId) throws NoSuchFieldException{
+    public void create(@RequestBody Course course, @PathVariable String userId) throws NoSuchFieldException {
 
         User user = userRepo.findOne(userId);
-        if(null == user){
+        if (null == user) {
             throw new NoSuchFieldException("User not found");
         }
         courseRepo.save(course);
 
         List<Course> courses = user.getCourses();
-        if (null == courses){
+        if (null == courses) {
             courses = new ArrayList<>();
         }
 
@@ -52,12 +52,12 @@ public class CourseService {
 
     //Returns all courses without assingments of pmd and checkstyle
     @RequestMapping(method = RequestMethod.GET)
-    public String getAllCourses(){
+    public String getAllCourses() {
 
         List<Course> courses = courseRepo.findAll();
         List<JSONObject> jsonObjects = new LinkedList<>();
 
-        for (Course course: courses){
+        for (Course course : courses) {
             jsonObjects.add(removeAssignments(course));
         }
 
@@ -67,39 +67,39 @@ public class CourseService {
 
     //Returns all groups to matching courseId
     @RequestMapping(value = "/groups/{courseId}", method = RequestMethod.GET)
-    public List<Group> getGroups(@PathVariable String courseId) throws NoSuchFieldException{
+    public List<Group> getGroups(@PathVariable String courseId) throws NoSuchFieldException {
 
         Course course = courseRepo.findOne(courseId);
-        if (null == course){
+        if (null == course) {
             throw new NoSuchFieldException("Course not found");
         }
 
         return course.getGroups();
     }
 
-    public JSONObject removeAssignments(Course course){
+    public JSONObject removeAssignments(Course course) {
 
         //Remove assignments from checkstyle and pmd
         JSONObject jCourse = new JSONObject(course);
 
-        if (jCourse.has("groups")){
+        if (jCourse.has("groups")) {
 
             JSONArray groups = jCourse.getJSONArray("groups");
 
-            for(int i = 0; i < groups.length() - 1; i++){
+            for (int i = 0; i < groups.length() - 1; i++) {
 
                 JSONObject group = groups.getJSONObject(i);
 
-                if(group.has("pmd")){
+                if (group.has("pmd")) {
                     JSONObject pmd = group.getJSONObject("pmd");
-                    if(pmd.has("assignments")){
+                    if (pmd.has("assignments")) {
                         pmd.remove("assignments");
                     }
                 }
 
-                if(group.has("checkstyle")){
+                if (group.has("checkstyle")) {
                     JSONObject checkstyle = group.getJSONObject("checkstyle");
-                    if(checkstyle.has("assignments")){
+                    if (checkstyle.has("assignments")) {
                         checkstyle.remove("assignments");
                     }
                 }
