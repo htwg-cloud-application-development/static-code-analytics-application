@@ -13,8 +13,7 @@ import org.springframework.web.bind.annotation.*;
 import java.util.Date;
 import java.util.List;
 
-//TODO:Exceptions for ID not found etc?
-//TODO:Own mapping or only mapping to methods?
+
 @RestController
 public class MongoService {
 
