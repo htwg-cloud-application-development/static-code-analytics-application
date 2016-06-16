@@ -43,11 +43,13 @@
             <property name="allowNonPrintableEscapes" value="true"/>
         </module>
         <module name="LineLength">
-            <property name="max" value="100"/>
+            <property name="max" value="130"/>
             <property name="ignorePattern" value="^package.*|^import.*|a href|href|http://|https://|ftp://"/>
         </module>
+		<!--
         <module name="AvoidStarImport"/>
-        <module name="OneTopLevelClass"/>
+        -->
+		<module name="OneTopLevelClass"/>
         <module name="NoLineWrap"/>
         <module name="EmptyBlock">
             <property name="option" value="TEXT"/>
@@ -55,12 +57,13 @@
         </module>
         <module name="NeedBraces"/>
         <module name="LeftCurly">
-            <property name="maxLineLength" value="100"/>
+            <property name="maxLineLength" value="130"/>
         </module>
         <module name="RightCurly">
             <property name="option" value="alone"/>
             <property name="tokens" value="CLASS_DEF, METHOD_DEF, CTOR_DEF, LITERAL_FOR, LITERAL_WHILE, LITERAL_DO, STATIC_INIT, INSTANCE_INIT"/>
         </module>
+		<!--
         <module name="WhitespaceAround">
             <property name="allowEmptyConstructors" value="false"/>
             <property name="allowEmptyMethods" value="false"/>
@@ -71,6 +74,7 @@
              <message key="ws.notPreceded"
              value="WhitespaceAround: ''{0}'' is not preceded with whitespace."/>
         </module>
+		-->
         <module name="OneStatementPerLine"/>
         <module name="MultipleVariableDeclarations"/>
         <module name="ArrayTypeStyle"/>
@@ -99,23 +103,23 @@
              value="Type name ''{0}'' must match pattern ''{1}''."/>
         </module>
         <module name="MemberName">
-            <property name="format" value="^[a-z][a-z0-9][a-zA-Z0-9]*$"/>
+            <property name="format" value="^[a-z][a-zA-Z0-9]*$"/>
             <message key="name.invalidPattern"
              value="Member name ''{0}'' must match pattern ''{1}''."/>
         </module>
         <module name="ParameterName">
-            <property name="format" value="^[a-z][a-z0-9][a-zA-Z0-9]*$"/>
+            <property name="format" value="^[a-z][a-zA-Z0-9]*$"/>
             <message key="name.invalidPattern"
              value="Parameter name ''{0}'' must match pattern ''{1}''."/>
         </module>
         <module name="CatchParameterName">
-            <property name="format" value="^[a-z][a-z0-9][a-zA-Z0-9]*$"/>
+            <property name="format" value="^[a-z][a-zA-Z0-9]*$"/>
             <message key="name.invalidPattern"
              value="Catch parameter name ''{0}'' must match pattern ''{1}''."/>
         </module>
         <module name="LocalVariableName">
             <property name="tokens" value="VARIABLE_DEF"/>
-            <property name="format" value="^[a-z][a-z0-9][a-zA-Z0-9]*$"/>
+            <property name="format" value="^[a-z][a-zA-Z0-9]*$"/>
             <property name="allowOneCharVarInForLoop" value="false"/>
             <message key="name.invalidPattern"
              value="Local variable name ''{0}'' must match pattern ''{1}''."/>
@@ -136,6 +140,7 @@
              value="Interface type name ''{0}'' must match pattern ''{1}''."/>
         </module>
         <module name="NoFinalizer"/>
+		<!--
         <module name="GenericWhitespace">
             <message key="ws.followed"
              value="GenericWhitespace ''{0}'' is followed by whitespace."/>
@@ -146,6 +151,7 @@
              <message key="ws.notPreceded"
              value="GenericWhitespace ''{0}'' is not preceded with whitespace."/>
         </module>
+		-->
 		<!--
         <module name="Indentation">
             <property name="basicOffset" value="4"/>
@@ -162,11 +168,13 @@
         </module>
         <module name="OverloadMethodsDeclarationOrder"/>
         <module name="VariableDeclarationUsageDistance"/>
-        <module name="CustomImportOrder">
+        <!--
+		<module name="CustomImportOrder">
             <property name="specialImportsRegExp" value="com.google"/>
             <property name="sortImportsInGroupAlphabetically" value="true"/>
             <property name="customImportOrderRules" value="STATIC###SPECIAL_IMPORTS###THIRD_PARTY_PACKAGE###STANDARD_JAVA_PACKAGE"/>
         </module>
+		-->
         <module name="MethodParamPad"/>
         <module name="OperatorWrap">
             <property name="option" value="NL"/>
@@ -207,7 +215,7 @@
         </module>
 		-->
         <module name="MethodName">
-            <property name="format" value="^[a-z][a-z0-9][a-zA-Z0-9_]*$"/>
+            <property name="format" value="^[a-z][a-zA-Z0-9_]*$"/>
             <message key="name.invalidPattern"
              value="Method name ''{0}'' must match pattern ''{1}''."/>
         </module>
@@ -219,6 +227,8 @@
         <module name="EmptyCatchBlock">
             <property name="exceptionVariableName" value="expected"/>
         </module>
+		<!--
         <module name="CommentsIndentation"/>
+		-->
     </module>
 </module>

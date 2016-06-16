@@ -1,45 +1,40 @@
 package de.htwg.konstanz.cloud.model;
 
-public class SeverityCounter
-{
+public class SeverityCounter {
     private int nErrorCount;
+
+
     private int nWarningCount;
+
     private int nIgnoreCount;
 
-    public SeverityCounter()
-    {
+    public SeverityCounter() {
         this.nErrorCount = 0;
         this.nWarningCount = 0;
         this.nIgnoreCount = 0;
     }
 
-    public void incErrorCount()
-    {
+    public void incErrorCount() {
         this.nErrorCount++;
     }
 
-    public void incWarningCount()
-    {
+    public void incWarningCount() {
         this.nWarningCount++;
     }
 
-    public void incIgnoreCount()
-    {
+    public void incIgnoreCount() {
         this.nIgnoreCount++;
     }
 
-    public int getErrorCount()
-    {
+    public int getErrorCount() {
         return this.nErrorCount;
     }
 
-    public int getWarningCount()
-    {
+    public int getWarningCount() {
         return this.nWarningCount;
     }
 
-    public int getIgnoreCount()
-    {
+    public int getIgnoreCount() {
         return this.nIgnoreCount;
     }
 }

@@ -5,14 +5,10 @@ import de.htwg.konstanz.cloud.model.Error;
 import de.htwg.konstanz.cloud.model.SeverityCounter;
 import org.apache.commons.io.FileUtils;
 import org.eclipse.jgit.api.errors.GitAPIException;
-import org.eclipse.jgit.api.errors.InvalidRemoteException;
-import org.eclipse.jgit.api.errors.TransportException;
 import org.json.JSONArray;
 import org.json.JSONObject;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import org.springframework.beans.factory.annotation.Value;
-import org.springframework.stereotype.Component;
 import org.w3c.dom.Document;
 import org.w3c.dom.Element;
 import org.w3c.dom.Node;
@@ -25,25 +21,31 @@ import javax.xml.parsers.DocumentBuilder;
 import javax.xml.parsers.DocumentBuilderFactory;
 import javax.xml.parsers.ParserConfigurationException;
 import java.io.*;
-import java.net.MalformedURLException;
 import java.net.URL;
 import java.nio.channels.Channels;
 import java.nio.channels.ReadableByteChannel;
 import java.util.ArrayList;
 import java.util.List;
 
-public class PMD {
+public class Pmd {
+    private static final Logger LOG = LoggerFactory.getLogger(Pmd.class);
 
-    private static final Logger LOG = LoggerFactory.getLogger(PMD.class);
     private final List<Class> lFormattedClassList = new ArrayList<>();
+
     private final OperatingSystemCheck oOperatingSystemCheck = new OperatingSystemCheck();
+
     private final Util oUtil = new Util();
+
     private File oRepoDir;
+
     private final GIT oGit = new GIT();
-    private final SVN oSvn = new SVN();
+
+    private final Svn oSvn = new Svn();
+
     private static final String SVN_IP_C = "141.37.122.26";
 
-    public String startIt(String gitRepository) throws IOException, ParserConfigurationException, SAXException, BadLocationException, InvalidRemoteException, TransportException, GitAPIException, NullPointerException {
+    public String startIt(String gitRepository) throws IOException, ParserConfigurationException, SAXException,
+                                                        BadLocationException, GitAPIException, NullPointerException {
         long lStartTime = System.currentTimeMillis();
         JSONObject oJsonResult;
         String sResult;
@@ -57,26 +59,21 @@ public class PMD {
             FileUtils.deleteDirectory(oRepoDir);
         }
 
-        if (null == oJsonResult) {
-            sResult = "Invalid Repository";
-            LOG.info("Error: received invalid repository and JSON file");
-        } else {
-            sResult = oJsonResult.toString();
-            LOG.info("Valid JSON result");
-        }
+        sResult = oUtil.checkJsonResult(oJsonResult);
 
         return sResult;
     }
 
-    private JSONObject determination(String sRepoUrl, SeverityCounter oSeverityCounter, long lStartTime) throws IOException, BadLocationException, InvalidRemoteException, TransportException, GitAPIException, ParserConfigurationException, SAXException {
+    private JSONObject determination(String sRepoUrl, SeverityCounter oSeverityCounter, long lStartTime)
+            throws IOException, BadLocationException, GitAPIException, ParserConfigurationException, SAXException {
         JSONObject oJson = null;
         String sLocalDir;
         StringBuilder oStringBuilder = new StringBuilder();
 
         LOG.info("Repository URL: " + sRepoUrl);
-        checkLocalPMD();
+        checkLocalPmd();
 
-        /* SVN */
+        /* Svn */
         if (sRepoUrl.contains(SVN_IP_C)) {
             /* URL needs to start with HTTP:// */
             if (!sRepoUrl.startsWith("http://")) {
@@ -87,25 +84,25 @@ public class PMD {
                 oStringBuilder.append(sRepoUrl.substring(0, sRepoUrl.length() - 1));
             }
 
-            LOG.info("SVN");
-            sLocalDir = oSvn.downloadSVNRepo(oStringBuilder.toString());
-            oJson = (runPMD(generatePMDServiceData(sLocalDir), oStringBuilder.toString(), oSeverityCounter, lStartTime));
+            LOG.info("Svn");
+            sLocalDir = oSvn.downloadSvnRepo(oStringBuilder.toString());
+            oJson = (runPmd(generatePmdServiceData(sLocalDir), oStringBuilder.toString(), oSeverityCounter, lStartTime));
             oRepoDir = new File(sLocalDir);
         }
         /* GIT */
         else if (sRepoUrl.contains("github.com")) {
             LOG.info("GIT");
             sLocalDir = oGit.downloadGITRepo(sRepoUrl);
-            oJson = (runPMD(generatePMDServiceData(sLocalDir), sRepoUrl, oSeverityCounter, lStartTime));
+            oJson = (runPmd(generatePmdServiceData(sLocalDir), sRepoUrl, oSeverityCounter, lStartTime));
             oRepoDir = new File(sLocalDir);
         } else {
-            LOG.info("Repository URL has no valid SVN/GIT attributes. (" + sRepoUrl + ")");
+            LOG.info("Repository URL has no valid Svn/GIT attributes. (" + sRepoUrl + ")");
         }
 
         return oJson;
     }
 
-    private List<List<String>> generatePMDServiceData(String sLocalDirectory) throws FileNotFoundException {
+    private List<List<String>> generatePmdServiceData(String sLocalDirectory) throws FileNotFoundException {
         /* Generate Data for CheckstyleService */
         List<List<String>> list = new ArrayList<>();
         File mainDir;
@@ -117,21 +114,23 @@ public class PMD {
         if (mainDir.exists()) {
             File[] files = mainDir.listFiles();
 
-            for (File file : files) {
+            if(files != null) {
+                for (File file : mainDir.listFiles()) {
 
-                File[] filesSub = new File(file.getPath()).listFiles();
-                List<String> pathsSub = new ArrayList<>();
+                    File[] filesSub = new File(file.getPath()).listFiles();
+                    List<String> pathsSub = new ArrayList<>();
 
-                if(filesSub!=null) {
-                    for (File aFilesSub : filesSub) {
-                        if (aFilesSub.getPath().endsWith(".java")) {
-                            pathsSub.add(aFilesSub.getPath());
+                    if (filesSub != null) {
+                        for (File aFilesSub : filesSub) {
+                            if (aFilesSub.getPath().endsWith(".java")) {
+                                pathsSub.add(aFilesSub.getPath());
+                            }
                         }
                     }
-                }
 
-                if(!pathsSub.isEmpty()) {
-                    list.add(pathsSub);
+                    if (!pathsSub.isEmpty()) {
+                        list.add(pathsSub);
+                    }
                 }
             }
         }
@@ -139,7 +138,7 @@ public class PMD {
         /* Other Structure Workaround */
         if(list.isEmpty()){
             LOG.info("divergent repository");
-            List<String> javaFiles=new ArrayList<>();
+            List<String> javaFiles = new ArrayList<>();
             list.add(walk(sLocalDirectory,javaFiles));
         }
 
@@ -161,7 +160,6 @@ public class PMD {
                 } else {
                     if(f.getPath().endsWith(".java")) {
                         javaFiles.add(f.getPath());
-                        LOG.info(f.getPath());
                     }
                 }
             }
@@ -170,33 +168,33 @@ public class PMD {
         return javaFiles;
     }
 
-    private void checkLocalPMD() throws MalformedURLException, IOException, FileNotFoundException {
-        ZIP oZIP = new ZIP();
+    private void checkLocalPmd() throws IOException {
+        Zip oZip = new Zip();
         final String sPmdDir = "pmd-bin-5.4.2.zip";
-        final String sDownloadPMD = "https://github.com/pmd/pmd/releases/download/pmd_releases%2F5.4.2/pmd-bin-5.4.2.zip";
+        final String sDownloadPmd = "https://github.com/pmd/pmd/releases/download/pmd_releases%2F5.4.2/pmd-bin-5.4.2.zip";
 
         File oFile = new File(sPmdDir);
         ReadableByteChannel oReadableByteChannel;
         FileOutputStream oFileOutput;
-        URL oURL;
+        URL oUrl;
 
         if (oFile.exists()) {
-            LOG.info("PMD Directory already exists!");
+            LOG.info("Pmd Directory already exists!");
         } else {
-            LOG.info("PMD Directory does not exists, Starting download");
-            oURL = new URL(sDownloadPMD);
-            oReadableByteChannel = Channels.newChannel(oURL.openStream());
+            LOG.info("Pmd Directory does not exists, Starting download");
+            oUrl = new URL(sDownloadPmd);
+            oReadableByteChannel = Channels.newChannel(oUrl.openStream());
             oFileOutput = new FileOutputStream(sPmdDir);
             oFileOutput.getChannel().transferFrom(oReadableByteChannel, 0, Long.MAX_VALUE);
 
-            oZIP.unzipFile(sPmdDir);
+            oZip.unzipFile(sPmdDir);
         }
     }
 
-    private JSONObject runPMD(List<List<String>> lRepoList, String gitRepository, SeverityCounter oSeverityCounter, long lStartTime) throws ParserConfigurationException, SAXException, IOException {
+    private JSONObject runPmd(List<List<String>> lRepoList, String gitRepository, SeverityCounter oSeverityCounter,
+                              long lStartTime) throws ParserConfigurationException, SAXException, IOException {
         final String sRuleSetPath = "java-basic,java-design,java-codesize";
         String sStartScript = "";
-        JSONObject oJson;
 
         if (oOperatingSystemCheck.isWindows()) {
             sStartScript = "pmd-bin-5.4.2\\bin\\pmd.bat";
@@ -214,8 +212,9 @@ public class PMD {
                 sFullPath = sFullPath.substring(0, sFullPath.length() - 5);
             }
 
-            String sPmdCommand = sStartScript + " -d " + sFullPath + ".java -f xml -failOnViolation false -encoding UTF-8 -rulesets " + sRuleSetPath + " -r " + sFullPath + ".xml";
-            LOG.info("PMD execution path: " + sPmdCommand);
+            String sPmdCommand = sStartScript + " -d " + sFullPath + ".java -f xml -failOnViolation false "
+                                + "-encoding UTF-8 -rulesets " + sRuleSetPath + " -r " + sFullPath + ".xml";
+            LOG.info("Pmd execution path: " + sPmdCommand);
 
             oUtil.execCommand(sPmdCommand);
 
@@ -224,7 +223,7 @@ public class PMD {
         }
 
         /* Schoene einheitliche JSON erstellen */
-        oJson = buildJSON(gitRepository, oSeverityCounter, lStartTime);
+        JSONObject oJson = buildJson(gitRepository, oSeverityCounter, lStartTime);
         /* JSON an Database weitersenden */
 
         return oJson;
@@ -233,25 +232,24 @@ public class PMD {
     private void formatList(List<List<String>> lRepoList) {
         OperatingSystemCheck oOperatingSystemCheck = new OperatingSystemCheck();
 
-        for (List<String> aLRepoList : lRepoList) {
+        for (List<String> lRepoListInList : lRepoList) {
             Class oClass;
 
-            for (String anALRepoList : aLRepoList) {
-                String[] sFullPathSplit_a = anALRepoList.split(oOperatingSystemCheck.getOperatingSystemSeparator());
+            for (String sRepo : lRepoListInList) {
+                String[] sFullPathSplitArray = sRepo.split(oOperatingSystemCheck.getOperatingSystemSeparator());
 
-                String sFullPath = anALRepoList;
+                String sTmpClassName = sFullPathSplitArray[sFullPathSplitArray.length - 1];
+                String sTmpExerciseName = sFullPathSplitArray[2];
 
-                String sTmpClassName = sFullPathSplit_a[sFullPathSplit_a.length - 1];
-                String sTmpExerciseName = sFullPathSplit_a[2];
-
-                oClass = new Class(sTmpClassName, sFullPath, sTmpExerciseName);
+                oClass = new Class(sTmpClassName, sRepo, sTmpExerciseName);
 
                 lFormattedClassList.add(oClass);
             }
         }
     }
 
-    private void storePmdInformation(String sXmlPath, int nClassPos, SeverityCounter oSeverityCounter) throws ParserConfigurationException, SAXException, IOException {
+    private void storePmdInformation(String sXmlPath, int nClassPos, SeverityCounter oSeverityCounter) throws
+            ParserConfigurationException, SAXException, IOException {
         InputStream inputStream = new FileInputStream(sXmlPath);
         Reader reader = new InputStreamReader(inputStream, "UTF-8");
         InputSource is = new InputSource(reader);
@@ -289,13 +287,14 @@ public class PMD {
             String sRuleset = oUtil.getNonEmptyElement(eElement, "ruleset");
             String sPackage = oUtil.getNonEmptyElement(eElement, "package");
 
-            Error oError = new Error(nLineBegin, nLineEnd, nColumnBegin, nColumnEnd, nPriority, sRule, sClassName, sPackage, sRuleset, sMessage);
+            Error oError = new Error(nLineBegin, nLineEnd, nColumnBegin, nColumnEnd, nPriority,
+                                        sRule, sClassName, sPackage, sRuleset, sMessage);
 
             lFormattedClassList.get(nClassPos).getErrorList().add(oError);
         }
     }
 
-    private JSONObject buildJSON(String sRepo, SeverityCounter oSeverityCounter, long lStartTime) {
+    private JSONObject buildJson(String sRepo, SeverityCounter oSeverityCounter, long lStartTime) {
         List<Error> lTmpErrorList;
         JSONObject oJsonRoot = new JSONObject();
         JSONObject oJsonExercise = new JSONObject();
@@ -396,7 +395,7 @@ public class PMD {
         oJsonRoot.put("totalExpendedTime", lTotalTime);
         oJsonRoot.put("assignments", lJsonExercises);
 
-        LOG.debug("PMD Static Analysis check for Repo: " + sRepo);
+        LOG.debug("Pmd Static Analysis check for Repo: " + sRepo);
         return oJsonRoot;
     }
 }

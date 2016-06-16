@@ -40,7 +40,7 @@ public class DatabaseService {
     }
 
     public String saveCourse(Integer userId, JSONObject course) throws InstantiationException {
-        String url = "/course/" + userId;
+        String url = "/courses/" + userId;
         return postDataBaseFor(url, course.toString());
     }
 

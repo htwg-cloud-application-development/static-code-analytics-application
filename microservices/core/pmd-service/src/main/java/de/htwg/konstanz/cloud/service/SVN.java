@@ -14,15 +14,14 @@ import java.net.URLConnection;
 import java.util.ArrayList;
 import java.util.List;
 
-public class SVN {
+public class Svn {
+    private static final Logger LOG = LoggerFactory.getLogger(Svn.class);
 
-    private static final Logger LOG = LoggerFactory.getLogger(SVN.class);
     private OperatingSystemCheck oOperatingSystemCheck = new OperatingSystemCheck();
+
     private String sFileSeparator = "";
 
-
-    public String downloadSVNRepo(String svnLink) throws IOException, BadLocationException {
-
+    public String downloadSvnRepo(String svnLink) throws IOException, BadLocationException {
         sFileSeparator = oOperatingSystemCheck.getOperatingSystemSeparator();
         //Parameters to access svn
         String local = "";
@@ -30,18 +29,15 @@ public class SVN {
         String password = System.getenv("SVN_PASSWORD");
         File dir = new File("repositories");
 
-        if(!dir.exists())
-        {
+        if(!dir.exists()) {
             dir.mkdir();
             LOG.info("creating " + dir.toString() + " directory");
         }
-        else
-        {
+        else {
             LOG.info("Main Directory " + dir.toString() + " already exists");
         }
 
         if((name != null)&& (password != null)) {
-
             /* Split URL at every Slash */
             String[] parts = svnLink.split("\\/");
 
@@ -52,15 +48,14 @@ public class SVN {
 
             svnCheckout(svnLink, genAuthString(name, password), local);
         }
-        else
-        {
+        else {
             LOG.info("invalid VPN credentials");
         }
 
         return local;
     }
 
-    public String genAuthString(String name, String pass) {
+    private String genAuthString(String name, String pass) {
         // HTTP Authentication
         String authString = name + ":" + pass;
         byte[] authEncBytes = Base64.encodeBase64(authString.getBytes());
@@ -69,9 +64,8 @@ public class SVN {
         return authStringEnc;
     }
 
-    public void svnCheckout(String mainURL, String authStringEnc,
-                            String localPath) throws FileNotFoundException, IOException, BadLocationException {
-        List<String> listValue = new ArrayList<String>();
+    private void svnCheckout(String mainURL, String authStringEnc, String localPath) throws
+                                                                                IOException, BadLocationException {
         // Generate and open the URL Connection
         URL url = new URL(mainURL);
         URLConnection urlConnection = url.openConnection();
@@ -86,7 +80,7 @@ public class SVN {
         htmlDoc.putProperty("IgnoreCharsetDirective", Boolean.TRUE);
         editorKit.read(br, htmlDoc, 0);
         HTMLDocument.Iterator iter = htmlDoc.getIterator(HTML.Tag.A);
-        listValue = iterToList(iter);
+        List<String> listValue = iterToList(iter);
 
         for (int i = 0; i < listValue.size(); i++) {
             if (java.net.URLDecoder.decode(listValue.get(i), "UTF-8").endsWith("/")) {
@@ -101,15 +95,15 @@ public class SVN {
                         localPathn);
             } else {
                 // download file
-                downloadFile(mainURL + sFileSeparator + java.net.URLDecoder.decode(listValue.get(i), "UTF-8"), localPath + sFileSeparator
-                        + java.net.URLDecoder.decode(listValue.get(i), "UTF-8"), authStringEnc);
+                downloadFile(mainURL + sFileSeparator + java.net.URLDecoder.decode(listValue.get(i), "UTF-8"), localPath
+                        + sFileSeparator + java.net.URLDecoder.decode(listValue.get(i), "UTF-8"), authStringEnc);
             }
         }
     }
 
-    public List<String> iterToList(HTMLDocument.Iterator iter) {
-        List<String> list = new ArrayList<String>();
-        // Get Headstructure of SVN and store it into List
+    private List<String> iterToList(HTMLDocument.Iterator iter) {
+        List<String> list = new ArrayList<>();
+        // Get Headstructure of Svn and store it into List
         do {
             list.add(iter.getAttributes().getAttribute(HTML.Attribute.HREF)
                     .toString());
@@ -121,7 +115,7 @@ public class SVN {
         return list;
     }
 
-    public void downloadFile(String urlString, String dest,
+    private void downloadFile(String urlString, String dest,
                              String authStringEnc) throws IOException {
         // Authenticate
         URL url = new URL(urlString);
@@ -136,7 +130,7 @@ public class SVN {
         try {
             File fi = new File(dest);
             outputStream = new FileOutputStream(fi);
-            int read = 0;
+            int read;
             byte[] bytes = new byte[1024];
 
             while ((read = is.read(bytes)) != -1) {

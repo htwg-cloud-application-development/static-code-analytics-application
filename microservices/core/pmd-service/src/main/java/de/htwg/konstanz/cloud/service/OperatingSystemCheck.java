@@ -4,41 +4,34 @@ import java.io.File;
 
 public class OperatingSystemCheck {
 
-    private String getOsName()
-    {
+    private String getOsName() {
         String sOS = "";
 
-        if("".equals(sOS))
-        {
+        if("".equals(sOS)) {
             sOS = System.getProperty("os.name");
         }
 
         return sOS;
     }
 
-    public String getOperatingSystemSeparator()
-    {
+    public String getOperatingSystemSeparator() {
         String sOperatingSystemSeparator = "";
 
-        if(isWindows())
-        {
+        if(isWindows()) {
             sOperatingSystemSeparator  = File.separatorChar + "" + File.separatorChar;
         }
-        else if(isLinux())
-        {
+        else if(isLinux()) {
             sOperatingSystemSeparator = File.separatorChar + "";
         }
 
         return sOperatingSystemSeparator;
     }
 
-    public boolean isWindows()
-    {
+    public boolean isWindows() {
         return getOsName().startsWith("Windows");
     }
 
-    public boolean isLinux()
-    {
+    public boolean isLinux() {
         return getOsName().startsWith("Linux");
     }
 }
