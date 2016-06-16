@@ -101,7 +101,7 @@ public class CustomScheduler {
         while (openTasks > 0 || noFinished) {
 
             // check if new instance available and free
-            availableInstances = util.getNumberOfActiveCheckstyleInstances(ec2) - runningTask;
+            availableInstances = util.getNumberOfActiveCheckstyleInstances(ec2) - runningTasks;
 
             if (availableInstances > 0) {
                 LOG.info("availableInstances: " + availableInstances);
@@ -114,20 +114,14 @@ public class CustomScheduler {
                         LOG.info("instanceurl: " + instance.getUri());
                         if (!blockedInstancesList.containsKey(instance.getUri())) {
 
-                            LOG.info("validate: " + instance.getUri());
-                            LOG.info("blabla: " + task.toString());
                             Future<String> future = validateRepositoryService.validateRepository(task.toString(), instance.getUri());
                             blockedInstancesList.put(instance.getUri(), task.toString());
-
                             taskList.add(future);
                             isExecute = true;
                         }
                     } else {
 
-                        LOG.info("HIER KRACHT ES!!! wegen availbaleInstancesList");
                         Future<String> future = validateRepositoryService.validateRepository(task.toString(), availableInstancesList.get(0));
-
-
                         blockedInstancesList.put(availableInstancesList.remove(0), task.toString());
 
                         // remove first element of available Instance list
@@ -169,15 +163,15 @@ public class CustomScheduler {
                         result.put("checkstyle", obj);
                         result.put("userId", repoUserInformationMap.get(obj.getString("repository")));
                         result.put("duration", (System.currentTimeMillis() - startTimeList.get(i)));
-			result.put("repository", obj.getSTring("repository"));
+                        result.put("repository", obj.getString("repository"));
                         ValidationData data = new ValidationData();
                         data.setRepository(obj.getString("repository"));
 
-LOG.info("1");
+                        LOG.info("1");
                         URI availableUri = getUriWithValue(blockedInstancesList, data.toString());
- 
-			System.out.println(availableUri);
-                       availableInstancesList.add(availableUri);
+
+                        System.out.println(availableUri);
+                        availableInstancesList.add(availableUri);
 
                         // remove entry from blocked instance list
                         for (Iterator<Map.Entry<URI, String>> it = blockedInstancesList.entrySet().iterator(); it.hasNext(); ) {
@@ -216,7 +210,6 @@ LOG.info("1");
                 toDelete.clear();
             }
 
-
             // slepp 1 second
             Thread.sleep(1000);
         }
@@ -229,18 +222,18 @@ LOG.info("1");
         for (int i = 0; i < blockedInstancesList.size(); i++) {
             JSONObject jsonObject = new JSONObject(blockedInstancesList.get(keys.get(i)));
 
-String repoUrl = jsonObject.getString("repository");
-if(repoUrl.endsWith("/")){
-	repoUrl = repoUrl.substring(0, repoUrl.length() -1);
-}
+            String repoUrl = jsonObject.getString("repository");
+            if (repoUrl.endsWith("/")) {
+                repoUrl = repoUrl.substring(0, repoUrl.length() - 1);
+            }
 
-String repoUrl2 = sObject.getString("repository");
-if(repoUrl2.endsWith("/")){
-	repoUrl2 = repoUrl2.substring(0, repoUrl2.length() -1);
-}
+            String repoUrl2 = sObject.getString("repository");
+            if (repoUrl2.endsWith("/")) {
+                repoUrl2 = repoUrl2.substring(0, repoUrl2.length() - 1);
+            }
 
             if (repoUrl.equals(repoUrl2)) {
-		LOG.info("key: " + keys.get(i));
+                LOG.info("key: " + keys.get(i));
                 return keys.get(i);
             }
         }
