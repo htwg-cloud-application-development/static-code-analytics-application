@@ -2,8 +2,6 @@ package de.htwg.konstanz.cloud.service;
 
 import org.eclipse.jgit.api.Git;
 import org.eclipse.jgit.api.errors.GitAPIException;
-import org.eclipse.jgit.api.errors.InvalidRemoteException;
-import org.eclipse.jgit.api.errors.TransportException;
 import org.eclipse.jgit.internal.storage.file.FileRepository;
 import org.eclipse.jgit.transport.RemoteSession;
 import org.eclipse.jgit.transport.SshSessionFactory;
@@ -19,14 +17,11 @@ import java.io.InputStream;
 import java.net.MalformedURLException;
 import java.net.URL;
 import java.net.URLConnection;
-import java.util.List;
 
 public class GIT {
-
     private static final Logger LOG = LoggerFactory.getLogger(GIT.class);
 
-    //TODO: Prüfen ob GIT.com antwortet oder nicht und entsprechende Log Meldung ausgeben
-    boolean isValidRepository(URIish repoUri) {
+    private boolean isValidRepository(URIish repoUri) {
         if (repoUri.isRemote()) {
             return isValidRemoteRepository(repoUri);
         } else {
@@ -34,8 +29,7 @@ public class GIT {
         }
     }
 
-
-    boolean isValidLocalRepository(URIish repoUri) {
+    private boolean isValidLocalRepository(URIish repoUri) {
         boolean result;
 
         try {
@@ -47,13 +41,13 @@ public class GIT {
         return result;
     }
 
-    public String downloadGITRepo(String gitRepo) throws InvalidRemoteException, TransportException, GitAPIException, MalformedURLException {
+    public String downloadGITRepo(String gitRepo) throws GitAPIException, MalformedURLException {
         /* Checkout Git-Repo */
         Git git = null;
 
         /* String Magic */
         String directoryName = gitRepo.substring(gitRepo.lastIndexOf("/"),
-                gitRepo.length() - 1).replace(".", "_");
+                gitRepo.length()).replace(".", "_");
         String localDirectory = "repositories/" + directoryName + "_"
                 + System.currentTimeMillis() + "/";
 
@@ -71,7 +65,7 @@ public class GIT {
         return localDirectory;
     }
 
-    boolean isValidRemoteRepository(URIish repoUri) {
+    private boolean isValidRemoteRepository(URIish repoUri) {
         boolean result;
 
         if (repoUri.getScheme().toLowerCase().startsWith("http") ) {
@@ -96,8 +90,9 @@ public class GIT {
                 try {
                     ins.close();
                 }
-                catch (Exception e)
-                { /* ignore */ }
+                catch (Exception e) {
+                    /* ignore */
+                }
             }
         } else if (repoUri.getScheme().toLowerCase().startsWith("ssh") ) {
 

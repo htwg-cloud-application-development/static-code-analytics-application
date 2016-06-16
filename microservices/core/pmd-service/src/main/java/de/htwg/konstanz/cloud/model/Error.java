@@ -1,20 +1,27 @@
 package de.htwg.konstanz.cloud.model;
 
-public class Error
-{
+public class Error {
     private int nLineBegin;
+
     private int nLineEnd;
+
     private int nColumnBegin;
+
     private int nColumnEnd;
+
     private int nPriority;
+
     private String sRule = "";
+
     private String sClassName = "";
+
     private String sPackage = "";
+
     private String sRuleset = "";
+
     private String sMessage = "";
 
-    public Error(int nLineBegin, int nLineEnd, int nColumnBegin, int nColumnEnd, int nPriority, String sRule, String sClassName, String sPackage, String sRuleset, String sMessage)
-    {
+    public Error(int nLineBegin, int nLineEnd, int nColumnBegin, int nColumnEnd, int nPriority, String sRule, String sClassName, String sPackage, String sRuleset, String sMessage) {
         this.nLineBegin = nLineBegin;
         this.nLineEnd = nLineEnd;
         this.nColumnBegin = nColumnBegin;

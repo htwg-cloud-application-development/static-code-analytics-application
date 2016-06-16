@@ -25,13 +25,12 @@ import java.net.MalformedURLException;
 @RestController
 @Data
 public class PmdService {
-
     private static final Logger LOG = LoggerFactory.getLogger(PmdService.class);
 
     @RequestMapping(value = "/validate", method = RequestMethod.POST, produces = "application/json", consumes = "application/json")
     public ResponseEntity validate(@RequestBody ValidationData data) {
         try {
-            return ResponseEntity.ok(new PMD().startIt(data.getRepository()));
+            return ResponseEntity.ok(new Pmd().startIt(data.getRepository()));
         } catch (ParserConfigurationException e) {
             LOG.error(e.getMessage());
             return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(e.getMessage());
@@ -61,20 +60,19 @@ public class PmdService {
             return ResponseEntity.status(HttpStatus.NOT_FOUND).body(e.getMessage());
         } catch (Exception e) {
             LOG.error(e.getMessage());
-            e.printStackTrace();
             return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(e.getMessage());
         }
     }
 
     @RequestMapping(value = "/info", method = RequestMethod.GET)
     public String info() {
-        return "PMD-Service";
+        return "Pmd-Service";
     }
 
     @RequestMapping(value = "/validate/copypaste", method = RequestMethod.POST, produces = "application/json", consumes = "application/json")
     public ResponseEntity copypaste(@RequestBody ValidationData data) {
         try {
-            return ResponseEntity.ok(new CPD().startIt(data.getRepository()));
+            return ResponseEntity.ok(new Cpd().startIt(data.getRepository()));
         } catch (ParserConfigurationException e) {
             LOG.error(e.getMessage());
             return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(e.getMessage());
@@ -104,7 +102,6 @@ public class PmdService {
             return ResponseEntity.status(HttpStatus.NOT_FOUND).body(e.getMessage());
         } catch (Exception e) {
             LOG.error(e.getMessage());
-            e.printStackTrace();
             return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(e.getMessage());
         }
     }

@@ -1,17 +1,19 @@
 package de.htwg.konstanz.cloud.model;
 
-import java.util.ArrayList;
 import java.util.List;
 
 public class Duplication {
-    private final int sDuplicatedLine;
-    private final int sTokens;
+    private final int nDuplicatedLine;
+
+    private final int nTokens;
+
     private final List<String> lInvolvedData;
+
     private final String sDuplicatedCode;
 
-    public Duplication(int sDupilcatedLine, int sTokens, List<String> lInvolvedData, String sDuplicatedCode){
-        this.sDuplicatedLine = sDupilcatedLine;
-        this.sTokens = sTokens;
+    public Duplication(int sDupilcatedLine, int nTokens, List<String> lInvolvedData, String sDuplicatedCode){
+        this.nDuplicatedLine = sDupilcatedLine;
+        this.nTokens = nTokens;
         this.lInvolvedData = lInvolvedData;
         this.sDuplicatedCode = sDuplicatedCode;
     }
@@ -20,19 +22,19 @@ public class Duplication {
         return new Duplication(sDupilcatedLine,sTokens,lInvolvedData,sDuplicatedCode);
     }
 
-    public int getsDuplicatedLine() {
-        return sDuplicatedLine;
+    public int getDuplicatedLine() {
+        return nDuplicatedLine;
     }
 
-    public int getsTokens() {
-        return sTokens;
+    public int getTokens() {
+        return nTokens;
     }
 
-    public List<String> getlInvolvedData() {
+    public List<String> getInvolvedData() {
         return lInvolvedData;
     }
 
-    public String getsDuplicatedCode() {
+    public String getDuplicatedCode() {
         return sDuplicatedCode;
     }
 }

@@ -1,7 +1,6 @@
 package de.htwg.konstanz.cloud.service;
 
 import de.htwg.konstanz.cloud.model.Duplication;
-import de.htwg.konstanz.cloud.model.SeverityCounter;
 import org.apache.commons.io.FileUtils;
 import org.eclipse.jgit.api.errors.GitAPIException;
 import org.eclipse.jgit.api.errors.InvalidRemoteException;
@@ -10,7 +9,6 @@ import org.json.JSONArray;
 import org.json.JSONObject;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import org.springframework.beans.factory.annotation.Value;
 import org.w3c.dom.Document;
 import org.w3c.dom.Element;
 import org.w3c.dom.Node;
@@ -30,22 +28,23 @@ import java.nio.channels.ReadableByteChannel;
 import java.util.ArrayList;
 import java.util.List;
 
-public class CPD {
+public class Cpd {
+    private static final Logger LOG = LoggerFactory.getLogger(Cpd.class);
 
-    private static final Logger LOG = LoggerFactory.getLogger(CPD.class);
     private final List<Duplication> lDuplications = new ArrayList<>();
-    private File oRepoDir;
-    private final Util oUtil = new Util();
-    private final SVN oSvn = new SVN();
 
-    @Value("${app.config.svn.server}")
-    private String SVN_IP_C;
+    private File oRepoDir;
+
+    private final Util oUtil = new Util();
+
+    private final Svn oSvn = new Svn();
+
+    private static final String SVN_IP_C = "141.37.122.26";
 
     public String startIt(String gitRepository) throws IOException, ParserConfigurationException, SAXException, BadLocationException, InvalidRemoteException, TransportException, GitAPIException, MalformedURLException, NullPointerException {
         long lStartTime = System.currentTimeMillis();
-        JSONObject oJsonResult = null;
-        String sResult = "";
-        SeverityCounter oSeverityCounter = new SeverityCounter();
+        JSONObject oJsonResult;
+        String sResult;
 
         oJsonResult = determination(gitRepository, lStartTime);
         if (oRepoDir == null) {
@@ -54,26 +53,21 @@ public class CPD {
             FileUtils.deleteDirectory(oRepoDir);
         }
 
-        if (null == oJsonResult) {
-            sResult = "Invalid Repository";
-            LOG.info("Error: received invalid repository and JSON file");
-        } else {
-            sResult = oJsonResult.toString();
-            LOG.info("Valid JSON result");
-        }
+        sResult = oUtil.checkJsonResult(oJsonResult);
 
         return sResult;
     }
 
-    private JSONObject determination(String sRepoUrl, long lStartTime) throws IOException, BadLocationException, InvalidRemoteException, TransportException, GitAPIException, ParserConfigurationException, SAXException {
+    private JSONObject determination(String sRepoUrl, long lStartTime) throws IOException, BadLocationException,
+                                                        GitAPIException, ParserConfigurationException, SAXException {
         JSONObject oJson = null;
         String sLocalDir;
         StringBuilder oStringBuilder = new StringBuilder();
 
         LOG.info("Repository URL: " + sRepoUrl);
-        checkLocalCPD();
+        checkLocalCpd();
 
-        /* SVN */
+        /* Svn */
         if (sRepoUrl.contains(SVN_IP_C)) {
             /* URL needs to start with HTTP:// */
             if (!sRepoUrl.startsWith("http://")) {
@@ -84,55 +78,56 @@ public class CPD {
                 oStringBuilder.append(sRepoUrl.substring(0, sRepoUrl.length() - 1));
             }
 
-            LOG.info("CPD");
-            sLocalDir = oSvn.downloadSVNRepo(oStringBuilder.toString());
-            oJson = (runCPD(sLocalDir, lStartTime));
+            LOG.info("Cpd");
+            sLocalDir = oSvn.downloadSvnRepo(oStringBuilder.toString());
+            oJson = (runCpd(sLocalDir, lStartTime));
             oRepoDir = new File(sLocalDir);
         }
 
         return oJson;
     }
 
+    /* NEVER USED?
     private String generateCPDData(String localDirectory) {
         File mainDir;
 
         mainDir = oUtil.checkLocalSrcDir(localDirectory);
 
-        /* List all files for CPDService */
         if (mainDir.exists()) {
             return mainDir.getPath();
         }
 
         return null;
     }
+    */
 
-    private void checkLocalCPD() throws MalformedURLException, IOException, FileNotFoundException {
-        ZIP oZIP = new ZIP();
+    private void checkLocalCpd() throws IOException {
+        Zip oZip = new Zip();
         boolean bSuccess = false;
-        final String sCPDDir = "pmd-bin-5.4.2.zip";
-        final String sDownloadCPD = "https://github.com/pmd/pmd/releases/download/pmd_releases%2F5.4.2/pmd-bin-5.4.2.zip";
+        final String sCpdDir = "pmd-bin-5.4.2.zip";
+        final String sDownloadCpd = "https://github.com/pmd/pmd/releases/download/pmd_releases%2F5.4.2/pmd-bin-5.4.2.zip";
 
-        File oFile = new File(sCPDDir);
-        ReadableByteChannel oReadableByteChannel = null;
-        FileOutputStream oFileOutput = null;
-        URL oURL = null;
+        File oFile = new File(sCpdDir);
+        ReadableByteChannel oReadableByteChannel;
+        FileOutputStream oFileOutput;
+        URL oUrl;
 
         if (oFile.exists()) {
             LOG.info("CDP Directory already exists!");
         } else {
             LOG.info("CDP Directory does not exists, Starting download");
-            oURL = new URL(sDownloadCPD);
-            oReadableByteChannel = Channels.newChannel(oURL.openStream());
-            oFileOutput = new FileOutputStream(sCPDDir);
+            oUrl = new URL(sDownloadCpd);
+            oReadableByteChannel = Channels.newChannel(oUrl.openStream());
+            oFileOutput = new FileOutputStream(sCpdDir);
             oFileOutput.getChannel().transferFrom(oReadableByteChannel, 0, Long.MAX_VALUE);
 
-            oZIP.unzipFile(sCPDDir);
+            oZip.unzipFile(sCpdDir);
         }
     }
 
-    private JSONObject runCPD(String sMainPath, long lStartTime) throws ParserConfigurationException, SAXException, IOException {
+    private JSONObject runCpd(String sMainPath, long lStartTime) throws ParserConfigurationException,
+                                                                        SAXException, IOException {
         OperatingSystemCheck oOperatingSystemCheck = new OperatingSystemCheck();
-        final String sRuleSetPath = "java-basic,java-design,java-codesize";
         final String sOutputFileName = "Duplications.xml";
         String sStartScript = "";
         JSONObject oJson = null;
@@ -143,24 +138,25 @@ public class CPD {
             sStartScript = "pmd-bin-5.4.2/bin/run.sh cpd";
         }
 
-        String sCPDCommand = sStartScript + " --minimum-tokens 75 --files " + sMainPath + " --skip-lexical-errors --format xml > " + sMainPath + sOutputFileName;
-        LOG.info("CPD execution path: " + sCPDCommand);
+        String sCpdCommand = sStartScript + " --minimum-tokens 75 --files " + sMainPath + " --skip-lexical-errors "
+                                    + "--format xml > " + sMainPath + sOutputFileName;
+        LOG.info("Cpd execution path: " + sCpdCommand);
 
-        oUtil.execCommand(sCPDCommand);
+        oUtil.execCommand(sCpdCommand);
 
         /* Checkstyle Informationen eintragen */
-        storeCPDInformation(sMainPath + sOutputFileName);
+        storeCpdInformation(sMainPath + sOutputFileName);
 
         if (lDuplications != null) {
             /* Schoene einheitliche JSON erstellen */
-            oJson = buildJSON(sMainPath, lStartTime);
+            oJson = buildJson(sMainPath, lStartTime);
             /* JSON an Database weitersenden */
         }
 
         return oJson;
     }
 
-    private void storeCPDInformation(String sXmlPath) throws ParserConfigurationException, SAXException, IOException {
+    private void storeCpdInformation(String sXmlPath) throws ParserConfigurationException, SAXException, IOException {
         InputStream oInputStream = new FileInputStream(sXmlPath);
         Reader oReader = new InputStreamReader(oInputStream, "UTF-8");
         InputSource oInputSource = new InputSource(oReader);
@@ -182,7 +178,7 @@ public class CPD {
 				/* Default Values */
                 int nLinesCount = 0;
                 int nTokens = 0;
-                List<String> lInvolvedData = new ArrayList<String>();
+                List<String> lInvolvedData = new ArrayList<>();
                 String sCodeFragment = "";
 
 
@@ -218,7 +214,7 @@ public class CPD {
         }
     }
 
-    private JSONObject buildJSON(String sMainDir, long lStartTime) {
+    private JSONObject buildJson(String sMainDir, long lStartTime) {
         JSONObject oJsonRoot = new JSONObject();
 
 		/* add general information to the JSON object */
@@ -229,16 +225,16 @@ public class CPD {
             JSONObject oJsonDuplication = new JSONObject();
 
 			/* Duplication Infos*/
-            oJsonDuplication.put("duplicatedLines", oDuplaction.getsDuplicatedLine());
-            oJsonDuplication.put("tokens", oDuplaction.getsTokens());
+            oJsonDuplication.put("duplicatedLines", oDuplaction.getDuplicatedLine());
+            oJsonDuplication.put("tokens", oDuplaction.getTokens());
 
             //New Json Array with involved Paths
             JSONArray lJsonFilePaths = new JSONArray();
-            for (String sDuplicationFilePath : oDuplaction.getlInvolvedData()) {
+            for (String sDuplicationFilePath : oDuplaction.getInvolvedData()) {
                 lJsonFilePaths.put(new JSONObject().put("filePath", sDuplicationFilePath));
             }
             oJsonDuplication.put("filePaths", lJsonFilePaths);
-            oJsonDuplication.put("codefragment", oDuplaction.getsDuplicatedCode());
+            oJsonDuplication.put("codefragment", oDuplaction.getDuplicatedCode());
             oJsonRoot.put("duplications", oJsonDuplication);
         }
 

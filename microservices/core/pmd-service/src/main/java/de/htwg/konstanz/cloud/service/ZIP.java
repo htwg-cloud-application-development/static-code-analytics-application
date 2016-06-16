@@ -3,7 +3,7 @@ package de.htwg.konstanz.cloud.service;
 import net.lingala.zip4j.core.ZipFile;
 import net.lingala.zip4j.exception.ZipException;
 
-public class ZIP {
+public class Zip {
 
     public void unzipFile(String sZipFile) {
         try {

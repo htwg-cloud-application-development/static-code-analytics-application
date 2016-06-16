@@ -1,6 +1,7 @@
 package de.htwg.konstanz.cloud.service;
 
 import de.htwg.konstanz.cloud.model.SeverityCounter;
+import org.json.JSONObject;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.w3c.dom.Element;
@@ -10,10 +11,12 @@ import java.io.IOException;
 
 public class Util {
     private static final Logger LOG = LoggerFactory.getLogger(Util.class);
+
     private final OperatingSystemCheck oOperatingSystemCheck = new OperatingSystemCheck();
 
     public File checkLocalSrcDir(String sLocalDirectory) {
         File mainDir;/* Check if local /src-dir exists */
+
         if (new File(sLocalDirectory + "/src").exists()) {
             mainDir = new File(sLocalDirectory + "/src");
             LOG.info("Local SRC directory found");
@@ -21,6 +24,7 @@ public class Util {
             mainDir = new File(sLocalDirectory);
             LOG.info("There was no local SRC directory");
         }
+
         return mainDir;
     }
 
@@ -37,6 +41,18 @@ public class Util {
         } catch (IOException ex) {
             //TODO
         }
+    }
+
+    public String checkJsonResult(JSONObject oJsonResult) {
+        String sResult;
+        if (null == oJsonResult) {
+            sResult = "Invalid Repository";
+            LOG.info("Error: received invalid repository and JSON file");
+        } else {
+            sResult = oJsonResult.toString();
+            LOG.info("Valid JSON result");
+        }
+        return sResult;
     }
 
     public boolean isParsable(String input) {
@@ -77,14 +93,14 @@ public class Util {
     }
 
     public String removeUnnecessaryPathParts(String sFilePath) {
-        String[] sFilePathSplit_a = sFilePath.split(oOperatingSystemCheck.getOperatingSystemSeparator());
+        String[] sFilePathSplitArray = sFilePath.split(oOperatingSystemCheck.getOperatingSystemSeparator());
         String sShortenPath = "";
-        for (int nPathPos = 2; nPathPos < sFilePathSplit_a.length; nPathPos++) {
-            if (nPathPos + 1 == sFilePathSplit_a.length) {
+        for (int nPathPos = 2; nPathPos < sFilePathSplitArray.length; nPathPos++) {
+            if (nPathPos + 1 == sFilePathSplitArray.length) {
                         /* last Part of the Path */
-                sShortenPath += sFilePathSplit_a[nPathPos];
+                sShortenPath += sFilePathSplitArray[nPathPos];
             } else {
-                sShortenPath += sFilePathSplit_a[nPathPos] + "\\";
+                sShortenPath += sFilePathSplitArray[nPathPos] + "\\";
             }
         }
 

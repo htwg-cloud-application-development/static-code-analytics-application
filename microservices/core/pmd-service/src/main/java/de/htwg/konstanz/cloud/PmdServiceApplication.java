@@ -36,7 +36,7 @@ public class PmdServiceApplication {
 
     private ApiInfo apiInfo() {
         return new ApiInfoBuilder()
-                .title("PMD Service")
+                .title("Pmd Service")
                 .description("Handle service calls for validation services")
                 .termsOfServiceUrl("http://www-03.ibm.com/software/sla/sladb.nsf/sla/bm?Open")
                 .license("Apache License Version 2.0")
