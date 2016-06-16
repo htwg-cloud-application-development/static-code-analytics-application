@@ -42,6 +42,18 @@ public class MoodleService {
 
     }
 
+
+    @RequestMapping(value = "/courses/{courseId}/users/{userId}/token/{token}/permission", method = RequestMethod.GET)
+    public ResponseEntity<String> checkPermission(@Valid @PathVariable String courseId,
+                                                  @Valid @PathVariable Integer userId,
+                                                  @Valid @PathVariable String token) {
+
+        Moodle moodle = new Moodle(token);
+
+        return new ResponseEntity<String>((moodle.hasPermissionOnCourse(courseId, userId)).toString(), HttpStatus.OK);
+
+    }
+
     @RequestMapping(value = "/courses/token/{token}", method = RequestMethod.GET)
     public ResponseEntity<List<MoodleCourse>> getCourses(@Valid @PathVariable String token) {
 
