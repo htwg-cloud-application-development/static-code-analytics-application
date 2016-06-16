@@ -102,24 +102,27 @@ public class GovernanceService {
             if (user.isNull("userid")) {
                 return createErrorResponse("No User information found for token: " + token, HttpStatus.BAD_REQUEST);
             }
-            // TODO: check if user is a prof.
-            String name = user.get("lastname").toString().toLowerCase();
-
-            if (!"langweg".equals(name) && !"gorenflo".equals(name)) {
-                return createErrorResponse("User is not allowed", HttpStatus.BAD_REQUEST);
-            }
 
             databaseService.saveUser(user);
 
-            // TODO: check if successful
 
             Integer userId = (Integer) user.get("userid");
+
+            JSONObject response = new JSONObject();
 
             // iterate over courses and save them
             for (MoodleCourse course : courses.getCourses()) {
 
+                JSONObject jsonCourse = new JSONObject(course);
+
+                if (!moodleService.hasPermission(userId, course.getId(), token)) {
+                    System.out.println("User " + user.get("lastname") + " has no permission for course: " + course.getFullname());
+                    response.append("notImported", course.getFullname());
+                    continue;
+                }
+
                 // first save course
-                databaseService.saveCourse(userId, new JSONObject(course));
+                databaseService.saveCourse(userId, jsonCourse);
 
                 // then get submissions of course
                 String groups = moodleService.getSubmissionsOfCourses(course.getId(), token);
@@ -130,10 +133,12 @@ public class GovernanceService {
 
                 // finally save submissions
                 databaseService.saveGroups(course.getId(), groups);
+                response.append("imported", course.getFullname());
 
             }
 
-            return createResponse("{\"ok\":true}", HttpStatus.OK);
+            response.put("ok", true);
+            return createResponse(response.toString(), HttpStatus.OK);
 
         } catch (InstantiationException e) {
             return createErrorResponse(e.getMessage(), HttpStatus.SERVICE_UNAVAILABLE);
