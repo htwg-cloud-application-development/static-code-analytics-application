@@ -14,7 +14,6 @@ import java.io.File;
 import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.io.InputStream;
-import java.net.MalformedURLException;
 import java.net.URL;
 import java.net.URLConnection;
 
@@ -47,12 +46,12 @@ class Git {
         return String.valueOf(revCommits.iterator().next().getCommitTime());
     }
 
-    String [] downloadGITRepo(String gitRepo) throws GitAPIException, IOException {
+    String downloadGITRepo(String gitRepo) throws GitAPIException, IOException {
         /* Checkout Git-Repo */
         org.eclipse.jgit.api.Git git = null;
 
         /* return Array */
-        String[] returnValue = null;
+        String returnValue = null;
 
         /* String Magic */
         String directoryName = gitRepo.substring(gitRepo.lastIndexOf("/"),
@@ -65,7 +64,7 @@ class Git {
         if (isValidRepository(new URIish(f))) {
             git = org.eclipse.jgit.api.Git.cloneRepository().setURI(gitRepo)
                     .setDirectory(new File(localDirectory)).call();
-            returnValue= new String[]{localDirectory, getLastCommit(git)};
+            returnValue = localDirectory;
         }
 
         /* Closing Object that we can delete the whole directory later */
@@ -74,6 +73,43 @@ class Git {
         /* Local Targetpath and Last Commit*/
         return returnValue;
     }
+
+	/*
+	private String getLastCommit(org.eclipse.jgit.api.Git git) throws IOException, GitAPIException {
+        //Get Last Commit of Git Repo
+        Iterable<RevCommit> revCommits =git.log().call();
+        return String.valueOf(revCommits.iterator().next().getCommitTime());
+    }
+
+    String [] downloadGITRepo(String gitRepo) throws GitAPIException, IOException {
+        // Checkout Git-Repo
+        org.eclipse.jgit.api.Git git = null;
+
+        // return Array
+        String[] returnValue = null;
+
+        // String Magic
+        String directoryName = gitRepo.substring(gitRepo.lastIndexOf("/"),
+                gitRepo.length()).replace(".", "_");
+        String localDirectory = "repositories/" + directoryName + "_"
+                + System.currentTimeMillis() + "/";
+
+        // Clone Command with jGIT
+        URL f = new URL(gitRepo);
+        if (isValidRepository(new URIish(f))) {
+            git = org.eclipse.jgit.api.Git.cloneRepository().setURI(gitRepo)
+                    .setDirectory(new File(localDirectory)).call();
+            returnValue= new String[]{localDirectory, getLastCommit(git)};
+        }
+
+        // Closing Object that we can delete the whole directory later
+        git.getRepository().close();
+
+        // Local Targetpath and Last Commit
+        return returnValue;
+    }
+
+	*/
 
     private boolean isValidRemoteRepository(URIish repoUri) {
         boolean result;

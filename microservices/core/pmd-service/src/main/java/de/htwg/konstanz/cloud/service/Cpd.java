@@ -19,9 +19,6 @@ import javax.xml.parsers.DocumentBuilder;
 import javax.xml.parsers.DocumentBuilderFactory;
 import javax.xml.parsers.ParserConfigurationException;
 import java.io.*;
-import java.net.URL;
-import java.nio.channels.Channels;
-import java.nio.channels.ReadableByteChannel;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -34,11 +31,13 @@ public class Cpd {
 
     private final Util oUtil = new Util();
 
+    private final Git oGit = new Git();
+
     private final Svn oSvn = new Svn();
 
     private static final String SVN_IP_C = "141.37.122.26";
 
-    String startIt(String gitRepository) throws IOException, ParserConfigurationException,
+    String startIt(List<String> gitRepository) throws IOException, ParserConfigurationException,
             SAXException, BadLocationException, GitAPIException, NullPointerException {
         long lStartTime = System.currentTimeMillis();
         JSONObject oJsonResult;
@@ -56,77 +55,59 @@ public class Cpd {
         return sResult;
     }
 
-    private JSONObject determination(String sRepoUrl, long lStartTime) throws IOException, BadLocationException,
-                                                        GitAPIException, ParserConfigurationException, SAXException {
+    private JSONObject determination(List<String> sRepoUrl, long lStartTime) throws IOException, BadLocationException,
+            GitAPIException, ParserConfigurationException, SAXException {
         JSONObject oJson = null;
         String sLocalDir;
+        List<String> lRepoDirs = new ArrayList<>();
         StringBuilder oStringBuilder = new StringBuilder();
 
         LOG.info("Repository URL: " + sRepoUrl);
-        checkLocalCpd();
+        oUtil.checkLocalPmd();
+        oRepoDir = oUtil.createDirectory("repositories");
 
-        /* Svn */
-        if (sRepoUrl.contains(SVN_IP_C)) {
+        /*Download SVN or Git Repos*/
+        for(String sRepo : sRepoUrl) {
+            /* Svn */
+            if (sRepo.contains(SVN_IP_C)) {
             /* URL needs to start with HTTP:// */
-            if (!sRepoUrl.startsWith("http://")) {
-                oStringBuilder.append("http://").append(sRepoUrl);
-            }
+                if (!sRepo.startsWith("http://")) {
+                    oStringBuilder.append("http://").append(sRepo);
+                }
             /* remove the last / */
-            if (sRepoUrl.endsWith("/")) {
-                oStringBuilder.append(sRepoUrl.substring(0, sRepoUrl.length() - 1));
+                if (sRepo.endsWith("/")) {
+                    oStringBuilder.append(sRepo.substring(0, sRepo.length() - 1));
+                }
+
+                LOG.info("Cpd");
+                sLocalDir = oSvn.downloadSvnRepo(oStringBuilder.toString());
+                lRepoDirs.add(sLocalDir);
             }
 
-            LOG.info("Cpd");
-            sLocalDir = oSvn.downloadSvnRepo(oStringBuilder.toString());
-            oJson = (runCpd(sLocalDir, lStartTime));
-            oRepoDir = new File(sLocalDir);
+            /* Git */
+            else if (sRepo.contains("github.com")) {
+                LOG.info("Git");
+                sLocalDir = oGit.downloadGITRepo(sRepo);
+                lRepoDirs.add(sLocalDir);
+            } else {
+                LOG.info("Repository URL has no valid Svn/Git attributes. (" + sRepoUrl + ")");
+            }
         }
+
+        /*Run CPD*/
+        if(!lRepoDirs.isEmpty())
+            oJson = (runCpd(lStartTime));
 
         return oJson;
     }
 
-    /* NEVER USED?
-    private String generateCPDData(String localDirectory) {
-        File mainDir;
-
-        mainDir = oUtil.checkLocalSrcDir(localDirectory);
-
-        if (mainDir.exists()) {
-            return mainDir.getPath();
-        }
-
-        return null;
-    }
-    */
-
-    private void checkLocalCpd() throws IOException {
-        Zip oZip = new Zip();
-        final String sCpdDir = "pmd-bin-5.4.2.zip";
-        final String sDownloadCpd = "https://github.com/pmd/pmd/releases/download/pmd_releases%2F5.4.2/pmd-bin-5.4.2.zip";
-
-        File oFile = new File(sCpdDir);
-        ReadableByteChannel oReadableByteChannel;
-        FileOutputStream oFileOutput;
-        URL oUrl;
-
-        if (oFile.exists()) {
-            LOG.info("CDP Directory already exists!");
-        } else {
-            LOG.info("CDP Directory does not exists, Starting download");
-            oUrl = new URL(sDownloadCpd);
-            oReadableByteChannel = Channels.newChannel(oUrl.openStream());
-            oFileOutput = new FileOutputStream(sCpdDir);
-            oFileOutput.getChannel().transferFrom(oReadableByteChannel, 0, Long.MAX_VALUE);
-
-            oZip.unzipFile(sCpdDir);
-        }
-    }
-
-    private JSONObject runCpd(String sMainPath, long lStartTime) throws ParserConfigurationException,
-                                                                        SAXException, IOException {
+    private JSONObject runCpd(long lStartTime) throws ParserConfigurationException,
+            SAXException, IOException {
         OperatingSystemCheck oOperatingSystemCheck = new OperatingSystemCheck();
         final String sOutputFileName = "Duplications.xml";
         String sStartScript = "";
+        String sFilesDirs = "";
+        String sMainPath = "repositories/repositories-cpd";
         JSONObject oJson = null;
 
         if (oOperatingSystemCheck.isWindows()) {
@@ -135,14 +116,17 @@ public class Cpd {
             sStartScript = "pmd-bin-5.4.2/bin/run.sh cpd";
         }
 
-        String sCpdCommand = sStartScript + " --minimum-tokens 75 --files " + sMainPath + " --skip-lexical-errors "
-                                    + "--format xml > " + sMainPath + sOutputFileName;
+        /* Check if Dir exists and if needed create new*/
+        oUtil.createDirectory(sMainPath);
+
+        String sCpdCommand = sStartScript + " --minimum-tokens 75 --files " + oRepoDir.getAbsolutePath() + " --skip-lexical-errors "
+                + "--format xml > " + sMainPath + "/CpdCheck_" + sOutputFileName;
         LOG.info("Cpd execution path: " + sCpdCommand);
 
         oUtil.execCommand(sCpdCommand);
 
         /* Checkstyle Informationen eintragen */
-        storeCpdInformation(sMainPath + sOutputFileName);
+        storeCpdInformation(sMainPath + "/CpdCheck_" + sOutputFileName);
 
         if (lDuplications != null) {
             /* Schoene einheitliche JSON erstellen */

@@ -26,15 +26,6 @@ public class Svn {
         String local = "";
         String name = System.getenv("SVN_USER");
         String password = System.getenv("SVN_PASSWORD");
-        File dir = new File("repositories");
-
-        if(dir.exists()) {
-            LOG.info("Main Directory " + dir.toString() + " already exists");
-        }
-        else {
-            dir.mkdir();
-            LOG.info("creating " + dir.toString() + " directory");
-        }
 
         if((name == null) && (password == null)) {
             LOG.info("invalid VPN credentials");
@@ -63,7 +54,7 @@ public class Svn {
     }
 
     private void svnCheckout(String mainUrl, String authStringEnc, String localPath) throws
-                                                                                IOException, BadLocationException {
+            IOException, BadLocationException {
         // Generate and open the URL Connection
         URL url = new URL(mainUrl);
         URLConnection urlConnection = url.openConnection();
@@ -114,7 +105,7 @@ public class Svn {
     }
 
     private void downloadFile(String urlString, String dest,
-                             String authStringEnc) throws IOException {
+                              String authStringEnc) throws IOException {
         // Authenticate
         URL url = new URL(urlString);
         URLConnection urlConnection = url.openConnection();

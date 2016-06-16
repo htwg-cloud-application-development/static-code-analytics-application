@@ -73,6 +73,7 @@ public class Pmd {
 
         LOG.info("Repository URL: " + sRepoUrl);
         checkLocalPmd();
+        oRepoDir = oUtil.createDirectory("repositories");
 
         /* Svn Checkout */
         if (sRepoUrl.contains(SVN_IP_C)) {
@@ -93,11 +94,11 @@ public class Pmd {
         /* Git Checkout */
         else if (sRepoUrl.contains("github.com")) {
             LOG.info("Git");
-            sLocalDirArray = oGit.downloadGITRepo(sRepoUrl);
-            oJson = (runPmd(generatePmdServiceData(sLocalDirArray[0]), sRepoUrl, oSeverityCounter, lStartTime));
-            oRepoDir = new File(sLocalDirArray[0]);
-            LOG.info("Array 0: "+sLocalDirArray[0]);
-            LOG.info("Array 1: "+sLocalDirArray[1]);
+            sLocalDir = oGit.downloadGITRepo(sRepoUrl);
+            oJson = (runPmd(generatePmdServiceData(sLocalDir), sRepoUrl, oSeverityCounter, lStartTime));
+            //oRepoDir = new File(sLocalDirArray[0]);
+            //LOG.info("Array 0: "+sLocalDirArray[0]);
+            //LOG.info("Array 1: "+sLocalDirArray[1]);
         } else {
             LOG.info("Repository URL has no valid Svn/Git attributes. (" + sRepoUrl + ")");
         }

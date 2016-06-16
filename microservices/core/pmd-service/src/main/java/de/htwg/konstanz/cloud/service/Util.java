@@ -7,7 +7,11 @@ import org.slf4j.LoggerFactory;
 import org.w3c.dom.Element;
 
 import java.io.File;
+import java.io.FileOutputStream;
 import java.io.IOException;
+import java.net.URL;
+import java.nio.channels.Channels;
+import java.nio.channels.ReadableByteChannel;
 
 public class Util {
     private static final Logger LOG = LoggerFactory.getLogger(Util.class);
@@ -105,5 +109,35 @@ public class Util {
         }
 
         return sShortenPath;
+    }
+
+    File createDirectory(String sDirectoy) {
+        File dir = new File(sDirectoy);
+        if (!dir.exists())
+            dir.mkdir();
+        return dir;
+    }
+
+    void checkLocalPmd() throws IOException {
+        Zip oZip = new Zip();
+        final String sPmdDir = "pmd-bin-5.4.2.zip";
+        final String sDownloadPmd = "https://github.com/pmd/pmd/releases/download/pmd_releases%2F5.4.2/pmd-bin-5.4.2.zip";
+
+        File oFile = new File(sPmdDir);
+        ReadableByteChannel oReadableByteChannel;
+        FileOutputStream oFileOutput;
+        URL oUrl;
+
+        if (oFile.exists()) {
+            LOG.info("Pmd Directory already exists!");
+        } else {
+            LOG.info("Pmd Directory does not exists, Starting download");
+            oUrl = new URL(sDownloadPmd);
+            oReadableByteChannel = Channels.newChannel(oUrl.openStream());
+            oFileOutput = new FileOutputStream(sPmdDir);
+            oFileOutput.getChannel().transferFrom(oReadableByteChannel, 0, Long.MAX_VALUE);
+
+            oZip.unzipFile(sPmdDir);
+        }
     }
 }
