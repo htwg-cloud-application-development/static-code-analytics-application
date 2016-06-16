@@ -58,7 +58,7 @@ public class MongoService {
         if (checkstyleResults.size() > 0){
             return new ResponseEntity<>(checkstyleResults.get(0), HttpStatus.OK);
         } else {
-            return new ResponseEntity<>(HttpStatus.OK);
+            return new ResponseEntity<>(HttpStatus.NO_CONTENT);
         }
     }
 
@@ -75,7 +75,7 @@ public class MongoService {
         if (pmdResults.size() > 0){
             return new ResponseEntity<>(pmdResults.get(0), HttpStatus.OK);
         } else {
-            return new ResponseEntity<>(HttpStatus.OK);
+            return new ResponseEntity<>(HttpStatus.NO_CONTENT);
         }    }
 
     @RequestMapping(value = "/addPMDEntry", method = RequestMethod.POST, consumes = "application/json")
