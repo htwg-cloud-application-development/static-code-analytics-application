@@ -19,7 +19,7 @@ public class Svn {
 
     private String sFileSeparator = "";
 
-    public String downloadSvnRepo(String svnLink) throws IOException, BadLocationException {
+    String downloadSvnRepo(String svnLink) throws IOException, BadLocationException {
         OperatingSystemCheck oOperatingSystemCheck = new OperatingSystemCheck();
         sFileSeparator = oOperatingSystemCheck.getOperatingSystemSeparator();
         //Parameters to access svn
@@ -58,15 +58,14 @@ public class Svn {
         // HTTP Authentication
         String authString = name + ":" + pass;
         byte[] authEncBytes = Base64.encodeBase64(authString.getBytes());
-        String authStringEnc = new String(authEncBytes);
 
-        return authStringEnc;
+        return new String(authEncBytes);
     }
 
-    private void svnCheckout(String mainURL, String authStringEnc, String localPath) throws
+    private void svnCheckout(String mainUrl, String authStringEnc, String localPath) throws
                                                                                 IOException, BadLocationException {
         // Generate and open the URL Connection
-        URL url = new URL(mainURL);
+        URL url = new URL(mainUrl);
         URLConnection urlConnection = url.openConnection();
         urlConnection.setRequestProperty("Authorization", "Basic "
                 + authStringEnc);
@@ -90,11 +89,11 @@ public class Svn {
                 new File(localPathn).mkdir();
                 // start new logic for the located dir
 
-                svnCheckout(mainURL + sFileSeparator + java.net.URLDecoder.decode(listValue.get(i), "UTF-8"), authStringEnc,
+                svnCheckout(mainUrl + sFileSeparator + java.net.URLDecoder.decode(listValue.get(i), "UTF-8"), authStringEnc,
                         localPathn);
             } else {
                 // download file
-                downloadFile(mainURL + sFileSeparator + java.net.URLDecoder.decode(listValue.get(i), "UTF-8"), localPath
+                downloadFile(mainUrl + sFileSeparator + java.net.URLDecoder.decode(listValue.get(i), "UTF-8"), localPath
                         + sFileSeparator + java.net.URLDecoder.decode(listValue.get(i), "UTF-8"), authStringEnc);
             }
         }

@@ -17,7 +17,7 @@ import java.net.MalformedURLException;
 import java.net.URL;
 import java.net.URLConnection;
 
-public class Git {
+class Git {
     private static final Logger LOG = LoggerFactory.getLogger(Git.class);
 
     private boolean isValidRepository(URIish repoUri) {

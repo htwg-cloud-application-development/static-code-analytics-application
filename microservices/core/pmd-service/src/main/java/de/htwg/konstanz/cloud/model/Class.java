@@ -8,7 +8,7 @@ public class Class {
 
     private String sFullPath;
 
-    private List<Error> lError = new ArrayList<Error>();
+    private List<Error> lError = new ArrayList<>();
 
     private String sExerciseName;
 
@@ -22,31 +22,16 @@ public class Class {
         return sFullPath;
     }
 
-    public void setFullPath(String sFullPath) {
-        this.sFullPath = sFullPath;
-    }
-
     public List<Error> getErrorList() {
         return lError;
-    }
-
-    public void setError(List<Error> lError) {
-        this.lError = lError;
     }
 
     public String getClassName() {
         return sClassName;
     }
 
-    public void setClassName(String sClassName) {
-        this.sClassName = sClassName;
-    }
-
     public String getsExcerciseName() {
         return sExerciseName;
     }
 
-    public void setsExcerciseName(String sExcerciseName) {
-        this.sExerciseName = sExcerciseName;
-    }
 }

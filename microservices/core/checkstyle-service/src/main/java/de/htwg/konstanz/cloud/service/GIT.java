@@ -1,9 +1,6 @@
 package de.htwg.konstanz.cloud.service;
 
-import org.eclipse.jgit.api.Git;
 import org.eclipse.jgit.api.errors.GitAPIException;
-import org.eclipse.jgit.api.errors.InvalidRemoteException;
-import org.eclipse.jgit.api.errors.TransportException;
 import org.eclipse.jgit.internal.storage.file.FileRepository;
 import org.eclipse.jgit.transport.RemoteSession;
 import org.eclipse.jgit.transport.SshSessionFactory;
@@ -19,13 +16,11 @@ import java.io.InputStream;
 import java.net.MalformedURLException;
 import java.net.URL;
 import java.net.URLConnection;
-import java.util.List;
 
-public class GIT {
+public class Git {
+    private static final Logger LOG = LoggerFactory.getLogger(Git.class);
 
-    private static final Logger LOG = LoggerFactory.getLogger(GIT.class);
-
-    boolean isValidRepository(URIish repoUri) {
+    private boolean isValidRepository(URIish repoUri) {
         if (repoUri.isRemote()) {
             return isValidRemoteRepository(repoUri);
         } else {
@@ -33,7 +28,7 @@ public class GIT {
         }
     }
 
-    boolean isValidLocalRepository(URIish repoUri) {
+    private boolean isValidLocalRepository(URIish repoUri) {
         boolean result;
 
         try {
@@ -45,10 +40,9 @@ public class GIT {
         return result;
     }
 
-
-    public String downloadGITRepo(String gitRepo) throws InvalidRemoteException, TransportException, GitAPIException, MalformedURLException {
+    String downloadGITRepo(String gitRepo) throws GitAPIException, MalformedURLException {
         /* Checkout Git-Repo */
-        Git git = null;
+        org.eclipse.jgit.api.Git git = null;
 
         /* String Magic */
         String directoryName = gitRepo.substring(gitRepo.lastIndexOf("/"),
@@ -59,10 +53,8 @@ public class GIT {
         /* Clone Command with jGIT */
         URL f = new URL(gitRepo);
         if (isValidRepository(new URIish(f))) {
-            git = Git.cloneRepository().setURI(gitRepo)
+            git = org.eclipse.jgit.api.Git.cloneRepository().setURI(gitRepo)
                     .setDirectory(new File(localDirectory)).call();
-        }else{
-            LOG.info("Git-Server unreachable");
         }
 
         /* Closing Object that we can delete the whole directory later */
@@ -72,7 +64,7 @@ public class GIT {
         return localDirectory;
     }
 
-    boolean isValidRemoteRepository(URIish repoUri) {
+    private boolean isValidRemoteRepository(URIish repoUri) {
         boolean result;
 
         if (repoUri.getScheme().toLowerCase().startsWith("http") ) {
@@ -97,8 +89,9 @@ public class GIT {
                 try {
                     ins.close();
                 }
-                catch (Exception e)
-                { /* ignore */ }
+                catch (Exception e) {
+                    /* ignore */
+                }
             }
         } else if (repoUri.getScheme().toLowerCase().startsWith("ssh") ) {
 

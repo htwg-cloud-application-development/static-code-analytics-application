@@ -3,11 +3,12 @@ package de.htwg.konstanz.cloud.model;
 public class SeverityCounter
 {
     private int nErrorCount;
+
     private int nWarningCount;
+
     private int nIgnoreCount;
 
-    public SeverityCounter()
-    {
+    public SeverityCounter() {
         this.nErrorCount = 0;
         this.nWarningCount = 0;
         this.nIgnoreCount = 0;
