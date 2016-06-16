@@ -10,15 +10,15 @@ import org.springframework.data.mongodb.core.mapping.Document;
 public class Group {
 
     @Id
-    String userId;
-    String attemptnumber;
-    String timecreated;
-    String timemodified;
-    String status;
-    String repository;
+    private String userId;
+    private String attemptnumber;
+    private String timecreated;
+    private String timemodified;
+    private String status;
+    private String repository;
     @DBRef
-    PMDResults pmd;
+    private PMDResults pmd;
     @DBRef
-    CheckstyleResults checkstyle;
+    private CheckstyleResults checkstyle;
 
 }

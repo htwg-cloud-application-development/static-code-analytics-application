@@ -12,15 +12,15 @@ import java.util.List;
 public class User {
 
     @Id
-    String userid;
-    String sitename;
-    String username;
-    String firstname;
-    String lastname;
-    String fullname;
-    String lang;
-    String siteurl;
-    String userpictureurl;
+    private String userid;
+    private String sitename;
+    private String username;
+    private String firstname;
+    private String lastname;
+    private String fullname;
+    private String lang;
+    private String siteurl;
+    private String userpictureurl;
     @DBRef
-    List<Course> courses;
+    private List<Course> courses;
 }

@@ -10,10 +10,10 @@ import org.springframework.data.mongodb.core.mapping.Document;
 public class Assignment {
 
     @Id
-    String id;
-    String name;
-    String modicon;
-    String modname;
-    String modplural;
-    String indent;
+    private String id;
+    private String name;
+    private String modicon;
+    private String modname;
+    private String modplural;
+    private String indent;
 }

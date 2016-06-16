@@ -31,49 +31,56 @@ public class MongoService {
     GroupRepository groupRepo;
 
     @RequestMapping(value = "/addCheckstyleEntry", method = RequestMethod.POST, consumes = "application/json")
-    public void addCheckstyleEntry(@RequestBody CheckstyleResults checkstyleResults) {
+    public void addCheckstyleEntry(@RequestBody final CheckstyleResults checkstyleResults) {
 
 
         checkstyleResults.setTimestamp(String.valueOf(new Date().getTime()));
         checkstyleRepo.save(checkstyleResults);
 
-        String userId = checkstyleResults.getUserId();
-        Group group = mongo.findOne(Query.query(Criteria.where("userId").is(userId)), Group.class);
+        final String userId = checkstyleResults.getUserId();
+        final Group group = mongo.findOne(Query.query(Criteria.where("userId").is(userId)), Group.class);
 
         group.setCheckstyle(checkstyleResults);
         groupRepo.save(group);
-        System.out.println(group);
     }
 
     @RequestMapping(value = "/addPMDEntry", method = RequestMethod.POST, consumes = "application/json")
-    public void addPMDEntry(@RequestBody PMDResults pmdResults) {
+    public void addPMDEntry(@RequestBody final PMDResults pmdResults) {
         pmdResults.setTimestamp(String.valueOf(new Date().getTime()));
         pmdRepo.save(pmdResults);
 
-        String userId = pmdResults.getUserId();
-        Group group = mongo.findOne(Query.query(Criteria.where("userId").is(userId)), Group.class);
+        final String userId = pmdResults.getUserId();
+        final Group group = mongo.findOne(Query.query(Criteria.where("userId").is(userId)), Group.class);
 
         group.setPmd(pmdResults);
         groupRepo.save(group);
-        System.out.println(group);
-
     }
 
     @RequestMapping(value = "/courses/{userId}/findLastCheckstyleResult", method = RequestMethod.GET)
     public
     @ResponseBody
-    CheckstyleResults getLastCheckstyleGroupResult(@PathVariable("userId") String userId) {
+    CheckstyleResults getLastCheckstyleGroupResult(@PathVariable("userId") final String userId) {
 
-        List<CheckstyleResults> userReps = mongo.find(Query.query(Criteria.where("userId").is(userId)).with(new Sort(Sort.Direction.DESC, "timestamp")).limit(1), CheckstyleResults.class);
+        final List<CheckstyleResults> userReps = mongo
+                .find(Query
+                        .query(Criteria.where("userId").is(userId))
+                        .with(new Sort(Sort.Direction.DESC, "timestamp"))
+                        .limit(1), CheckstyleResults.class);
+
         return userReps.get(0);
     }
 
     @RequestMapping(value = "/courses/{userId}/findLastPMDResult", method = RequestMethod.GET)
     public
     @ResponseBody
-    PMDResults getLastPMDGroupResult(@PathVariable("userId") String userId) {
+    PMDResults getLastPMDGroupResult(@PathVariable("userId") final String userId) {
 
-        List<PMDResults> pmdResults = mongo.find(Query.query(Criteria.where("userId").is(userId)).with(new Sort(Sort.Direction.DESC, "timestamp")).limit(1), PMDResults.class);
+        final List<PMDResults> pmdResults = mongo
+                .find(Query
+                        .query(Criteria.where("userId").is(userId))
+                        .with(new Sort(Sort.Direction.DESC, "timestamp"))
+                        .limit(1), PMDResults.class);
+
         return pmdResults.get(0);
     }
 

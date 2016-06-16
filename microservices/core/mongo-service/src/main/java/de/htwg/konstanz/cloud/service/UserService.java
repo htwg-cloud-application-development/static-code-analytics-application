@@ -16,13 +16,13 @@ public class UserService {
     UserRepository userRepo;
 
     @RequestMapping(value = "/add", method = RequestMethod.POST)
-    public void addUser(@RequestBody User user) {
+    public void addUser(@RequestBody final User user) {
 
         userRepo.save(user);
     }
 
     @RequestMapping(value = "{userId}", method = RequestMethod.GET)
-    public User getUser(@PathVariable String userId) {
+    public User getUser(@PathVariable final String userId) {
         return userRepo.findOne(userId);
     }
 }

@@ -24,9 +24,9 @@ public class CourseService {
     private CourseRepository courseRepo;
 
     @RequestMapping(path = "/{userId}", method = RequestMethod.POST, consumes = "application/json")
-    public void create(@RequestBody Course course, @PathVariable String userId) throws NoSuchFieldException {
+    public void create(@RequestBody final Course course, @PathVariable final String userId) throws NoSuchFieldException {
 
-        User user = userRepo.findOne(userId);
+        final User user = userRepo.findOne(userId);
         if (null == user) {
             throw new NoSuchFieldException("User not found");
         }
@@ -44,9 +44,9 @@ public class CourseService {
 
     //Returns one course without assignements of pmd and checkstyle
     @RequestMapping(value = "/{courseId}", method = RequestMethod.GET)
-    public String getCourse(@PathVariable String courseId) throws IOException {
+    public String getCourse(@PathVariable final String courseId) throws IOException {
 
-        Course course = courseRepo.findOne(courseId);
+        final Course course = courseRepo.findOne(courseId);
         return removeAssignments(course).toString();
     }
 
@@ -54,10 +54,10 @@ public class CourseService {
     @RequestMapping(method = RequestMethod.GET)
     public String getAllCourses() {
 
-        List<Course> courses = courseRepo.findAll();
-        List<JSONObject> jsonObjects = new LinkedList<>();
+        final List<Course> courses = courseRepo.findAll();
+        final List<JSONObject> jsonObjects = new LinkedList<>();
 
-        for (Course course : courses) {
+        for (final Course course : courses) {
             jsonObjects.add(removeAssignments(course));
         }
 
@@ -67,9 +67,9 @@ public class CourseService {
 
     //Returns all groups to matching courseId
     @RequestMapping(value = "/groups/{courseId}", method = RequestMethod.GET)
-    public List<Group> getGroups(@PathVariable String courseId) throws NoSuchFieldException {
+    public List<Group> getGroups(@PathVariable final String courseId) throws NoSuchFieldException {
 
-        Course course = courseRepo.findOne(courseId);
+        final Course course = courseRepo.findOne(courseId);
         if (null == course) {
             throw new NoSuchFieldException("Course not found");
         }
@@ -77,30 +77,31 @@ public class CourseService {
         return course.getGroups();
     }
 
-    public JSONObject removeAssignments(Course course) {
+    public JSONObject removeAssignments(final Course course) {
 
         //Remove assignments from checkstyle and pmd
-        JSONObject jCourse = new JSONObject(course);
+        final JSONObject jCourse = new JSONObject(course);
 
         if (jCourse.has("groups")) {
 
-            JSONArray groups = jCourse.getJSONArray("groups");
+            final JSONArray groups = jCourse.getJSONArray("groups");
+            final String assignments = "assignments";
 
             for (int i = 0; i < groups.length() - 1; i++) {
 
-                JSONObject group = groups.getJSONObject(i);
+                final JSONObject group = groups.getJSONObject(i);
 
                 if (group.has("pmd")) {
-                    JSONObject pmd = group.getJSONObject("pmd");
-                    if (pmd.has("assignments")) {
-                        pmd.remove("assignments");
+                    final JSONObject pmd = group.getJSONObject("pmd");
+                    if (pmd.has(assignments)) {
+                        pmd.remove(assignments);
                     }
                 }
 
                 if (group.has("checkstyle")) {
-                    JSONObject checkstyle = group.getJSONObject("checkstyle");
-                    if (checkstyle.has("assignments")) {
-                        checkstyle.remove("assignments");
+                    final JSONObject checkstyle = group.getJSONObject("checkstyle");
+                    if (checkstyle.has(assignments)) {
+                        checkstyle.remove(assignments);
                     }
                 }
             }

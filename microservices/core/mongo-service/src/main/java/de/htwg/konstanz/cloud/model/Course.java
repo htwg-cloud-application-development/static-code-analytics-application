@@ -12,14 +12,14 @@ import java.util.List;
 public class Course {
 
     @Id
-    String id;
-    String shortname;
-    String fullname;
-    String enrolledusercount;
-    String idnumber;
-    String visible;
+    private String id;
+    private String shortname;
+    private String fullname;
+    private String enrolledusercount;
+    private String idnumber;
+    private String visible;
     @DBRef
-    List<Assignment> assignments;
+    private List<Assignment> assignments;
     @DBRef
-    List<Group> groups;
+    private List<Group> groups;
 }
