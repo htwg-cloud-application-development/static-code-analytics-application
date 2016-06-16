@@ -1,6 +1,5 @@
 package de.htwg.konstanz.cloud.service;
 
-import org.eclipse.jgit.api.Git;
 import org.eclipse.jgit.api.errors.GitAPIException;
 import org.eclipse.jgit.internal.storage.file.FileRepository;
 import org.eclipse.jgit.transport.RemoteSession;
@@ -18,8 +17,8 @@ import java.net.MalformedURLException;
 import java.net.URL;
 import java.net.URLConnection;
 
-public class GIT {
-    private static final Logger LOG = LoggerFactory.getLogger(GIT.class);
+public class Git {
+    private static final Logger LOG = LoggerFactory.getLogger(Git.class);
 
     private boolean isValidRepository(URIish repoUri) {
         if (repoUri.isRemote()) {
@@ -43,7 +42,7 @@ public class GIT {
 
     public String downloadGITRepo(String gitRepo) throws GitAPIException, MalformedURLException {
         /* Checkout Git-Repo */
-        Git git = null;
+        org.eclipse.jgit.api.Git git = null;
 
         /* String Magic */
         String directoryName = gitRepo.substring(gitRepo.lastIndexOf("/"),
@@ -54,7 +53,7 @@ public class GIT {
         /* Clone Command with jGIT */
         URL f = new URL(gitRepo);
         if (isValidRepository(new URIish(f))) {
-            git = Git.cloneRepository().setURI(gitRepo)
+            git = org.eclipse.jgit.api.Git.cloneRepository().setURI(gitRepo)
                     .setDirectory(new File(localDirectory)).call();
         }
 

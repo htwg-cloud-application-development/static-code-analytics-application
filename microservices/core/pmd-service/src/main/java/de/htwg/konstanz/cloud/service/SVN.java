@@ -17,11 +17,10 @@ import java.util.List;
 public class Svn {
     private static final Logger LOG = LoggerFactory.getLogger(Svn.class);
 
-    private OperatingSystemCheck oOperatingSystemCheck = new OperatingSystemCheck();
-
     private String sFileSeparator = "";
 
     public String downloadSvnRepo(String svnLink) throws IOException, BadLocationException {
+        OperatingSystemCheck oOperatingSystemCheck = new OperatingSystemCheck();
         sFileSeparator = oOperatingSystemCheck.getOperatingSystemSeparator();
         //Parameters to access svn
         String local = "";
@@ -29,15 +28,18 @@ public class Svn {
         String password = System.getenv("SVN_PASSWORD");
         File dir = new File("repositories");
 
-        if(!dir.exists()) {
+        if(dir.exists()) {
+            LOG.info("Main Directory " + dir.toString() + " already exists");
+        }
+        else {
             dir.mkdir();
             LOG.info("creating " + dir.toString() + " directory");
         }
-        else {
-            LOG.info("Main Directory " + dir.toString() + " already exists");
-        }
 
-        if((name != null)&& (password != null)) {
+        if((name == null) && (password == null)) {
+            LOG.info("invalid VPN credentials");
+        }
+        else {
             /* Split URL at every Slash */
             String[] parts = svnLink.split("\\/");
 
@@ -47,9 +49,6 @@ public class Svn {
             dir1.mkdir();
 
             svnCheckout(svnLink, genAuthString(name, password), local);
-        }
-        else {
-            LOG.info("invalid VPN credentials");
         }
 
         return local;

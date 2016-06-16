@@ -38,7 +38,7 @@ public class Pmd {
 
     private File oRepoDir;
 
-    private final GIT oGit = new GIT();
+    private final Git oGit = new Git();
 
     private final Svn oSvn = new Svn();
 
@@ -89,14 +89,14 @@ public class Pmd {
             oJson = (runPmd(generatePmdServiceData(sLocalDir), oStringBuilder.toString(), oSeverityCounter, lStartTime));
             oRepoDir = new File(sLocalDir);
         }
-        /* GIT */
+        /* Git */
         else if (sRepoUrl.contains("github.com")) {
-            LOG.info("GIT");
+            LOG.info("Git");
             sLocalDir = oGit.downloadGITRepo(sRepoUrl);
             oJson = (runPmd(generatePmdServiceData(sLocalDir), sRepoUrl, oSeverityCounter, lStartTime));
             oRepoDir = new File(sLocalDir);
         } else {
-            LOG.info("Repository URL has no valid Svn/GIT attributes. (" + sRepoUrl + ")");
+            LOG.info("Repository URL has no valid Svn/Git attributes. (" + sRepoUrl + ")");
         }
 
         return oJson;
@@ -137,7 +137,7 @@ public class Pmd {
 
         /* Other Structure Workaround */
         if(list.isEmpty()){
-            LOG.info("divergent repository");
+            LOG.info("unregular repository");
             List<String> javaFiles = new ArrayList<>();
             list.add(walk(sLocalDirectory,javaFiles));
         }
@@ -151,15 +151,15 @@ public class Pmd {
         
         if (list != null) {
 
-            for (File f : list) {
-                if (f.isDirectory()) {
-                    if (!f.getPath().contains(".git")) {
+            for (File tmpFile : list) {
+                if (tmpFile.isDirectory()) {
+                    if (!tmpFile.getPath().contains(".git")) {
 
-                        walk(f.getPath(),javaFiles);
+                        walk(tmpFile.getPath(),javaFiles);
                     }
                 } else {
-                    if(f.getPath().endsWith(".java")) {
-                        javaFiles.add(f.getPath());
+                    if(tmpFile.getPath().endsWith(".java")) {
+                        javaFiles.add(tmpFile.getPath());
                     }
                 }
             }
