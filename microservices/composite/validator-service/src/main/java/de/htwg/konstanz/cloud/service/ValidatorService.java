@@ -129,6 +129,10 @@ public class ValidatorService {
             Future<String> checkstyleRepo = validateRepositoryService.validateRepository(repositoryData.toString(), checkstyleInstance.getUri());
             Future<String> pmdRepo = validateRepositoryService.validateRepository(repositoryData.toString(), pmdInstance.getUri());
 
+            if (checkstyleRepo == null || pmdRepo == null) {
+                return util.createErrorResponse("Validation services not found!", HttpStatus.SERVICE_UNAVAILABLE);
+            }
+
             boolean run = true;
             // Wait until they are done
             while (run) {
