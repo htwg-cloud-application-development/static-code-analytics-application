@@ -67,6 +67,7 @@ class Checkstyle {
             IOException, BadLocationException, GitAPIException, ParserConfigurationException, SAXException {
         JSONObject oJson = null;
         String sLocalDir;
+        String[] sLocalDirArray;
         StringBuilder oStringBuilder = new StringBuilder();
 
         LOG.info("Repository URL: " + sRepoUrl);
@@ -91,9 +92,11 @@ class Checkstyle {
         /* Git Checkout */
         else if (sRepoUrl.contains("github.com")) {
             LOG.info("Git");
-            sLocalDir = oGit.downloadGITRepo(sRepoUrl);
-            oJson = (checkStyle(generateCheckStyleServiceData(sLocalDir), sRepoUrl, oSeverityCounter, lStartTime));
-            oRepoDir = new File(sLocalDir);
+            sLocalDirArray = oGit.downloadGITRepo(sRepoUrl);
+            oJson = (checkStyle(generateCheckStyleServiceData(sLocalDirArray[0]), sRepoUrl, oSeverityCounter, lStartTime));
+            oRepoDir = new File(sLocalDirArray[0]);
+            LOG.info("Array 0: "+sLocalDirArray[0]);
+            LOG.info("Array 1: "+sLocalDirArray[1]);
         } else {
             LOG.info("Repository URL has no valid Svn/Git attributes. (" + sRepoUrl + ")");
         }

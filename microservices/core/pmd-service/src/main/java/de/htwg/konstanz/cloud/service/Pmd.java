@@ -68,12 +68,13 @@ public class Pmd {
             throws IOException, BadLocationException, GitAPIException, ParserConfigurationException, SAXException {
         JSONObject oJson = null;
         String sLocalDir;
+        String[] sLocalDirArray;
         StringBuilder oStringBuilder = new StringBuilder();
 
         LOG.info("Repository URL: " + sRepoUrl);
         checkLocalPmd();
 
-        /* Svn */
+        /* Svn Checkout */
         if (sRepoUrl.contains(SVN_IP_C)) {
             /* URL needs to start with HTTP:// */
             if (!sRepoUrl.startsWith("http://")) {
@@ -86,15 +87,17 @@ public class Pmd {
 
             LOG.info("Svn");
             sLocalDir = oSvn.downloadSvnRepo(oStringBuilder.toString());
-            oJson = (runPmd(generatePmdServiceData(sLocalDir), oStringBuilder.toString(), oSeverityCounter, lStartTime));
+            oJson = (runPmd(generatePmdServiceData(oStringBuilder.toString()), sRepoUrl, oSeverityCounter, lStartTime));
             oRepoDir = new File(sLocalDir);
         }
-        /* Git */
+        /* Git Checkout */
         else if (sRepoUrl.contains("github.com")) {
             LOG.info("Git");
-            sLocalDir = oGit.downloadGITRepo(sRepoUrl);
-            oJson = (runPmd(generatePmdServiceData(sLocalDir), sRepoUrl, oSeverityCounter, lStartTime));
-            oRepoDir = new File(sLocalDir);
+            sLocalDirArray = oGit.downloadGITRepo(sRepoUrl);
+            oJson = (runPmd(generatePmdServiceData(sLocalDirArray[0]), sRepoUrl, oSeverityCounter, lStartTime));
+            oRepoDir = new File(sLocalDirArray[0]);
+            LOG.info("Array 0: "+sLocalDirArray[0]);
+            LOG.info("Array 1: "+sLocalDirArray[1]);
         } else {
             LOG.info("Repository URL has no valid Svn/Git attributes. (" + sRepoUrl + ")");
         }
