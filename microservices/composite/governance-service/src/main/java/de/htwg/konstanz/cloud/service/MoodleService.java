@@ -37,14 +37,6 @@ public class MoodleService {
 
     }
 
-    public String getAssignmentsOfCourse(String course, String token) {
-        return null;
-    }
-
-    public String getSubmissionOfAssignment(String assignment, String token) {
-        return null;
-    }
-
     public String getSubmissionsOfCourses(Integer courseid, String token) throws InstantiationException {
 
         String route = "/courses/" + courseid + "/groups/token/" + token;
