@@ -157,7 +157,6 @@ class Checkstyle {
                 } else {
                     if(f.getPath().endsWith(".java")) {
                         javaFiles.add(f.getPath());
-                        LOG.info(f.getPath());
                     }
                 }
             }
@@ -292,9 +291,7 @@ class Checkstyle {
         LOG.info("Number of Warnings: " + oSeverityCounter.getWarningCount());
         oJsonRoot.put("numberOfIgnores", oSeverityCounter.getIgnoreCount());
         LOG.info("Number of Ignores: " + oSeverityCounter.getIgnoreCount());
-        //oJsonRoot.put("groupID", nGroupID);
-        //oJsonRoot.put("name", sName);
-		
+
 		/* all Classes */
         for (int nClassPos = 0; nClassPos < lFormattedClassList.size(); nClassPos++) {
             if (bExcerciseChange) {
@@ -323,13 +320,15 @@ class Checkstyle {
                     lJsonErrors.put(oJsonError);
                 }
 
-                sTmpExcerciseName = sExcerciseName;
-                String sFilePath = oUtil.removeUnnecessaryPathParts(lFormattedClassList.get(nClassPos).getFullPath());
+                if(lJsonErrors.length() > 0) {
+                    sTmpExcerciseName = sExcerciseName;
+                    String sFilePath = oUtil.removeUnnecessaryPathParts(lFormattedClassList.get(nClassPos).getFullPath());
 
-                oJsonClass.put("filepath", sFilePath);
-                oJsonClass.put("errors", lJsonErrors);
-                lJsonClasses.put(oJsonClass);
-				
+                    oJsonClass.put("filepath", sFilePath);
+                    oJsonClass.put("errors", lJsonErrors);
+                    lJsonClasses.put(oJsonClass);
+                }
+
 				/* last run if different exercises were found */
                 if (bLastRun) {
                     oJsonExercise.put(sTmpExcerciseName, lJsonClasses);
@@ -344,19 +343,21 @@ class Checkstyle {
             }
 			/* swap for a different exercise */
             else {
-                oJsonExercise.put(sTmpExcerciseName, lJsonClasses);
-                lJsonExercises.put(oJsonExercise);
-                oJsonExercise = new JSONObject();
-                lJsonClasses = new JSONArray();
-                sTmpExcerciseName = lFormattedClassList.get(nClassPos).getsExcerciseName();
-                bExcerciseChange = true;
-                bExcerciseNeverChanged = false;
+                if (lFormattedClassList.get(nClassPos).getErrorList().size() > 0) {
+                    oJsonExercise.put(sTmpExcerciseName, lJsonClasses);
+                    lJsonExercises.put(oJsonExercise);
+                    oJsonExercise = new JSONObject();
+                    lJsonClasses = new JSONArray();
+                    sTmpExcerciseName = lFormattedClassList.get(nClassPos).getsExcerciseName();
+                    bExcerciseChange = true;
+                    bExcerciseNeverChanged = false;
 				
-				/* decrement the position to get the last class from the list */
-                if ((nClassPos + 1) == lFormattedClassList.size()) {
-                    nClassPos--;
-                    bExcerciseChange = false;
-                    bLastRun = true;
+				    /* decrement the position to get the last class from the list */
+                    if ((nClassPos + 1) == lFormattedClassList.size()) {
+                        nClassPos--;
+                        bExcerciseChange = false;
+                        bLastRun = true;
+                    }
                 }
             }
         }
