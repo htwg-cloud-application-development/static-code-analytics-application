@@ -15,8 +15,8 @@ import java.net.URLDecoder;
 import java.util.ArrayList;
 import java.util.List;
 
-public class Svn1 {
-    private static final Logger LOG = LoggerFactory.getLogger(Svn1.class);
+public class Svn {
+    private static final Logger LOG = LoggerFactory.getLogger(Svn.class);
 
     private String sFileSeparator = "";
 
@@ -122,7 +122,7 @@ public class Svn1 {
 
     private List<String> iterToList(HTMLDocument.Iterator iter) {
         List<String> list = new ArrayList<>();
-        // Get Headstructure of Svn1 and store it into List
+        // Get Headstructure of Svn and store it into List
         do {
             list.add(iter.getAttributes().getAttribute(HTML.Attribute.HREF)
                     .toString());
