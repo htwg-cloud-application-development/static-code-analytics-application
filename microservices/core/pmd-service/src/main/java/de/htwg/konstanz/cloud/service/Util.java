@@ -14,7 +14,7 @@ public class Util {
 
     private final OperatingSystemCheck oOperatingSystemCheck = new OperatingSystemCheck();
 
-    public File checkLocalSrcDir(String sLocalDirectory) {
+    File checkLocalSrcDir(String sLocalDirectory) {
         File mainDir;/* Check if local /src-dir exists */
 
         if (new File(sLocalDirectory + "/src").exists()) {
@@ -28,7 +28,7 @@ public class Util {
         return mainDir;
     }
 
-    public void execCommand(String sPmdCommand) {
+    void execCommand(String sPmdCommand) {
         try {
             Runtime runtime = Runtime.getRuntime();
             Process proc = runtime.exec(sPmdCommand);
@@ -43,7 +43,7 @@ public class Util {
         }
     }
 
-    public String checkJsonResult(JSONObject oJsonResult) {
+    String checkJsonResult(JSONObject oJsonResult) {
         String sResult;
         if (null == oJsonResult) {
             sResult = "Invalid Repository";
@@ -55,7 +55,7 @@ public class Util {
         return sResult;
     }
 
-    public boolean isParsable(String input) {
+    boolean isParsable(String input) {
         boolean bParsable = true;
 
         try {
@@ -67,14 +67,14 @@ public class Util {
         return bParsable;
     }
 
-    public String getNonEmptyElement(Element eElement, String sAttributeName) {
+    String getNonEmptyElement(Element eElement, String sAttributeName) {
         if (!eElement.getAttribute(sAttributeName).isEmpty()) {
             return eElement.getAttribute(sAttributeName);
         }
         return "";
     }
 
-    public void incErrorType(SeverityCounter oSeverityCounter, int nPriority) {
+    void incErrorType(SeverityCounter oSeverityCounter, int nPriority) {
         /* Count every Error Type we have found in the XML */
         if (nPriority == 1) {
             oSeverityCounter.incIgnoreCount();
@@ -85,19 +85,19 @@ public class Util {
         }
     }
 
-    public int getParsableElement(Element eElement, String sAttribute) {
+    int getParsableElement(Element eElement, String sAttribute) {
         if (isParsable(eElement.getAttribute(sAttribute))) {
             return Integer.parseInt(eElement.getAttribute(sAttribute));
         }
         return 0;
     }
 
-    public String removeUnnecessaryPathParts(String sFilePath) {
+    String removeUnnecessaryPathParts(String sFilePath) {
         String[] sFilePathSplitArray = sFilePath.split(oOperatingSystemCheck.getOperatingSystemSeparator());
         String sShortenPath = "";
         for (int nPathPos = 2; nPathPos < sFilePathSplitArray.length; nPathPos++) {
             if (nPathPos + 1 == sFilePathSplitArray.length) {
-                        /* last Part of the Path */
+                /* last Part of the Path */
                 sShortenPath += sFilePathSplitArray[nPathPos];
             } else {
                 sShortenPath += sFilePathSplitArray[nPathPos] + "\\";

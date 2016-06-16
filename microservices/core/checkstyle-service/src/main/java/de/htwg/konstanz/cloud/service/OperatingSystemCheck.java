@@ -2,13 +2,13 @@ package de.htwg.konstanz.cloud.service;
 
 import java.io.File;
 
-public class OperatingSystemCheck {
+class OperatingSystemCheck {
 
     private String getOsName()
     {
         String sOS = "";
 
-        if(sOS.equals(""))
+        if("".equals(sOS))
         {
             sOS = System.getProperty("os.name");
         }
@@ -16,7 +16,7 @@ public class OperatingSystemCheck {
         return sOS;
     }
 
-    public String getOperatingSystemSeparator()
+    String getOperatingSystemSeparator()
     {
         String sOperatingSystemSeparator = "";
 

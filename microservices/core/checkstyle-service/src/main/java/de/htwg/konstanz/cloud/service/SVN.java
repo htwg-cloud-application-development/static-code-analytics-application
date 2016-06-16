@@ -11,17 +11,17 @@ import javax.swing.text.html.HTMLEditorKit;
 import java.io.*;
 import java.net.URL;
 import java.net.URLConnection;
+import java.net.URLDecoder;
 import java.util.ArrayList;
 import java.util.List;
 
-public class SVN {
+public class Svn {
+    private static final Logger LOG = LoggerFactory.getLogger(Svn.class);
 
-    private static final Logger LOG = LoggerFactory.getLogger(SVN.class);
-    private OperatingSystemCheck oOperatingSystemCheck = new OperatingSystemCheck();
     private String sFileSeparator = "";
 
-    public String downloadSVNRepo(String svnLink) throws IOException, BadLocationException {
-
+    String downloadSvnRepo(String svnLink) throws IOException, BadLocationException {
+        OperatingSystemCheck oOperatingSystemCheck = new OperatingSystemCheck();
         sFileSeparator = oOperatingSystemCheck.getOperatingSystemSeparator();
         //Parameters to access svn
         String local = "";
@@ -29,48 +29,55 @@ public class SVN {
         String password = System.getenv("SVN_PASSWORD");
         File dir = new File("repositories");
 
-        if(!dir.exists())
-        {
-            dir.mkdir();
-            LOG.info("creating " + dir.toString() + " directory");
-        }
-        else
-        {
+        if(dir.exists()) {
             LOG.info("Main Directory " + dir.toString() + " already exists");
         }
+        else {
+            boolean bSuccess = dir.mkdir();
 
-        if((name != null)&& (password != null)) {
+            if(bSuccess) {
+                LOG.info("creating " + dir.toString() + " directory");
+            }
+            else {
+                LOG.info("Error while creating directory: " + dir.toString());
+            }
+        }
 
+        if((name == null) && (password == null)) {
+            LOG.info("invalid VPN credentials");
+        }
+        else {
             /* Split URL at every Slash */
             String[] parts = svnLink.split("\\/");
 
             local = local + parts[parts.length - 1];
             local = "repositories" + sFileSeparator + local + "_" + System.currentTimeMillis() + sFileSeparator;
             File dir1 = new File(local);
-            dir1.mkdir();
+            boolean bSuccess = dir1.mkdir();
+
+            if(bSuccess) {
+                LOG.info("creating " + dir.toString() + " directory");
+            }
+            else {
+                LOG.info("Error while creating directory: " + dir.toString());
+            }
 
             svnCheckout(svnLink, genAuthString(name, password), local);
-        }
-        else
-        {
-            LOG.info("invalid VPN credentials");
         }
 
         return local;
     }
 
-    public String genAuthString(String name, String pass) {
+    private String genAuthString(String name, String pass) {
         // HTTP Authentication
         String authString = name + ":" + pass;
         byte[] authEncBytes = Base64.encodeBase64(authString.getBytes());
-        String authStringEnc = new String(authEncBytes);
 
-        return authStringEnc;
+        return new String(authEncBytes);
     }
 
-    public void svnCheckout(String mainURL, String authStringEnc,
-                            String localPath) throws FileNotFoundException, IOException, BadLocationException {
-        List<String> listValue = new ArrayList<String>();
+    private void svnCheckout(String mainURL, String authStringEnc, String localPath) throws
+            IOException, BadLocationException {
         // Generate and open the URL Connection
         URL url = new URL(mainURL);
         URLConnection urlConnection = url.openConnection();
@@ -85,30 +92,37 @@ public class SVN {
         htmlDoc.putProperty("IgnoreCharsetDirective", Boolean.TRUE);
         editorKit.read(br, htmlDoc, 0);
         HTMLDocument.Iterator iter = htmlDoc.getIterator(HTML.Tag.A);
-        listValue = iterToList(iter);
+        List<String> listValue = iterToList(iter);
 
-        for (int i = 0; i < listValue.size(); i++) {
-            if (java.net.URLDecoder.decode(listValue.get(i), "UTF-8").endsWith("/")) {
+        for (String aListValue : listValue) {
+            if (URLDecoder.decode(aListValue, "UTF-8").endsWith("/")) {
                 // String Magic
-                String[] parts = java.net.URLDecoder.decode(listValue.get(i), "UTF-8").split("\\/");
+                String[] parts = URLDecoder.decode(aListValue, "UTF-8").split("\\/");
                 String localPathn = localPath + sFileSeparator + parts[parts.length - 1];
                 // Create new Dir
-                new File(localPathn).mkdir();
-                // start new logic for the located dir
+                boolean bSuccess = new File(localPathn).mkdir();
 
-                svnCheckout(mainURL + sFileSeparator + java.net.URLDecoder.decode(listValue.get(i), "UTF-8"), authStringEnc,
+                if(bSuccess) {
+                    LOG.info("created directory");
+                }
+                else {
+                    LOG.info("eror while creating directory");
+                }
+
+                // start new logic for the located dir
+                svnCheckout(mainURL + sFileSeparator + URLDecoder.decode(aListValue, "UTF-8"), authStringEnc,
                         localPathn);
             } else {
                 // download file
-                downloadFile(mainURL + sFileSeparator + java.net.URLDecoder.decode(listValue.get(i), "UTF-8"), localPath + sFileSeparator
-                        + java.net.URLDecoder.decode(listValue.get(i), "UTF-8"), authStringEnc);
+                downloadFile(mainURL + sFileSeparator + URLDecoder.decode(aListValue, "UTF-8"), localPath
+                        + sFileSeparator + URLDecoder.decode(aListValue, "UTF-8"), authStringEnc);
             }
         }
     }
 
-    public List<String> iterToList(HTMLDocument.Iterator iter) {
-        List<String> list = new ArrayList<String>();
-        // Get Headstructure of SVN and store it into List
+    private List<String> iterToList(HTMLDocument.Iterator iter) {
+        List<String> list = new ArrayList<>();
+        // Get Headstructure of Svn and store it into List
         do {
             list.add(iter.getAttributes().getAttribute(HTML.Attribute.HREF)
                     .toString());
@@ -120,8 +134,8 @@ public class SVN {
         return list;
     }
 
-    public void downloadFile(String urlString, String dest,
-                             String authStringEnc) throws IOException {
+    private void downloadFile(String urlString, String dest,
+                              String authStringEnc) throws IOException {
         // Authenticate
         URL url = new URL(urlString);
         URLConnection urlConnection = url.openConnection();
@@ -135,7 +149,7 @@ public class SVN {
         try {
             File fi = new File(dest);
             outputStream = new FileOutputStream(fi);
-            int read = 0;
+            int read;
             byte[] bytes = new byte[1024];
 
             while ((read = is.read(bytes)) != -1) {
@@ -159,6 +173,5 @@ public class SVN {
                 }
             }
         }
-
     }
 }

@@ -3,8 +3,6 @@ package de.htwg.konstanz.cloud.service;
 import de.htwg.konstanz.cloud.model.Duplication;
 import org.apache.commons.io.FileUtils;
 import org.eclipse.jgit.api.errors.GitAPIException;
-import org.eclipse.jgit.api.errors.InvalidRemoteException;
-import org.eclipse.jgit.api.errors.TransportException;
 import org.json.JSONArray;
 import org.json.JSONObject;
 import org.slf4j.Logger;
@@ -21,7 +19,6 @@ import javax.xml.parsers.DocumentBuilder;
 import javax.xml.parsers.DocumentBuilderFactory;
 import javax.xml.parsers.ParserConfigurationException;
 import java.io.*;
-import java.net.MalformedURLException;
 import java.net.URL;
 import java.nio.channels.Channels;
 import java.nio.channels.ReadableByteChannel;
@@ -41,7 +38,8 @@ public class Cpd {
 
     private static final String SVN_IP_C = "141.37.122.26";
 
-    public String startIt(String gitRepository) throws IOException, ParserConfigurationException, SAXException, BadLocationException, InvalidRemoteException, TransportException, GitAPIException, MalformedURLException, NullPointerException {
+    String startIt(String gitRepository) throws IOException, ParserConfigurationException,
+            SAXException, BadLocationException, GitAPIException, NullPointerException {
         long lStartTime = System.currentTimeMillis();
         JSONObject oJsonResult;
         String sResult;
@@ -103,7 +101,6 @@ public class Cpd {
 
     private void checkLocalCpd() throws IOException {
         Zip oZip = new Zip();
-        boolean bSuccess = false;
         final String sCpdDir = "pmd-bin-5.4.2.zip";
         final String sDownloadCpd = "https://github.com/pmd/pmd/releases/download/pmd_releases%2F5.4.2/pmd-bin-5.4.2.zip";
 

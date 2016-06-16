@@ -44,7 +44,7 @@ public class Pmd {
 
     private static final String SVN_IP_C = "141.37.122.26";
 
-    public String startIt(String gitRepository) throws IOException, ParserConfigurationException, SAXException,
+    String startIt(String gitRepository) throws IOException, ParserConfigurationException, SAXException,
                                                         BadLocationException, GitAPIException, NullPointerException {
         long lStartTime = System.currentTimeMillis();
         JSONObject oJsonResult;
@@ -116,20 +116,21 @@ public class Pmd {
 
             if(files != null) {
                 for (File file : mainDir.listFiles()) {
+                    if(file != null) {
+                        File[] filesSub = new File(file.getPath()).listFiles();
+                        List<String> pathsSub = new ArrayList<>();
 
-                    File[] filesSub = new File(file.getPath()).listFiles();
-                    List<String> pathsSub = new ArrayList<>();
-
-                    if (filesSub != null) {
-                        for (File aFilesSub : filesSub) {
-                            if (aFilesSub.getPath().endsWith(".java")) {
-                                pathsSub.add(aFilesSub.getPath());
+                        if (filesSub != null) {
+                            for (File aFilesSub : filesSub) {
+                                if (aFilesSub.getPath().endsWith(".java")) {
+                                    pathsSub.add(aFilesSub.getPath());
+                                }
                             }
                         }
-                    }
 
-                    if (!pathsSub.isEmpty()) {
-                        list.add(pathsSub);
+                        if (!pathsSub.isEmpty()) {
+                            list.add(pathsSub);
+                        }
                     }
                 }
             }
@@ -150,7 +151,6 @@ public class Pmd {
         File[] list = root.listFiles();
         
         if (list != null) {
-
             for (File tmpFile : list) {
                 if (tmpFile.isDirectory()) {
                     if (!tmpFile.getPath().contains(".git")) {
