@@ -17,8 +17,8 @@ import java.net.MalformedURLException;
 import java.net.URL;
 import java.net.URLConnection;
 
-public class Git {
-    private static final Logger LOG = LoggerFactory.getLogger(Git.class);
+public class Git1 {
+    private static final Logger LOG = LoggerFactory.getLogger(Git1.class);
 
     private boolean isValidRepository(URIish repoUri) {
         if (repoUri.isRemote()) {
@@ -41,7 +41,7 @@ public class Git {
     }
 
     String downloadGITRepo(String gitRepo) throws GitAPIException, MalformedURLException {
-        /* Checkout Git-Repo */
+        /* Checkout Git1-Repo */
         org.eclipse.jgit.api.Git git = null;
 
         /* String Magic */

@@ -38,9 +38,9 @@ class Checkstyle {
 
     private File oRepoDir;
 
-    private final Git oGit = new Git();
+    private final Git1 oGit = new Git1();
 
-    private final Svn oSvn = new Svn();
+    private final Svn1 oSvn = new Svn1();
 
     private static final String SVN_IP_C = "141.37.122.26";
 
@@ -72,7 +72,7 @@ class Checkstyle {
         LOG.info("Repository URL: " + sRepoUrl);
         checkLocalCheckstyle();
 
-        /* Svn Checkout */
+        /* Svn1 Checkout */
         if (sRepoUrl.contains(SVN_IP_C)) {
             /* URL needs to start with HTTP:// */
             if (!sRepoUrl.startsWith("http://")) {
@@ -83,19 +83,19 @@ class Checkstyle {
                 oStringBuilder.append(sRepoUrl.substring(0, sRepoUrl.length() - 1));
             }
 
-            LOG.info("Svn");
+            LOG.info("Svn1");
             sLocalDir = oSvn.downloadSvnRepo(oStringBuilder.toString());
             oJson = (checkStyle(generateCheckStyleServiceData(oStringBuilder.toString()), sRepoUrl, oSeverityCounter, lStartTime));
             oRepoDir = new File(sLocalDir);
         }
-        /* Git Checkout */
+        /* Git1 Checkout */
         else if (sRepoUrl.contains("github.com")) {
-            LOG.info("Git");
+            LOG.info("Git1");
             sLocalDir = oGit.downloadGITRepo(sRepoUrl);
             oJson = (checkStyle(generateCheckStyleServiceData(sLocalDir), sRepoUrl, oSeverityCounter, lStartTime));
             oRepoDir = new File(sLocalDir);
         } else {
-            LOG.info("Repository URL has no valid Svn/Git attributes. (" + sRepoUrl + ")");
+            LOG.info("Repository URL has no valid Svn1/Git1 attributes. (" + sRepoUrl + ")");
         }
 
         return oJson;
