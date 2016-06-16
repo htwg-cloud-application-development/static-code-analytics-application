@@ -51,4 +51,12 @@ public class MoodleService {
 
         return util.postToService(route, jsonObject.toString(), "moodle");
     }
+
+    public boolean hasPermission(Integer userId, Integer courseId, String token) throws InstantiationException {
+        String route = "/courses/ " + courseId + "/users/" + userId + "/token/" + token + "/permission";
+
+        String response = util.getFromService(route, "moodle");
+
+        return "true".equals(response);
+    }
 }
