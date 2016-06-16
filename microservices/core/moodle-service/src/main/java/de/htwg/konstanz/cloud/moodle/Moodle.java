@@ -14,7 +14,7 @@ import java.util.List;
 
 public class Moodle {
 
-    private RestTemplate templ = new RestTemplate();
+    private final RestTemplate templ = new RestTemplate();
 
     private String MOODLE_BASE_URL = "https://moodle.htwg-konstanz.de/moodle/webservice/rest/server.php?" +
             "&moodlewsrestformat=json";
@@ -79,6 +79,43 @@ public class Moodle {
     }
 
 
+    public Boolean hasPermissionOnCourse(String courseId, Integer userId) {
+        final String service = "core_enrol_get_enrolled_users";
+        final String requestURL = MOODLE_BASE_URL + "&wsfunction=" + service + "&courseid=" + courseId;
+
+        JsonNode enrolledUser = templ.getForObject(requestURL, JsonNode.class);
+
+        Boolean hasPermission = false;
+
+        for (JsonNode user : enrolledUser) {
+
+            // check on userid
+            if (userId == user.findPath("id").asInt()) {
+
+                // user found --> check on permission
+                JsonNode roles = user.findPath("roles");
+
+
+                // iterate over roles of user in that course
+                for (JsonNode role : roles) {
+
+                    if ("editingteacher".equals(role.findPath("shortname").asText())) {
+                        return true;
+                    }
+                }
+
+                // user found, but has no permission
+                return false;
+            }
+
+
+        }
+
+        // user not found in course
+        return false;
+    }
+
+
     private List<MoodleAssignment> findAssignmentsInCourse(JsonNode course) throws JsonProcessingException {
 
         JsonNode jsonCourse = course.findPath("courses");
@@ -90,7 +127,7 @@ public class Moodle {
 
         ObjectMapper mapper = new ObjectMapper();
         List<MoodleAssignment> assignments = new ArrayList<>();
-        
+
         // iterate over all assignments
         for (JsonNode assign : jsonAssignments) {
             assignments.add(mapper.treeToValue(assign, MoodleAssignment.class));
@@ -100,7 +137,6 @@ public class Moodle {
     }
 
     private List<MoodleSubmissionOfAssignmet> findSubmissionsInAssignment(JsonNode assignment) throws JsonProcessingException {
-
 
 
         JsonNode moodleSubmissions = assignment.findPath("submissions");
