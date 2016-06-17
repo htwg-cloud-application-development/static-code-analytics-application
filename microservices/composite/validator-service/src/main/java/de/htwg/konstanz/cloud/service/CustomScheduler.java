@@ -127,27 +127,19 @@ public class CustomScheduler {
                         if (!blockedCheckstyleInstancesList.containsKey(checkstyleIinstance.getUri())
                                 && !blockedPmdInstancesList.containsKey(pmdInstance.getUri())) {
 
-                            Future<String> checkstyleFuture = validateRepositoryService.validateRepository(task.toString(), checkstyleIinstance.getUri());
-                            Future<String> pmdFuture = validateRepositoryService.validateRepository(task.toString(), pmdInstance.getUri());
-                            blockedCheckstyleInstancesList.put(checkstyleIinstance.getUri(), task.toString());
-                            blockedPmdInstancesList.put(pmdInstance.getUri(), task.toString());
-                            checkstyleTaskList.add(checkstyleFuture);
-                            pmdTaskList.add(pmdFuture);
+                            validateWithNewInstance(checkstyleTaskList, blockedCheckstyleInstancesList, task, checkstyleIinstance);
+                            validateWithNewInstance(pmdTaskList, blockedPmdInstancesList, task, pmdInstance);
+
                             isExecute = true;
                         }
                     } else {
 
-                        Future<String> checkstyleFuture = validateRepositoryService.validateRepository(task.toString(), availableCheckstyleInstancesList.get(0));
-                        Future<String> pmdFuture = validateRepositoryService.validateRepository(task.toString(), availablePmdInstancesList.get(0));
-                        blockedCheckstyleInstancesList.put(availableCheckstyleInstancesList.remove(0), task.toString());
-                        blockedPmdInstancesList.put(availablePmdInstancesList.remove(0), task.toString());
+                        validateWithAvailableInstance(checkstyleTaskList, availableCheckstyleInstancesList, blockedCheckstyleInstancesList, task.toString());
+                        validateWithAvailableInstance(pmdTaskList, availablePmdInstancesList, blockedPmdInstancesList, task.toString());
 
                         removeFirstElementFormList(availableCheckstyleInstancesList);
                         removeFirstElementFormList(availablePmdInstancesList);
 
-
-                        checkstyleTaskList.add(checkstyleFuture);
-                        pmdTaskList.add(pmdFuture);
                         isExecute = true;
                     }
 
@@ -242,6 +234,18 @@ public class CustomScheduler {
             Thread.sleep(1000);
         }
         return resultList;
+    }
+
+    private void validateWithNewInstance(List<Future<String>> checkstyleTaskList, Map<URI, String> blockedCheckstyleInstancesList, JSONObject task, ServiceInstance checkstyleIinstance) {
+        Future<String> checkstyleFuture = validateRepositoryService.validateRepository(task.toString(), checkstyleIinstance.getUri());
+        blockedCheckstyleInstancesList.put(checkstyleIinstance.getUri(), task.toString());
+        checkstyleTaskList.add(checkstyleFuture);
+    }
+
+    private void validateWithAvailableInstance(List<Future<String>> checkstyleTaskList, List<URI> availableCheckstyleInstancesList, Map<URI, String> blockedCheckstyleInstancesList, String taskToExecute) {
+        Future<String> checkstyleFuture = validateRepositoryService.validateRepository(taskToExecute, availableCheckstyleInstancesList.get(0));
+        blockedCheckstyleInstancesList.put(availableCheckstyleInstancesList.remove(0), taskToExecute);
+        checkstyleTaskList.add(checkstyleFuture);
     }
 
     private void removeFirstElementFormList(List<URI> availableCheckstyleInstancesList) {
