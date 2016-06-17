@@ -4,6 +4,8 @@ import de.htwg.konstanz.cloud.model.ValidationData;
 import org.eclipse.jgit.api.errors.GitAPIException;
 import org.eclipse.jgit.api.errors.InvalidRemoteException;
 import org.eclipse.jgit.api.errors.TransportException;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.RequestBody;
@@ -22,10 +24,16 @@ import java.net.MalformedURLException;
 @RestController
 public class CheckstyleService {
 
+    @Autowired
+    Checkstyle checkstyle;
+
+    @Value("${spring.application.name}")
+    private String serviceName;
+
     @RequestMapping(value = "/validate", method = RequestMethod.POST, produces = "application/json", consumes = "application/json")
     public ResponseEntity validate(@RequestBody ValidationData data) {
         try {
-            return ResponseEntity.ok(new Checkstyle().startIt(data.getRepository()));
+            return ResponseEntity.ok(checkstyle.startIt(data.getRepository()));
         } catch (ParserConfigurationException e) {
             return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(e.getMessage());
         } catch (MalformedURLException e) {
@@ -49,7 +57,7 @@ public class CheckstyleService {
 
     @RequestMapping(value = "/info", method = RequestMethod.GET)
     public String info() {
-        return "Checkstyle-Service";
+        return serviceName;
     }
 
 }

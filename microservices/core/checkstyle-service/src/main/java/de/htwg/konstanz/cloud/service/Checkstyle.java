@@ -9,6 +9,8 @@ import org.json.JSONArray;
 import org.json.JSONObject;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.beans.factory.annotation.Value;
+import org.springframework.stereotype.Component;
 import org.w3c.dom.Document;
 import org.w3c.dom.Element;
 import org.w3c.dom.Node;
@@ -27,6 +29,7 @@ import java.nio.channels.ReadableByteChannel;
 import java.util.ArrayList;
 import java.util.List;
 
+@Component
 class Checkstyle {
     private static final Logger LOG = LoggerFactory.getLogger(Checkstyle.class);
 
@@ -42,7 +45,8 @@ class Checkstyle {
 
     private final Svn oSvn = new Svn();
 
-    private static final String SVN_IP_C = "141.37.122.26";
+    @Value("${app.config.svn.ip}")
+    private String SVN_IP_C;
 
     String startIt(String gitRepository) throws IOException, ParserConfigurationException,
                                                 SAXException, GitAPIException, BadLocationException {
