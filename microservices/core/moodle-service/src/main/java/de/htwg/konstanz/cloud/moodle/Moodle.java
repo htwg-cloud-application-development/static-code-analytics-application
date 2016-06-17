@@ -185,7 +185,15 @@ public class Moodle {
                     JsonNode actualSubmit = field.findPath("text");
 
                     if (!actualSubmit.isMissingNode()) {
-                        return Jsoup.parse(actualSubmit.asText()).text();
+                        String repo = Jsoup.parse(actualSubmit.asText()).text();
+
+                        // remove last dash if present
+                        if (repo.endsWith("/")) {
+                            repo = repo.substring(0, repo.length() - 1);
+
+                        }
+                        
+                        return repo;
                     }
                 }
 
