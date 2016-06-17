@@ -82,14 +82,14 @@ public class Cpd {
                 if (sRepo.endsWith("/")) {
                     oStringBuilder.append(sRepo.substring(0, sRepo.length() - 1));
                 }
-
+                LOG.info("SVN " + oStringBuilder.toString());
                 sLocalDir = oSvn.downloadSvnRepo(oStringBuilder.toString());
                 lRepoDirs.add(sLocalDir);
             }
 
             /* Git */
             else if (sRepo.contains("github.com")) {
-                LOG.info("Git");
+                LOG.info("Git " + sRepo);
                 sLocalDir = oGit.downloadGITRepo(sRepo);
                 lRepoDirs.add(sLocalDir);
             } else {
@@ -205,8 +205,7 @@ public class Cpd {
 
 		/* add general information to the JSON object */
         oJsonRoot.put("duplicationCursPath", sMainDir);
-
-        LOG.info(String.valueOf(lDuplications.size()));
+    
 		/* all Classes */
         JSONArray lJsonDuplicatiions = new JSONArray();
         for (Duplication oDuplaction : lDuplications) {
