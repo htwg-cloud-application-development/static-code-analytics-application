@@ -31,6 +31,7 @@ class Util {
     @Value("${app.aws.securityGroup}")
     private String securityGroup;
 
+    /* checkstyle config */
     @Value("${app.aws.services.checkstyle.imageId}")
     private String checkstyleImageId;
 
@@ -39,6 +40,16 @@ class Util {
 
     @Value("${app.aws.services.checkstyle.keyName}")
     private String checkstyleKeyName;
+
+    /* pmd config */
+    @Value("${app.aws.services.pmd.imageId}")
+    private String pmdImageId;
+
+    @Value("${app.aws.services.pmd.instanceType}")
+    private String pmdInstanceType;
+
+    @Value("${app.aws.services.pmd.keyName}")
+    private String pmdKeyName;
 
 
     <T> ResponseEntity<T> createResponse(T body, HttpStatus httpStatus) {
