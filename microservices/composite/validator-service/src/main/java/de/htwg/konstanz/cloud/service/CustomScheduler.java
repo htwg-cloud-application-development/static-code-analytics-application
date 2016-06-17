@@ -184,24 +184,14 @@ public class CustomScheduler {
                         availablePmdInstancesList.add(availablePmdUri);
 
                         // remove entry from blocked instance list
-                        for (Iterator<Map.Entry<URI, String>> it = blockedCheckstyleInstancesList.entrySet().iterator(); it.hasNext(); ) {
-                            Map.Entry<URI, String> entry = it.next();
-                            if (entry.getKey().equals(availableCheckstyleUri)) {
-                                it.remove();
-                            }
-                        }
-                        for (Iterator<Map.Entry<URI, String>> it = blockedPmdInstancesList.entrySet().iterator(); it.hasNext(); ) {
-                            Map.Entry<URI, String> entry = it.next();
-                            if (entry.getKey().equals(blockedPmdInstancesList)) {
-                                it.remove();
-                            }
-                        }
+                        removeEntryFromBlockedInstanceListe(blockedCheckstyleInstancesList, availableCheckstyleUri);
+                        removeEntryFromBlockedInstanceListe(blockedPmdInstancesList, availablePmdUri);
+
                         resultList.add(result);
 
                         if (resultList.size() == groups.length()) {
                             noFinished = false;
                         }
-
                         toDelete.add(i);
                         databaseService.saveCheckstleResult(checkstyleObj.toString());
                         databaseService.savePmdResult(pmdObj.toString());
@@ -211,29 +201,43 @@ public class CustomScheduler {
 
 
             if (!toDelete.isEmpty()) {
-                Iterator<Future<String>> it = checkstyleTaskList.listIterator();
-                Iterator<Future<String>> itPmd = pmdTaskList.listIterator();
-                Iterator<Long> itTime = startTimeList.iterator();
-                int j = 0;
-                while (it.hasNext()) {
-                    it.next();
-                    itPmd.next();
-                    itTime.next();
-                    if (toDelete.contains(j)) {
-                        it.remove();
-                        itPmd.remove();
-                        itTime.remove();
-                        runningTasks--;
-                    }
-                    j++;
-                }
-                toDelete.clear();
+                runningTasks = removeTaskFromLists(checkstyleTaskList, pmdTaskList, startTimeList, runningTasks, toDelete);
             }
 
             // slepp 1 second
             Thread.sleep(1000);
         }
         return resultList;
+    }
+
+    private int removeTaskFromLists(List<Future<String>> checkstyleTaskList, List<Future<String>> pmdTaskList, List<Long> startTimeList, int runningTasks, ArrayList<Integer> toDelete) {
+        Iterator<Future<String>> it = checkstyleTaskList.listIterator();
+        Iterator<Future<String>> itPmd = pmdTaskList.listIterator();
+        Iterator<Long> itTime = startTimeList.iterator();
+        int j = 0;
+        while (it.hasNext()) {
+            it.next();
+            itPmd.next();
+            itTime.next();
+            if (toDelete.contains(j)) {
+                it.remove();
+                itPmd.remove();
+                itTime.remove();
+                runningTasks--;
+            }
+            j++;
+        }
+        toDelete.clear();
+        return runningTasks;
+    }
+
+    private void removeEntryFromBlockedInstanceListe(Map<URI, String> blockedCheckstyleInstancesList, URI availableCheckstyleUri) {
+        for (Iterator<Map.Entry<URI, String>> it = blockedCheckstyleInstancesList.entrySet().iterator(); it.hasNext(); ) {
+            Map.Entry<URI, String> entry = it.next();
+            if (entry.getKey().equals(availableCheckstyleUri)) {
+                it.remove();
+            }
+        }
     }
 
     private void validateWithNewInstance(List<Future<String>> checkstyleTaskList, Map<URI, String> blockedCheckstyleInstancesList, JSONObject task, ServiceInstance checkstyleIinstance) {
