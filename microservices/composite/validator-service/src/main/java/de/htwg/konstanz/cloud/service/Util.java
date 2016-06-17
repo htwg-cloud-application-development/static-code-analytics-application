@@ -112,19 +112,16 @@ class Util {
         return instances;
     }
 
-
     int getNumberOfActiveCheckstyleInstances(AmazonEC2 ec2) throws NoSuchFieldException {
-        if (null == checkstyleImageId) throw new NoSuchFieldException("Missing Config Parameter [checkstyleImageId]");
-        List<Instance> allActiveInstances = getAllActiveInstances(ec2);
-        int numberOfInstances = 0;
-        for (Instance instance : allActiveInstances) {
-            if (instance.getImageId().equals(checkstyleImageId)) numberOfInstances++;
-        }
-        return numberOfInstances;
+        return getNumberOfActiveInstances(ec2, checkstyleImageId);
     }
 
     int getNumberOfActivePmdInstances(AmazonEC2 ec2) throws NoSuchFieldException {
-        if (null == pmdImageId) throw new NoSuchFieldException("Missing Config Parameter [checkstyleImageId]");
+        return getNumberOfActiveInstances(ec2, pmdImageId);
+    }
+
+    private int getNumberOfActiveInstances(AmazonEC2 ec2, String imageId) throws NoSuchFieldException {
+        if (null == imageId) throw new NoSuchFieldException("Missing Config Parameter [ImageId]");
         List<Instance> allActiveInstances = getAllActiveInstances(ec2);
         int numberOfInstances = 0;
         for (Instance instance : allActiveInstances) {
