@@ -10,7 +10,7 @@ public class CheckstyleResults {
 
     @Id
     private String id;
-    private String repositoryUrl;
+    private String repository;
     private String numberOfErrors;
     private String numberOfWarnings;
     private String numberOfIgnores;
