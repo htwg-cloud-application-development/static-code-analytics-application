@@ -142,15 +142,9 @@ public class CustomScheduler {
                         blockedCheckstyleInstancesList.put(availableCheckstyleInstancesList.remove(0), task.toString());
                         blockedPmdInstancesList.put(availablePmdInstancesList.remove(0), task.toString());
 
-                        // remove first element of available Instance list
-                        Iterator<URI> it = availableCheckstyleInstancesList.iterator();
-                        Iterator<URI> itPmd = availablePmdInstancesList.iterator();
-                        if (it.hasNext()) {
-                            it.next();
-                            it.remove();
-                            itPmd.next();
-                            itPmd.remove();
-                        }
+                        removeFirstElementFormList(availableCheckstyleInstancesList);
+                        removeFirstElementFormList(availablePmdInstancesList);
+
 
                         checkstyleTaskList.add(checkstyleFuture);
                         pmdTaskList.add(pmdFuture);
@@ -248,6 +242,15 @@ public class CustomScheduler {
             Thread.sleep(1000);
         }
         return resultList;
+    }
+
+    private void removeFirstElementFormList(List<URI> availableCheckstyleInstancesList) {
+        // remove first element of available Instance list
+        Iterator<URI> it = availableCheckstyleInstancesList.iterator();
+        if (it.hasNext()) {
+            it.next();
+            it.remove();
+        }
     }
 
     private URI getUriWithValue(Map<URI, String> blockedInstancesList, String s) throws JSONException {
