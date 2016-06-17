@@ -153,7 +153,8 @@ public class Util {
         ArrayList<String> repositories = new ArrayList<String>();
         int len = array.length();
         for (int i = 0; i < len; i++) {
-            repositories.add(array.get(i).toString());
+            JSONObject obj = new JSONObject(array.get(i));
+            repositories.add(obj.getString("repository"));
         }
         return repositories;
     }
