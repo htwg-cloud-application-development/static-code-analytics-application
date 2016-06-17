@@ -7,6 +7,7 @@ import org.eclipse.jgit.api.errors.InvalidRemoteException;
 import org.eclipse.jgit.api.errors.TransportException;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.RequestBody;
@@ -27,10 +28,13 @@ import java.net.MalformedURLException;
 public class PmdService {
     private static final Logger LOG = LoggerFactory.getLogger(PmdService.class);
 
+    @Autowired
+    Pmd pmd;
+
     @RequestMapping(value = "/validate", method = RequestMethod.POST, produces = "application/json", consumes = "application/json")
     public ResponseEntity validate(@RequestBody ValidationData data) {
         try {
-            return ResponseEntity.ok(new Pmd().startIt(data.getRepository()));
+            return ResponseEntity.ok(pmd.startIt(data.getRepository()));
         } catch (ParserConfigurationException e) {
             LOG.error(e.getMessage());
             return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(e.getMessage());

@@ -1,7 +1,5 @@
 package de.htwg.konstanz.cloud.service;
 
-import de.htwg.konstanz.cloud.model.Class;
-import de.htwg.konstanz.cloud.model.Error;
 import de.htwg.konstanz.cloud.model.SeverityCounter;
 import org.apache.commons.io.FileUtils;
 import org.eclipse.jgit.api.errors.GitAPIException;
@@ -9,6 +7,8 @@ import org.json.JSONArray;
 import org.json.JSONObject;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.beans.factory.annotation.Value;
+import org.springframework.stereotype.Component;
 import org.w3c.dom.Document;
 import org.w3c.dom.Element;
 import org.w3c.dom.Node;
@@ -27,6 +27,7 @@ import java.nio.channels.ReadableByteChannel;
 import java.util.ArrayList;
 import java.util.List;
 
+@Component
 public class Pmd {
     private static final Logger LOG = LoggerFactory.getLogger(Pmd.class);
 
@@ -42,10 +43,14 @@ public class Pmd {
 
     private final Svn oSvn = new Svn();
 
-    private static final String SVN_IP_C = "141.37.122.26";
+    @Value("${app.config.svn.ip}")
+    private String SVN_IP_C;
+
+    @Value("${app.config.pmd.ruleset}")
+    private String ruleSetPath;
 
     String startIt(String gitRepository) throws IOException, ParserConfigurationException, SAXException,
-                                                        BadLocationException, GitAPIException, NullPointerException {
+            BadLocationException, GitAPIException, NullPointerException {
         long lStartTime = System.currentTimeMillis();
         JSONObject oJsonResult;
         String sResult;
@@ -118,9 +123,9 @@ public class Pmd {
         if (mainDir.exists()) {
             File[] files = mainDir.listFiles();
 
-            if(files != null) {
+            if (files != null) {
                 for (File file : mainDir.listFiles()) {
-                    if(file != null) {
+                    if (file != null) {
                         File[] filesSub = new File(file.getPath()).listFiles();
                         List<String> pathsSub = new ArrayList<>();
 
@@ -141,10 +146,10 @@ public class Pmd {
         }
 
         /* Other Structure Workaround */
-        if(list.isEmpty()){
+        if (list.isEmpty()) {
             LOG.info("unregular repository");
             List<String> javaFiles = new ArrayList<>();
-            list.add(walk(sLocalDirectory,javaFiles));
+            list.add(walk(sLocalDirectory, javaFiles));
         }
 
         return list;
@@ -153,16 +158,16 @@ public class Pmd {
     private List<String> walk(String path, List<String> javaFiles) throws FileNotFoundException {
         File root = new File(path);
         File[] list = root.listFiles();
-        
+
         if (list != null) {
             for (File tmpFile : list) {
                 if (tmpFile.isDirectory()) {
                     if (!tmpFile.getPath().contains(".git")) {
 
-                        walk(tmpFile.getPath(),javaFiles);
+                        walk(tmpFile.getPath(), javaFiles);
                     }
                 } else {
-                    if(tmpFile.getPath().endsWith(".java")) {
+                    if (tmpFile.getPath().endsWith(".java")) {
                         javaFiles.add(tmpFile.getPath());
                     }
                 }
@@ -197,7 +202,7 @@ public class Pmd {
 
     private JSONObject runPmd(List<List<String>> lRepoList, String gitRepository, SeverityCounter oSeverityCounter,
                               long lStartTime) throws ParserConfigurationException, SAXException, IOException {
-        final String sRuleSetPath = "java-basic,java-design,java-codesize";
+
         String sStartScript = "";
 
         if (oOperatingSystemCheck.isWindows()) {
@@ -217,7 +222,7 @@ public class Pmd {
             }
 
             String sPmdCommand = sStartScript + " -d " + sFullPath + ".java -f xml -failOnViolation false "
-                                + "-encoding UTF-8 -rulesets " + sRuleSetPath + " -r " + sFullPath + ".xml";
+                    + "-encoding UTF-8 -rulesets " + ruleSetPath + " -r " + sFullPath + ".xml";
             LOG.info("Pmd execution path: " + sPmdCommand);
 
             oUtil.execCommand(sPmdCommand);
@@ -292,7 +297,7 @@ public class Pmd {
             String sPackage = oUtil.getNonEmptyElement(eElement, "package");
 
             Error oError = new Error(nLineBegin, nLineEnd, nColumnBegin, nColumnEnd, nPriority,
-                                        sRule, sClassName, sPackage, sRuleset, sMessage);
+                    sRule, sClassName, sPackage, sRuleset, sMessage);
 
             lFormattedClassList.get(nClassPos).getErrorList().add(oError);
         }
