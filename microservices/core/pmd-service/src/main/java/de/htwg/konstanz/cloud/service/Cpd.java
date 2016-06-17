@@ -171,11 +171,9 @@ public class Cpd {
                 //Duplication Infos
                 if (oUtil.isParsable(eNodeElement.getAttribute("lines"))) {
                     nLinesCount = Integer.parseInt(eNodeElement.getAttribute("lines"));
-                    LOG.info(eNodeElement.getAttribute("lines"));
                 }
                 if (oUtil.isParsable(eNodeElement.getAttribute("tokens"))) {
                     nTokens = Integer.parseInt(eNodeElement.getAttribute("tokens"));
-                    LOG.info(eNodeElement.getAttribute("tokens"));
                 }
 
                 //CheckFileNodes
@@ -183,8 +181,10 @@ public class Cpd {
                 for (int nNodeFilePos = 0; nNodeFilePos < nNodeFiles.getLength(); nNodeFilePos++) {
                     Node nNodeFile = nNodeFiles.item(nNodeFilePos);
                     Element eNodeFileElement = (Element) nNodeFile;
-                    if(oUtil.checkIfDifferentReops(lInvolvedData, String.valueOf(eNodeFileElement.getAttribute("path")).substring(String.valueOf(eNodeFileElement.getAttribute("path")).indexOf("repositories") + ("repositories").length() + 1)))
-                        lInvolvedData.add(String.valueOf(eNodeFileElement.getAttribute("path")).substring(String.valueOf(eNodeFileElement.getAttribute("path")).indexOf("repositories") + ("repositories").length() + 1));
+                    String sRepoString = String.valueOf(eNodeFileElement.getAttribute("path")).substring(String.valueOf(eNodeFileElement.getAttribute("path")).indexOf("repositories") + ("repositories").length() + 1);
+                    if(oUtil.checkIfDifferentReops(lInvolvedData, sRepoString)){
+                        lInvolvedData.add(sRepoString);
+                    }
                 }
 
                 //CheckCodefragment

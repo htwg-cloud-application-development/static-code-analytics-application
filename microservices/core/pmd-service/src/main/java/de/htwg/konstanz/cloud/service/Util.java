@@ -149,7 +149,6 @@ public class Util {
 
     boolean checkIfDifferentReops(List<String> lFileList, String sCheckRepo){
         String[] sSplitCheck = sCheckRepo.split("\\\\");
-        LOG.info(sSplitCheck[0]);
         for(String sFileRepo : lFileList){
             if(sFileRepo.contains(sSplitCheck[0]))
                 return false;
