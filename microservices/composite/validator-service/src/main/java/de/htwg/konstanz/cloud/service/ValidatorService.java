@@ -151,8 +151,8 @@ public class ValidatorService {
             pmdResult.put("userId", userId);
             pmdResult.put("duration", (System.currentTimeMillis() - startTime));
 
-            Future<String> savePmd = databaseService.savePmdResult(pmdResult.toString());
-            Future<String> saveCheckstyle = databaseService.saveCheckstleResult(checkstyleResult.toString());
+            databaseService.savePmdResult(pmdResult.toString());
+            databaseService.saveCheckstleResult(checkstyleResult.toString());
 
             jsonObject.put("checkstyle", checkstyleResult);
             jsonObject.put("pmd", pmdResult);
@@ -187,16 +187,11 @@ public class ValidatorService {
                 Thread.sleep(500);
             }
 
-            // TODO validate strucutre of result with team
             JSONObject jsonObject = new JSONObject();
-            jsonObject.put("structure", "TODO");
             jsonObject.put("checkstyle", checkstyleRepo.get());
             jsonObject.put("pmd", pmdRepo.get());
 
             return util.createResponse(jsonObject.toString(), HttpStatus.OK);
-        } catch (InstantiationException e) {
-            LOG.error(e.getMessage());
-            return util.createErrorResponse(e.getMessage(), HttpStatus.SERVICE_UNAVAILABLE);
         } catch (Exception e) {
             LOG.error(e.getMessage());
             e.printStackTrace();

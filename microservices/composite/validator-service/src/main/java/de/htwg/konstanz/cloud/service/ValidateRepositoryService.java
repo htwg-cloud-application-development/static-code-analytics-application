@@ -21,7 +21,7 @@ import java.util.concurrent.Future;
 public class ValidateRepositoryService {
     private static final Logger LOG = LoggerFactory.getLogger(ValidateRepositoryService.class);
 
-    RestTemplate restTemplate;
+    private RestTemplate restTemplate;
 
     @Autowired
     private LoadBalancerClient loadBalancer;
@@ -42,7 +42,7 @@ public class ValidateRepositoryService {
     }
 
     @Async
-    public Future<String> validateRepository(String repositoryUrlJsonObj, URI requestUri) throws InstantiationException {
+    public Future<String> validateRepository(String repositoryUrlJsonObj, URI requestUri) {
         String VALIDATE_ROUTE = "/validate";
         LOG.info("Validate " + repositoryUrlJsonObj);
         return executePostRequest(repositoryUrlJsonObj, requestUri + VALIDATE_ROUTE);
@@ -65,7 +65,7 @@ public class ValidateRepositoryService {
         headers.setContentType(MediaType.APPLICATION_JSON);
         HttpEntity<String> entity = new HttpEntity<>(repositoryUrlJsonObj, headers);
         // post to service and return response
-        return new AsyncResult<String>(restTemplate.postForObject(requestUrl, entity, String.class));
+        return new AsyncResult<>(restTemplate.postForObject(requestUrl, entity, String.class));
     }
 
 }
