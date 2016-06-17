@@ -123,6 +123,16 @@ class Util {
         return numberOfInstances;
     }
 
+    int getNumberOfActivePmdInstances(AmazonEC2 ec2) throws NoSuchFieldException {
+        if (null == pmdImageId) throw new NoSuchFieldException("Missing Config Parameter [checkstyleImageId]");
+        List<Instance> allActiveInstances = getAllActiveInstances(ec2);
+        int numberOfInstances = 0;
+        for (Instance instance : allActiveInstances) {
+            if (instance.getImageId().equals(pmdImageId)) numberOfInstances++;
+        }
+        return numberOfInstances;
+    }
+
     private void createDefaultAlarm(String instanceId) {
         AmazonCloudWatchClient cloudWatch = new AmazonCloudWatchClient();
         cloudWatch.setEndpoint("monitoring.eu-central-1.amazonaws.com");
