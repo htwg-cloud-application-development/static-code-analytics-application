@@ -16,6 +16,7 @@ import java.net.URL;
 import java.nio.channels.Channels;
 import java.nio.channels.ReadableByteChannel;
 import java.util.ArrayList;
+import java.util.List;
 
 @Component
 public class Util {
@@ -144,5 +145,15 @@ public class Util {
             repositories.add(array.getJSONObject(i).getString("repository"));
         }
         return repositories;
+    }
+
+    boolean checkIfDifferentReops(List<String> lFileList, String sCheckRepo){
+        String[] sSplitCheck = sCheckRepo.split("\\\\");
+        LOG.info(sSplitCheck[0]);
+        for(String sFileRepo : lFileList){
+            if(sFileRepo.contains(sSplitCheck[0]))
+                return false;
+        }
+        return true;
     }
 }

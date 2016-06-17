@@ -183,7 +183,8 @@ public class Cpd {
                 for (int nNodeFilePos = 0; nNodeFilePos < nNodeFiles.getLength(); nNodeFilePos++) {
                     Node nNodeFile = nNodeFiles.item(nNodeFilePos);
                     Element eNodeFileElement = (Element) nNodeFile;
-                    lInvolvedData.add(String.valueOf(eNodeFileElement.getAttribute("path")));
+                    if(oUtil.checkIfDifferentReops(lInvolvedData, String.valueOf(eNodeFileElement.getAttribute("path")).substring(String.valueOf(eNodeFileElement.getAttribute("path")).indexOf("repositories") + ("repositories").length() + 1)))
+                        lInvolvedData.add(String.valueOf(eNodeFileElement.getAttribute("path")).substring(String.valueOf(eNodeFileElement.getAttribute("path")).indexOf("repositories") + ("repositories").length() + 1));
                 }
 
                 //CheckCodefragment
@@ -193,7 +194,8 @@ public class Cpd {
                 }
 
                 //Create Duplication
-                lDuplications.add(Duplication.getDupliactionInstance(nLinesCount, nTokens, lInvolvedData, sCodeFragment));
+                if(lInvolvedData.size() > 1)
+                    lDuplications.add(Duplication.getDupliactionInstance(nLinesCount, nTokens, lInvolvedData, sCodeFragment));
             }
         }
     }
@@ -217,7 +219,6 @@ public class Cpd {
             //New Json Array with involved Paths
             JSONArray lJsonFilePaths = new JSONArray();
             for (String sDuplicationFilePath : oDuplaction.getInvolvedData()) {
-                LOG.info(sDuplicationFilePath);
                 lJsonFilePaths.put(new JSONObject().put("filePath", sDuplicationFilePath));
             }
             oJsonDuplication.put("filePaths", lJsonFilePaths);
