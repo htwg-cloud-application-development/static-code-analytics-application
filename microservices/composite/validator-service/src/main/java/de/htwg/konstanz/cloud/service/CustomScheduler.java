@@ -53,23 +53,22 @@ public class CustomScheduler {
 
         for (int i = 0; i < groups.length(); i++) {
             JSONObject jsonObject = (JSONObject) groups.get(i);
-            int executinTime = jsonObject.optInt("executiontime", 60000);
-            if (executinTime == 0) executinTime = 30000;
-            fullExecutionTime += executinTime;
+            int executionTime = jsonObject.optInt("executiontime", 60000);
+            fullExecutionTime += executionTime;
 
             LOG.info(jsonObject.toString());
-            LOG.info("Executiontime for repo " + i + " is: " + executinTime);
+            LOG.info("Executiontime for repo " + i + " is: " + executionTime);
 
             // if execution time not exists, add new key to pipeline
-            if (pipeline.containsKey(executinTime)) {
+            if (pipeline.containsKey(executionTime)) {
                 // if execution time exists, add to object to existing list
-                List<JSONObject> list = pipeline.get(executinTime);
+                List<JSONObject> list = pipeline.get(executionTime);
                 list.add(jsonObject);
-                pipeline.put(executinTime, list);
+                pipeline.put(executionTime, list);
             } else {
                 List<JSONObject> list = new ArrayList<>();
                 list.add(jsonObject);
-                pipeline.put(executinTime, list);
+                pipeline.put(executionTime, list);
             }
             repoUserInformationMap.put(jsonObject.getString("repository"), jsonObject.getString("userId"));
         }
