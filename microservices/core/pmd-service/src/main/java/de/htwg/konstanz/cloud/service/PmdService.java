@@ -31,6 +31,9 @@ public class PmdService {
     @Autowired
     Pmd pmd;
 
+    @Autowired
+    Util util;
+
     @RequestMapping(value = "/validate", method = RequestMethod.POST, produces = "application/json", consumes = "application/json")
     public ResponseEntity validate(@RequestBody ValidationData data) {
         try {
@@ -74,9 +77,9 @@ public class PmdService {
     }
 
     @RequestMapping(value = "/validate/copypaste", method = RequestMethod.POST, produces = "application/json", consumes = "application/json")
-    public ResponseEntity copypaste(@RequestBody ValidationData data) {
+    public ResponseEntity copypaste(@RequestBody String data) {
         try {
-            return ResponseEntity.ok(new Cpd().startIt(data.getRepository()));
+            return ResponseEntity.ok(new Cpd().startIt(util.getRepositoriesFromRequestBody(data)));
         } catch (ParserConfigurationException e) {
             LOG.error(e.getMessage());
             return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(e.getMessage());
