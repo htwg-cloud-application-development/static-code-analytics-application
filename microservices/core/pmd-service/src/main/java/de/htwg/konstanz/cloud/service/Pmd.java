@@ -1,5 +1,7 @@
 package de.htwg.konstanz.cloud.service;
 
+import de.htwg.konstanz.cloud.model.Class;
+import de.htwg.konstanz.cloud.model.Error;
 import de.htwg.konstanz.cloud.model.SeverityCounter;
 import org.apache.commons.io.FileUtils;
 import org.eclipse.jgit.api.errors.GitAPIException;
