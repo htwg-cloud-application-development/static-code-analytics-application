@@ -47,7 +47,7 @@ public class CourseService {
     public String getCourse(@PathVariable final String courseId) throws IOException {
 
         final Course course = courseRepo.findOne(courseId);
-        return removeAssignments(course).toString();
+        return goToPmdAndCheckstyleInJson(course).toString();
     }
 
     //Returns all courses without assingments of pmd and checkstyle
@@ -58,7 +58,7 @@ public class CourseService {
         final List<JSONObject> jsonObjects = new LinkedList<>();
 
         for (final Course course : courses) {
-            jsonObjects.add(removeAssignments(course));
+            jsonObjects.add(goToPmdAndCheckstyleInJson(course));
         }
 
         return jsonObjects.toString();
@@ -77,7 +77,7 @@ public class CourseService {
         return course.getGroups();
     }
 
-    public JSONObject removeAssignments(final Course course) {
+    public JSONObject goToPmdAndCheckstyleInJson(final Course course) {
 
         //Remove assignments from checkstyle and pmd
         final JSONObject jCourse = new JSONObject(course);
@@ -85,28 +85,55 @@ public class CourseService {
         if (jCourse.has("groups")) {
 
             final JSONArray groups = jCourse.getJSONArray("groups");
-            final String assignments = "assignments";
 
-            for (int i = 0; i < groups.length() - 1; i++) {
+            for (int i = 0; i < groups.length(); i++) {
 
                 final JSONObject group = groups.getJSONObject(i);
+                final String assignments = "assignments";
+
 
                 if (group.has("pmd")) {
-                    final JSONObject pmd = group.getJSONObject("pmd");
-                    if (pmd.has(assignments)) {
-                        pmd.remove(assignments);
+                    JSONObject pmd = group.getJSONObject("pmd");
+                    if (pmd.has(assignments)){
+                        removeErrorsInAssignments(pmd);
                     }
+
                 }
 
                 if (group.has("checkstyle")) {
                     final JSONObject checkstyle = group.getJSONObject("checkstyle");
                     if (checkstyle.has(assignments)) {
-                        checkstyle.remove(assignments);
+                        removeErrorsInAssignments(checkstyle);
                     }
                 }
             }
         }
 
         return jCourse;
+    }
+
+    public void removeErrorsInAssignments(JSONObject analysisResult){
+
+        if (analysisResult.has("assignments")){
+
+            // in assignments
+            JSONArray assignments = analysisResult.getJSONArray("assignments");
+
+            for (int i = 0; i < assignments.length(); i++) {
+                JSONObject assignment = assignments.getJSONObject(i);
+
+                //getting name of "key"
+                String[] keys = JSONObject.getNames(assignment);
+
+                //getting array under "key"
+                JSONArray files = assignment.getJSONArray(keys[0]);
+
+                //iterating over "key" array and remove errors
+                for (int o = 0; o < files.length(); o++) {
+                    JSONObject file = files.getJSONObject(o);
+                    file.remove("errors");
+                }
+            }
+        }
     }
 }

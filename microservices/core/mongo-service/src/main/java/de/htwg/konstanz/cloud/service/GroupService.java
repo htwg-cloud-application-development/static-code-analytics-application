@@ -32,10 +32,14 @@ public class GroupService {
 
         final List<Group> dbGroups = course.getGroups();
 
+        //System.out.println("____________ " + dbGroups);
+
         if (null != dbGroups) {
             //delete groups
+            System.out.println("-------------BÄM");
             groupRepository.delete(dbGroups);
 
+            System.out.println("----AFTER--------BÄM");
         }
 
         groupRepository.save(groups);
