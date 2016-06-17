@@ -35,7 +35,7 @@ class Checkstyle {
 
     private final OperatingSystemCheck oOperatingSystemCheck = new OperatingSystemCheck();
 
-    private final List<Class> lFormattedClassList = new ArrayList<>();
+    private List<Class> lFormattedClassList;
 
     private final Util oUtil = new Util();
 
@@ -50,6 +50,7 @@ class Checkstyle {
 
     String startIt(String gitRepository) throws IOException, ParserConfigurationException,
                                                 SAXException, GitAPIException, BadLocationException {
+        lFormattedClassList = new ArrayList<>();
         long lStartTime = System.currentTimeMillis();
         JSONObject oJsonResult;
         String sResult;
