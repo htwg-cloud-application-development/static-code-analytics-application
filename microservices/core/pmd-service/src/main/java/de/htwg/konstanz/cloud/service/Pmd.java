@@ -2,7 +2,6 @@ package de.htwg.konstanz.cloud.service;
 
 import de.htwg.konstanz.cloud.model.Class;
 import de.htwg.konstanz.cloud.model.Error;
-import de.htwg.konstanz.cloud.model.SeverityCounter;
 import org.apache.commons.io.FileUtils;
 import org.eclipse.jgit.api.errors.GitAPIException;
 import org.json.JSONArray;
@@ -35,7 +34,7 @@ public class Pmd {
 
     private static final Logger LOG = LoggerFactory.getLogger(Pmd.class);
 
-    private final List<Class> lFormattedClassList = new ArrayList<>();
+    private List<Class> lFormattedClassList;
 
     private final OperatingSystemCheck oOperatingSystemCheck = new OperatingSystemCheck();
 
@@ -53,12 +52,12 @@ public class Pmd {
 
     String startIt(String gitRepository) throws IOException, ParserConfigurationException, SAXException,
             BadLocationException, GitAPIException, NullPointerException {
+        lFormattedClassList = new ArrayList<>();
         long lStartTime = System.currentTimeMillis();
         JSONObject oJsonResult;
         String sResult;
-        SeverityCounter oSeverityCounter = new SeverityCounter();
 
-        oJsonResult = determination(gitRepository, oSeverityCounter, lStartTime);
+        oJsonResult = determination(gitRepository, lStartTime);
 
         if (oRepoDir == null) {
             LOG.info("Error: Local Directory is null!");
@@ -71,7 +70,7 @@ public class Pmd {
         return sResult;
     }
 
-    private JSONObject determination(String sRepoUrl, SeverityCounter oSeverityCounter, long lStartTime)
+    private JSONObject determination(String sRepoUrl, long lStartTime)
             throws IOException, BadLocationException, GitAPIException, ParserConfigurationException, SAXException {
         JSONObject oJson = null;
         String sLocalDir;
@@ -95,14 +94,14 @@ public class Pmd {
 
             LOG.info("Svn");
             sLocalDir = oSvn.downloadSvnRepo(oStringBuilder.toString());
-            oJson = (runPmd(generatePmdServiceData(oStringBuilder.toString()), sRepoUrl, oSeverityCounter, lStartTime));
+            oJson = (runPmd(generatePmdServiceData(oStringBuilder.toString()), sRepoUrl, lStartTime));
             oRepoDir = new File(sLocalDir);
         }
         /* Git Checkout */
         else if (sRepoUrl.contains("github.com")) {
             LOG.info("Git");
             sLocalDir = oGit.downloadGITRepo(sRepoUrl);
-            oJson = (runPmd(generatePmdServiceData(sLocalDir), sRepoUrl, oSeverityCounter, lStartTime));
+            oJson = (runPmd(generatePmdServiceData(sLocalDir), sRepoUrl, lStartTime));
             //oRepoDir = new File(sLocalDirArray[0]);
             //LOG.info("Array 0: "+sLocalDirArray[0]);
             //LOG.info("Array 1: "+sLocalDirArray[1]);
@@ -179,8 +178,8 @@ public class Pmd {
         return javaFiles;
     }
 
-    private JSONObject runPmd(List<List<String>> lRepoList, String gitRepository, SeverityCounter oSeverityCounter,
-                              long lStartTime) throws ParserConfigurationException, SAXException, IOException {
+    private JSONObject runPmd(List<List<String>> lRepoList, String gitRepository, long lStartTime)
+                                    throws ParserConfigurationException, SAXException, IOException {
 
         String sStartScript = "";
 
@@ -207,11 +206,11 @@ public class Pmd {
             util.execCommand(sPmdCommand);
 
 			/* Checkstyle Informationen eintragen */
-            storePmdInformation(sFullPath + ".xml", nClassPos, oSeverityCounter);
+            storePmdInformation(sFullPath + ".xml", nClassPos);
         }
 
         /* Schoene einheitliche JSON erstellen */
-        JSONObject oJson = buildJson(gitRepository, oSeverityCounter, lStartTime);
+        JSONObject oJson = buildJson(gitRepository, lStartTime);
         /* JSON an Database weitersenden */
 
         return oJson;
@@ -236,7 +235,7 @@ public class Pmd {
         }
     }
 
-    private void storePmdInformation(String sXmlPath, int nClassPos, SeverityCounter oSeverityCounter) throws
+    private void storePmdInformation(String sXmlPath, int nClassPos) throws
             ParserConfigurationException, SAXException, IOException {
         InputStream inputStream = new FileInputStream(sXmlPath);
         Reader reader = new InputStreamReader(inputStream, "UTF-8");
@@ -250,11 +249,11 @@ public class Pmd {
         NodeList nList = doc.getElementsByTagName("violation");
 
         for (int nNodePos = 0; nNodePos < nList.getLength(); nNodePos++) {
-            readAndSaveAttributes(nClassPos, oSeverityCounter, nList, nNodePos);
+            readAndSaveAttributes(nClassPos, nList, nNodePos);
         }
     }
 
-    private void readAndSaveAttributes(int nClassPos, SeverityCounter oSeverityCounter, NodeList nList, int nNodePos) {
+    private void readAndSaveAttributes(int nClassPos, NodeList nList, int nNodePos) {
         Node nNode = nList.item(nNodePos);
 
         if (nNode.getNodeType() == Node.ELEMENT_NODE) {
@@ -268,7 +267,7 @@ public class Pmd {
             int nColumnEnd = util.getParsableElement(eElement, "endcolumn");
             int nPriority = util.getParsableElement(eElement, "priority");
 
-            util.incErrorType(oSeverityCounter, nPriority);
+            lFormattedClassList.get(nClassPos).incErrorType(nPriority);
 
             String sClassName = util.getNonEmptyElement(eElement, "class");
             String sRule = util.getNonEmptyElement(eElement, "rule");
@@ -282,7 +281,7 @@ public class Pmd {
         }
     }
 
-    private JSONObject buildJson(String sRepo, SeverityCounter oSeverityCounter, long lStartTime) {
+    private JSONObject buildJson(String sRepo, long lStartTime) {
         List<Error> lTmpErrorList;
         JSONObject oJsonRoot = new JSONObject();
         JSONObject oJsonExercise = new JSONObject();
@@ -292,12 +291,23 @@ public class Pmd {
         boolean bExcerciseChange = false;
         boolean bLastRun = false;
         boolean bExcerciseNeverChanged = true;
+        int nTmpErrorCount = 0;
+        int nTmpWarningCount = 0;
+        int nTmpIgnoreCounter = 0;
 
 		/* add general information to the JSON object */
         oJsonRoot.put("repository", sRepo);
-        oJsonRoot.put("numberOfErrors", oSeverityCounter.getErrorCount());
-        oJsonRoot.put("numberOfWarnings", oSeverityCounter.getWarningCount());
-        oJsonRoot.put("numberOfIgnores", oSeverityCounter.getIgnoreCount());
+
+
+        /* get severities of the whole project */
+        for (Class oFormattedClassList : lFormattedClassList) {
+            nTmpErrorCount += oFormattedClassList.getErrorCount();
+            nTmpWarningCount += oFormattedClassList.getWarningCount();
+            nTmpIgnoreCounter += oFormattedClassList.getIgnoreCount();
+        }
+        oJsonRoot.put("numberOfErrors", nTmpErrorCount);
+        oJsonRoot.put("numberOfWarnings", nTmpWarningCount);
+        oJsonRoot.put("numberOfIgnores", nTmpIgnoreCounter);
 
 		/* all Classes */
         for (int nClassPos = 0; nClassPos < lFormattedClassList.size(); nClassPos++) {
@@ -340,6 +350,8 @@ public class Pmd {
                         String sFilePath = util.removeUnnecessaryPathParts(lFormattedClassList.get(nClassPos).getFullPath());
                         oJsonClass.put("filepath", sFilePath);
                         oJsonClass.put("errors", lJsonErrors);
+                        setPriorityCounters(oJsonClass, nClassPos);
+
                         lJsonClasses.put(oJsonClass);
                     }
 
@@ -385,5 +397,11 @@ public class Pmd {
 
         LOG.debug("Pmd Static Analysis check for Repo: " + sRepo);
         return oJsonRoot;
+    }
+
+    private void setPriorityCounters(JSONObject oJsonClass, int nClassPos) {
+        oJsonClass.put("numberOfErros", lFormattedClassList.get(nClassPos).getErrorCount());
+        oJsonClass.put("numberOfWarnings", lFormattedClassList.get(nClassPos).getWarningCount());
+        oJsonClass.put("numberOfIgnores", lFormattedClassList.get(nClassPos).getIgnoreCount());
     }
 }

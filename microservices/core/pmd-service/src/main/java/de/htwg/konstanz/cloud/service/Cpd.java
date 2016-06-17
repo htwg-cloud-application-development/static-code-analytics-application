@@ -37,8 +37,8 @@ public class Cpd {
 
     private static final String SVN_IP_C = "141.37.122.26";
 
-    String startIt(List<String> gitRepository) throws IOException, ParserConfigurationException,
-            SAXException, BadLocationException, GitAPIException, NullPointerException {
+    String startIt(List<String> gitRepository) throws IOException, ParserConfigurationException, SAXException,
+                                                BadLocationException, GitAPIException, NullPointerException {
         long lStartTime = System.currentTimeMillis();
         JSONObject oJsonResult;
         String sResult;

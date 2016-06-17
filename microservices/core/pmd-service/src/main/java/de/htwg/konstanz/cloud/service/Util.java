@@ -2,7 +2,6 @@ package de.htwg.konstanz.cloud.service;
 
 import com.amazonaws.util.json.JSONArray;
 import com.amazonaws.util.json.JSONException;
-import de.htwg.konstanz.cloud.model.SeverityCounter;
 import org.json.JSONObject;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -82,17 +81,6 @@ public class Util {
             return eElement.getAttribute(sAttributeName);
         }
         return "";
-    }
-
-    void incErrorType(SeverityCounter oSeverityCounter, int nPriority) {
-        /* Count every Error Type we have found in the XML */
-        if (nPriority == 1) {
-            oSeverityCounter.incIgnoreCount();
-        } else if (nPriority == 2) {
-            oSeverityCounter.incWarningCount();
-        } else if (nPriority == 3) {
-            oSeverityCounter.incErrorCount();
-        }
     }
 
     int getParsableElement(Element eElement, String sAttribute) {
