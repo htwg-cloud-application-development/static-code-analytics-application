@@ -7,7 +7,6 @@ import org.json.JSONArray;
 import org.json.JSONObject;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Component;
 import org.w3c.dom.Document;
 import org.w3c.dom.Element;
@@ -38,11 +37,11 @@ public class Cpd {
 
     private final Svn oSvn = new Svn();
 
-    @Value("${app.config.svn.ip}")
-    private String SVN_IP_C;
+    //@Value("${app.config.svn.ip}")
+    private String SVN_IP_C = "141.37.122.26";
 
-    String startIt(List<String> gitRepository) throws IOException, ParserConfigurationException, SAXException,
-                                                BadLocationException, GitAPIException, NullPointerException {
+    String startIt(List<String> gitRepository) throws IOException, ParserConfigurationException,
+            SAXException, BadLocationException, GitAPIException, NullPointerException {
         long lStartTime = System.currentTimeMillis();
         JSONObject oJsonResult;
         String sResult;
@@ -83,7 +82,6 @@ public class Cpd {
                     oStringBuilder.append(sRepo.substring(0, sRepo.length() - 1));
                 }
 
-                LOG.info("Cpd");
                 sLocalDir = oSvn.downloadSvnRepo(oStringBuilder.toString());
                 lRepoDirs.add(sLocalDir);
             }
@@ -151,8 +149,10 @@ public class Cpd {
         DocumentBuilder oDBuilder = oDbFactory.newDocumentBuilder();
         Document oDocument = oDBuilder.parse(oInputSource);
 
-        NodeList oNodeList = oDocument.getElementsByTagName("dupliaction");
+        Node oMainNode = oDocument.getFirstChild();
+        Element eMainElement = (Element) oMainNode;
 
+        NodeList oNodeList = eMainElement.getElementsByTagName("duplication");
         for (int nNodePos = 0; nNodePos < oNodeList.getLength(); nNodePos++) {
 
             Node oNode = oNodeList.item(nNodePos);
@@ -170,27 +170,25 @@ public class Cpd {
                 //Duplication Infos
                 if (oUtil.isParsable(eNodeElement.getAttribute("lines"))) {
                     nLinesCount = Integer.parseInt(eNodeElement.getAttribute("lines"));
+                    LOG.info(eNodeElement.getAttribute("lines"));
                 }
                 if (oUtil.isParsable(eNodeElement.getAttribute("tokens"))) {
                     nTokens = Integer.parseInt(eNodeElement.getAttribute("tokens"));
+                    LOG.info(eNodeElement.getAttribute("tokens"));
                 }
 
                 //CheckFileNodes
                 NodeList nNodeFiles = eNodeElement.getElementsByTagName("file");
                 for (int nNodeFilePos = 0; nNodeFilePos < nNodeFiles.getLength(); nNodeFilePos++) {
                     Node nNodeFile = nNodeFiles.item(nNodeFilePos);
-                    if (nNodeFile.getNodeType() == Node.ELEMENT_NODE) {
-                        Element eNodeFileElement = (Element) nNodeFile;
-                        if (oUtil.isParsable(eNodeFileElement.getAttribute("path"))) {
-                            lInvolvedData.add(eNodeElement.getAttribute("path").toString());
-                        }
-                    }
+                    Element eNodeFileElement = (Element) nNodeFile;
+                    lInvolvedData.add(String.valueOf(eNodeFileElement.getAttribute("path")));
                 }
 
                 //CheckCodefragment
                 NodeList nNodeCodeFragment = eNodeElement.getElementsByTagName("codefragment");
                 if (nNodeCodeFragment != null) {
-                    sCodeFragment = nNodeCodeFragment.item(0).getFirstChild().toString();
+                    sCodeFragment = nNodeCodeFragment.item(0).getTextContent();
                 }
 
                 //Create Duplication
@@ -205,7 +203,9 @@ public class Cpd {
 		/* add general information to the JSON object */
         oJsonRoot.put("duplicationCursPath", sMainDir);
 
+        LOG.info(String.valueOf(lDuplications.size()));
 		/* all Classes */
+        JSONArray lJsonDuplicatiions = new JSONArray();
         for (Duplication oDuplaction : lDuplications) {
             JSONObject oJsonDuplication = new JSONObject();
 
@@ -216,12 +216,14 @@ public class Cpd {
             //New Json Array with involved Paths
             JSONArray lJsonFilePaths = new JSONArray();
             for (String sDuplicationFilePath : oDuplaction.getInvolvedData()) {
+                LOG.info(sDuplicationFilePath);
                 lJsonFilePaths.put(new JSONObject().put("filePath", sDuplicationFilePath));
             }
             oJsonDuplication.put("filePaths", lJsonFilePaths);
             oJsonDuplication.put("codefragment", oDuplaction.getDuplicatedCode());
-            oJsonRoot.put("duplications", oJsonDuplication);
+            lJsonDuplicatiions.put(new  JSONObject().put("duplication", oJsonDuplication));
         }
+        oJsonRoot.put("duplications", lJsonDuplicatiions);
 
         long lEndTime = System.currentTimeMillis();
         long lTotalTime = (lEndTime - lStartTime);

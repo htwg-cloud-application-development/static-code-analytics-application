@@ -1,7 +1,7 @@
 package de.htwg.konstanz.cloud.service;
 
-import com.amazonaws.util.json.JSONArray;
 import com.amazonaws.util.json.JSONException;
+import org.json.JSONArray;
 import org.json.JSONObject;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -136,13 +136,12 @@ public class Util {
     }
 
     ArrayList<String> getRepositoriesFromRequestBody(@RequestBody String data) throws JSONException {
-        com.amazonaws.util.json.JSONObject object = new com.amazonaws.util.json.JSONObject(data);
-        JSONArray array = new JSONArray(object.getJSONArray("repositories"));
-        ArrayList<String> repositories = new ArrayList<String>();
+        JSONObject object = new JSONObject(data);
+        JSONArray array = object.getJSONArray("repositories");
+        ArrayList<String> repositories = new ArrayList();
         int len = array.length();
         for (int i = 0; i < len; i++) {
-            JSONObject obj = new JSONObject(array.get(i));
-            repositories.add(obj.getString("repository"));
+            repositories.add(array.getJSONObject(i).getString("repository"));
         }
         return repositories;
     }
