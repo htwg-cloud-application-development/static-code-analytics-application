@@ -73,6 +73,10 @@ public class CustomScheduler {
             repoUserInformationMap.put(jsonObject.getString("repository"), jsonObject.getString("userId"));
         }
 
+        return startScheduling(groups, fullExecutionTime, pipeline, repoUserInformationMap);
+    }
+
+    private ArrayList<JSONObject> startScheduling(JSONArray groups, int fullExecutionTime, Map<Integer, List<JSONObject>> pipeline, Map<String, String> repoUserInformationMap) throws NoSuchFieldException, JSONException, InterruptedException, ExecutionException, InstantiationException {
         AmazonEC2 ec2 = new AmazonEC2Client(new EnvironmentVariableCredentialsProvider());
         ec2.setRegion(com.amazonaws.regions.Region.getRegion(Regions.EU_CENTRAL_1));
 
