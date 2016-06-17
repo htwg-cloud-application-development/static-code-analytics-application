@@ -62,7 +62,7 @@ public class MongoService {
         }
     }
 
-    @RequestMapping(value = "/courses/{userId}/findLastPMDResult", method = RequestMethod.GET)
+    @RequestMapping(value = "/courses/{userId}/findLastPmdResult", method = RequestMethod.GET)
     public
     ResponseEntity<PMDResults> getLastPMDGroupResult(@PathVariable("userId") final String userId) {
 
