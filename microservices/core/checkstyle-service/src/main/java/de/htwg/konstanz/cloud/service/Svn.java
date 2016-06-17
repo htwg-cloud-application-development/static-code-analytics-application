@@ -76,10 +76,10 @@ public class Svn {
         return new String(authEncBytes);
     }
 
-    private void svnCheckout(String mainURL, String authStringEnc, String localPath) throws
+    private void svnCheckout(String mainUrl, String authStringEnc, String localPath) throws
             IOException, BadLocationException {
         // Generate and open the URL Connection
-        URL url = new URL(mainURL);
+        URL url = new URL(mainUrl);
         URLConnection urlConnection = url.openConnection();
         urlConnection.setRequestProperty("Authorization", "Basic "
                 + authStringEnc);
@@ -110,11 +110,11 @@ public class Svn {
                 }
 
                 // start new logic for the located dir
-                svnCheckout(mainURL + sFileSeparator + URLDecoder.decode(aListValue, "UTF-8"), authStringEnc,
+                svnCheckout(mainUrl + sFileSeparator + URLDecoder.decode(aListValue, "UTF-8"), authStringEnc,
                         localPathn);
             } else {
                 // download file
-                downloadFile(mainURL + sFileSeparator + URLDecoder.decode(aListValue, "UTF-8"), localPath
+                downloadFile(mainUrl + sFileSeparator + URLDecoder.decode(aListValue, "UTF-8"), localPath
                         + sFileSeparator + URLDecoder.decode(aListValue, "UTF-8"), authStringEnc);
             }
         }

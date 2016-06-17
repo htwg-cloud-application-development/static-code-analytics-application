@@ -11,6 +11,8 @@ app:
   config:
     svn:
       ip: 141.37.122.26
+    checkstyle:
+      rulepath: google_checks_modified.xml
 ---
 # profile for development
 spring:
