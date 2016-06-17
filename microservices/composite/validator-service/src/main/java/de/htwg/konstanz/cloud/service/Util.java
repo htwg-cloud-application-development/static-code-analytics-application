@@ -68,23 +68,7 @@ class Util {
         if (null != securityGroup && null != checkstyleImageId
                 && null != checkstyleInstanceType && null != checkstyleKeyName) {
 
-            if (minCount < 1) minCount = 1;
-            if (maxCount < 1) maxCount = 1;
-            if (minCount > maxCount) maxCount = minCount;
-
-            RunInstancesRequest runInstancesRequest = new RunInstancesRequest()
-                    .withInstanceType(checkstyleInstanceType)
-                    .withImageId(checkstyleImageId)
-                    .withMinCount(minCount)
-                    .withMaxCount(maxCount)
-                    .withMonitoring(true)
-                    .withKeyName(checkstyleKeyName)
-                    .withSecurityGroupIds(securityGroup);
-            RunInstancesResult result = ec2.runInstances(runInstancesRequest);
-            for (Instance instance : result.getReservation().getInstances()) {
-                createDefaultAlarm(instance.getInstanceId());
-            }
-            return result;
+            return runInstance(ec2, minCount, maxCount, checkstyleImageId, checkstyleKeyName, checkstyleInstanceType, securityGroup);
 
         } else {
             throw new NoSuchFieldException("Missing Config Parameter for one of following parameter:\n " +
@@ -93,6 +77,41 @@ class Util {
                     "|checkstyleInstanceType=" + checkstyleInstanceType +
                     "|checkstyleKeyName=" + checkstyleKeyName + "]");
         }
+    }
+
+    RunInstancesResult runNewPmdInstance(AmazonEC2 ec2, int minCount, int maxCount) throws NoSuchFieldException {
+        if (null != securityGroup && null != pmdImageId
+                && null != pmdKeyName && null != pmdInstanceType) {
+
+            return runInstance(ec2, minCount, maxCount, pmdImageId, pmdKeyName, pmdInstanceType, securityGroup);
+
+        } else {
+            throw new NoSuchFieldException("Missing Config Parameter for one of following parameter:\n " +
+                    "[securityGroup=" + securityGroup +
+                    "|pmdImageId=" + pmdImageId +
+                    "|pmdInstanceType=" + pmdImageId +
+                    "|pmdKeyName=" + pmdImageId + "]");
+        }
+    }
+
+    private RunInstancesResult runInstance(AmazonEC2 ec2, int minCount, int maxCount, String imageId, String keyName, String instanceType, String securityGroup) {
+        if (minCount < 1) minCount = 1;
+        if (maxCount < 1) maxCount = 1;
+        if (minCount > maxCount) maxCount = minCount;
+
+        RunInstancesRequest runInstancesRequest = new RunInstancesRequest()
+                .withInstanceType(instanceType)
+                .withImageId(imageId)
+                .withMinCount(minCount)
+                .withMaxCount(maxCount)
+                .withMonitoring(true)
+                .withKeyName(keyName)
+                .withSecurityGroupIds(securityGroup);
+        RunInstancesResult result = ec2.runInstances(runInstancesRequest);
+        for (Instance instance : result.getReservation().getInstances()) {
+            createDefaultAlarm(instance.getInstanceId());
+        }
+        return result;
     }
 
     private List<Instance> getAllActiveInstances(AmazonEC2 ec2) {
