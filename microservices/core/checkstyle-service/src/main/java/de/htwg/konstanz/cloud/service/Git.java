@@ -14,7 +14,6 @@ import java.io.File;
 import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.io.InputStream;
-import java.net.MalformedURLException;
 import java.net.URL;
 import java.net.URLConnection;
 
@@ -47,7 +46,7 @@ public class Git {
         return String.valueOf(revCommits.iterator().next().getCommitTime());
     }
 
-    String [] downloadGITRepo(String gitRepo) throws GitAPIException, IOException {
+    String [] downloadGitRepo(String gitRepo) throws GitAPIException, IOException {
         /* Checkout Git-Repo */
         org.eclipse.jgit.api.Git git = null;
 
@@ -128,8 +127,16 @@ public class Git {
                 result = false;
 
             } finally {
-                try { exec.destroy(); } catch (Exception e) { /* ignore */ }
-                try { ssh.disconnect(); } catch (Exception e) { /* ignore */ }
+                try {
+                    exec.destroy();
+                } catch (Exception e) {
+                    /* ignore */
+                }
+                try {
+                    ssh.disconnect();
+                } catch (Exception e) {
+                    /* ignore */
+                }
             }
         } else {
             // TODO need to implement tests for other schemas

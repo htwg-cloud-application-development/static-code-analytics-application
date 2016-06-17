@@ -2,7 +2,6 @@ package de.htwg.konstanz.cloud.service;
 
 import de.htwg.konstanz.cloud.model.Class;
 import de.htwg.konstanz.cloud.model.Error;
-import de.htwg.konstanz.cloud.model.SeverityCounter;
 import org.apache.commons.io.FileUtils;
 import org.eclipse.jgit.api.errors.GitAPIException;
 import org.json.JSONArray;
@@ -35,7 +34,7 @@ class Checkstyle {
 
     private final OperatingSystemCheck oOperatingSystemCheck = new OperatingSystemCheck();
 
-    private final List<Class> lFormattedClassList = new ArrayList<>();
+    private List<Class> lFormattedClassList;
 
     private final Util oUtil = new Util();
 
@@ -48,14 +47,17 @@ class Checkstyle {
     @Value("${app.config.svn.ip}")
     private String SVN_IP_C;
 
+    @Value("${app.config.checkstyle.rulepath}")
+    private String sRuleSetPath;
+
     String startIt(String gitRepository) throws IOException, ParserConfigurationException,
                                                 SAXException, GitAPIException, BadLocationException {
+        lFormattedClassList = new ArrayList<>();
         long lStartTime = System.currentTimeMillis();
         JSONObject oJsonResult;
         String sResult;
-        SeverityCounter oSeverityCounter = new SeverityCounter();
 
-        oJsonResult = determination(gitRepository, oSeverityCounter, lStartTime);
+        oJsonResult = determination(gitRepository, lStartTime);
         if (oRepoDir == null) {
             LOG.info("Error: Local Directory is null!");
         } else {
@@ -67,7 +69,7 @@ class Checkstyle {
         return sResult;
     }
 
-    private JSONObject determination(String sRepoUrl, SeverityCounter oSeverityCounter, long lStartTime) throws
+    private JSONObject determination(String sRepoUrl, long lStartTime) throws
             IOException, BadLocationException, GitAPIException, ParserConfigurationException, SAXException {
         JSONObject oJson = null;
         String sLocalDir;
@@ -90,17 +92,16 @@ class Checkstyle {
 
             LOG.info("Svn");
             sLocalDir = oSvn.downloadSvnRepo(oStringBuilder.toString());
-            oJson = (checkStyle(generateCheckStyleServiceData(oStringBuilder.toString()), sRepoUrl, oSeverityCounter, lStartTime));
+            /* Last Update Time SVN empty */
+            oJson = (checkStyle(generateCheckStyleServiceData(oStringBuilder.toString()), sRepoUrl, lStartTime, ""));
             oRepoDir = new File(sLocalDir);
         }
         /* Git Checkout */
         else if (sRepoUrl.contains("github.com")) {
             LOG.info("Git");
-            sLocalDirArray = oGit.downloadGITRepo(sRepoUrl);
-            oJson = (checkStyle(generateCheckStyleServiceData(sLocalDirArray[0]), sRepoUrl, oSeverityCounter, lStartTime));
+            sLocalDirArray = oGit.downloadGitRepo(sRepoUrl);
+            oJson = (checkStyle(generateCheckStyleServiceData(sLocalDirArray[0]), sRepoUrl, lStartTime, sLocalDirArray[1]));
             oRepoDir = new File(sLocalDirArray[0]);
-            LOG.info("Array 0: "+sLocalDirArray[0]);
-            LOG.info("Array 1: "+sLocalDirArray[1]);
         } else {
             LOG.info("Repository URL has no valid Svn/Git attributes. (" + sRepoUrl + ")");
         }
@@ -177,23 +178,22 @@ class Checkstyle {
         File oFile = new File(sCheckstyleJar);
         ReadableByteChannel oReadableByteChannel;
         FileOutputStream oFileOutput;
-        URL oURL;
+        URL oUrl;
 
         if (oFile.exists()) {
             LOG.info("Checkstyle .jar already exists! (" + oFile.toString() + ")");
         } else {
             LOG.info("Checkstyle .jar does not exist, starting download");
-            oURL = new URL(sDownloadCheckStyleJar);
-            oReadableByteChannel = Channels.newChannel(oURL.openStream());
+            oUrl = new URL(sDownloadCheckStyleJar);
+            oReadableByteChannel = Channels.newChannel(oUrl.openStream());
             oFileOutput = new FileOutputStream(sCheckstyleJar);
             oFileOutput.getChannel().transferFrom(oReadableByteChannel, 0, Long.MAX_VALUE);
         }
     }
 
-    private JSONObject checkStyle(List<List<String>> lRepoList, String gitRepository, SeverityCounter oSeverityCounter,
-                                  long lStartTime) throws ParserConfigurationException, SAXException, IOException {
+    private JSONObject checkStyle(List<List<String>> lRepoList, String gitRepository, long lStartTime, String sLastUpdateTime)
+                                        throws ParserConfigurationException, SAXException, IOException {
         final String sCheckStylePath = "checkstyle-6.17-all.jar";
-        final String sRuleSetPath = "google_checks_modified.xml";
         JSONObject oJson;
 
 		/* Listeninhalt kuerzen, um JSON vorbereiten */
@@ -213,25 +213,25 @@ class Checkstyle {
             oUtil.execCommand(sCheckStyleCommand);
 
 			/* store Checkstyle Informationen in the global List */
-            storeCheckstyleInformation(sFullPath + ".xml", nClassPos, oSeverityCounter);
+            storeCheckstyleInformation(sFullPath + ".xml", nClassPos);
         }
 
         /* generate JSON File */
-        oJson = buildJson(gitRepository, oSeverityCounter, lStartTime);
+        oJson = buildJson(gitRepository, lStartTime, sLastUpdateTime);
 
         return oJson;
     }
 
     private void formatList(List<List<String>> lRepoList) {
 
-        for (List<String> RepoListInList : lRepoList) {
+        for (List<String> sRepoListInList : lRepoList) {
             Class oClass;
 
-            for (String sRepo : RepoListInList) {
-                String[] sFullPathSplit_a = sRepo.split(oOperatingSystemCheck.getOperatingSystemSeparator());
+            for (String sRepo : sRepoListInList) {
+                String[] sFullPathSplitArray = sRepo.split(oOperatingSystemCheck.getOperatingSystemSeparator());
 
-                String sTmpClassName = sFullPathSplit_a[sFullPathSplit_a.length - 1];
-                String sTmpExerciseName = sFullPathSplit_a[2];
+                String sTmpClassName = sFullPathSplitArray[sFullPathSplitArray.length - 1];
+                String sTmpExerciseName = sFullPathSplitArray[2];
 
                 oClass = new Class(sTmpClassName, sRepo, sTmpExerciseName);
 
@@ -240,7 +240,7 @@ class Checkstyle {
         }
     }
 
-    private void storeCheckstyleInformation(String sXmlPath, int nClassPos, SeverityCounter oSeverityCounter)
+    private void storeCheckstyleInformation(String sXmlPath, int nClassPos)
                                                 throws ParserConfigurationException, SAXException, IOException {
         InputStream inputStream = new FileInputStream(sXmlPath);
         Reader reader = new InputStreamReader(inputStream, "UTF-8");
@@ -254,11 +254,11 @@ class Checkstyle {
         NodeList nList = doc.getElementsByTagName("error");
 
         for (int nNodePos = 0; nNodePos < nList.getLength(); nNodePos++) {
-            readAndSaveAttributes(nClassPos, oSeverityCounter, nList, nNodePos);
+            readAndSaveAttributes(nClassPos, nList, nNodePos);
         }
     }
 
-    private void readAndSaveAttributes(int nClassPos, SeverityCounter oSeverityCounter, NodeList nList, int nNodePos) {
+    private void readAndSaveAttributes(int nClassPos, NodeList nList, int nNodePos) {
         Node nNode = nList.item(nNodePos);
 
         if (nNode.getNodeType() == Node.ELEMENT_NODE) {
@@ -268,7 +268,7 @@ class Checkstyle {
             int nColumn = oUtil.getParsableElement(eElement, "column");
 
             String sSeverity = oUtil.getNonEmptyElement(eElement, "severity");
-            oUtil.incErrorType(oSeverityCounter, sSeverity);
+            lFormattedClassList.get(nClassPos).incErrorType(sSeverity);
 
             String sMessage = oUtil.getNonEmptyElement(eElement, "message");
             String sSource = oUtil.getNonEmptyElement(eElement, "source");
@@ -279,7 +279,7 @@ class Checkstyle {
         }
     }
 
-    private JSONObject buildJson(String sRepo, SeverityCounter oSeverityCounter, long lStartTime) {
+    private JSONObject buildJson(String sRepo, long lStartTime, String sLastRepoUpdateTime) {
         List<Error> lTmpErrorList;
         JSONObject oJsonRoot = new JSONObject();
         JSONObject oJsonExercise = new JSONObject();
@@ -289,15 +289,29 @@ class Checkstyle {
         boolean bExcerciseChange = false;
         boolean bLastRun = false;
         boolean bExcerciseNeverChanged = true;
+        int nTmpErrorCount = 0;
+        int nTmpWarningCount = 0;
+        int nTmpIgnoreCounter = 0;
 		
 		/* add general information to the JSON object */
         oJsonRoot.put("repository", sRepo);
-        oJsonRoot.put("numberOfErrors", oSeverityCounter.getErrorCount());
-        LOG.info("Number of Errors: " + oSeverityCounter.getErrorCount());
-        oJsonRoot.put("numberOfWarnings", oSeverityCounter.getWarningCount());
-        LOG.info("Number of Warnings: " + oSeverityCounter.getWarningCount());
-        oJsonRoot.put("numberOfIgnores", oSeverityCounter.getIgnoreCount());
-        LOG.info("Number of Ignores: " + oSeverityCounter.getIgnoreCount());
+
+        /* get severities of the whole project */
+        for (Class oFormattedClassList : lFormattedClassList) {
+            nTmpErrorCount += oFormattedClassList.getErrorCount();
+            nTmpWarningCount += oFormattedClassList.getWarningCount();
+            nTmpIgnoreCounter += oFormattedClassList.getIgnoreCount();
+        }
+
+        oJsonRoot.put("numberOfErrors", nTmpErrorCount);
+        LOG.info("Number of Errors: " + nTmpErrorCount);
+        oJsonRoot.put("numberOfWarnings", nTmpWarningCount);
+        LOG.info("Number of Warnings: " + nTmpWarningCount);
+        oJsonRoot.put("numberOfIgnores", nTmpIgnoreCounter);
+        LOG.info("Number of Ignores: " + nTmpIgnoreCounter);
+
+        oJsonRoot.put("lastRepoUpdateTime", sLastRepoUpdateTime);
+        LOG.info("Last Update Time: " + sLastRepoUpdateTime);
 
 		/* all Classes */
         for (int nClassPos = 0; nClassPos < lFormattedClassList.size(); nClassPos++) {
@@ -333,12 +347,15 @@ class Checkstyle {
 
                     oJsonClass.put("filepath", sFilePath);
                     oJsonClass.put("errors", lJsonErrors);
+                    setSeverityCounters(oJsonClass, nClassPos);
+
                     lJsonClasses.put(oJsonClass);
                 }
 
 				/* last run if different exercises were found */
                 if (bLastRun) {
                     oJsonExercise.put(sTmpExcerciseName, lJsonClasses);
+
                     lJsonExercises.put(oJsonExercise);
                 }
 				
@@ -377,5 +394,11 @@ class Checkstyle {
         oJsonRoot.put("assignments", lJsonExercises);
 
         return oJsonRoot;
+    }
+
+    private void setSeverityCounters(JSONObject oJsonClass, int nClassPos) {
+        oJsonClass.put("numberOfErros", lFormattedClassList.get(nClassPos).getErrorCount());
+        oJsonClass.put("numberOfWarnings", lFormattedClassList.get(nClassPos).getWarningCount());
+        oJsonClass.put("numberOfIgnores", lFormattedClassList.get(nClassPos).getIgnoreCount());
     }
 }

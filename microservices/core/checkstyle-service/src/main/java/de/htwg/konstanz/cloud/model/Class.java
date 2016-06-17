@@ -12,10 +12,30 @@ public class Class {
 
 	private final String sExerciseName;
 
+	private int nErrorCount;
+
+	private int nWarningCount;
+
+	private int nIgnoreCount;
+
 	public Class(String sClassName, String sFullPath, String sExcerciseName) {
 		this.sClassName = sClassName;
 		this.sFullPath = sFullPath;
 		this.sExerciseName = sExcerciseName;
+		this.nErrorCount = 0;
+		this.nWarningCount = 0;
+		this.nIgnoreCount = 0;
+	}
+
+	public void incErrorType(String sSeverity) {
+        /* Count every Error Type we have found in the XML */
+		if (sSeverity.toLowerCase().equals("error")) {
+			incErrorCount();
+		} else if (sSeverity.toLowerCase().equals("warning")) {
+			incWarningCount();
+		} else if (sSeverity.toLowerCase().equals("ignore")) {
+			incIgnoreCount();
+		}
 	}
 
 	public String getFullPath() {
@@ -28,5 +48,29 @@ public class Class {
 
 	public String getsExcerciseName() {
 		return sExerciseName;
+	}
+
+	public void incErrorCount() {
+		this.nErrorCount++;
+	}
+
+	public void incWarningCount() {
+		this.nWarningCount++;
+	}
+
+	public void incIgnoreCount() {
+		this.nIgnoreCount++;
+	}
+
+	public int getErrorCount() {
+		return this.nErrorCount;
+	}
+
+	public int getWarningCount() {
+		return this.nWarningCount;
+	}
+
+	public int getIgnoreCount() {
+		return this.nIgnoreCount;
 	}
 }

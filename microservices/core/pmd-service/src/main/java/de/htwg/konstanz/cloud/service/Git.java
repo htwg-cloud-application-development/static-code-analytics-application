@@ -2,7 +2,6 @@ package de.htwg.konstanz.cloud.service;
 
 import org.eclipse.jgit.api.errors.GitAPIException;
 import org.eclipse.jgit.internal.storage.file.FileRepository;
-import org.eclipse.jgit.revwalk.RevCommit;
 import org.eclipse.jgit.transport.RemoteSession;
 import org.eclipse.jgit.transport.SshSessionFactory;
 import org.eclipse.jgit.transport.URIish;
@@ -40,19 +39,12 @@ class Git {
         return result;
     }
 
-    private String getLastCommit(org.eclipse.jgit.api.Git git) throws IOException, GitAPIException {
-        //Get Last Commit of Git Repo
-        Iterable<RevCommit> revCommits =git.log().call();
-        return String.valueOf(revCommits.iterator().next().getCommitTime());
-    }
-
     String downloadGITRepo(String gitRepo) throws GitAPIException, IOException {
         /* Checkout Git-Repo */
         org.eclipse.jgit.api.Git git = null;
 
         /* return Array */
         String returnValue = null;
-
         /* String Magic */
         String directoryName = gitRepo.substring(gitRepo.lastIndexOf("/"),
                 gitRepo.length()).replace(".", "_");
@@ -62,11 +54,10 @@ class Git {
         /* Clone Command with jGIT */
         URL f = new URL(gitRepo);
         if (isValidRepository(new URIish(f))) {
-            git = org.eclipse.jgit.api.Git.cloneRepository().setURI(gitRepo)
+            git = git.cloneRepository().setURI(gitRepo)
                     .setDirectory(new File(localDirectory)).call();
             returnValue = localDirectory;
         }
-
         /* Closing Object that we can delete the whole directory later */
         git.getRepository().close();
 

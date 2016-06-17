@@ -1,9 +1,12 @@
 package de.htwg.konstanz.cloud.service;
 
-import de.htwg.konstanz.cloud.model.SeverityCounter;
+import com.amazonaws.util.json.JSONException;
+import org.json.JSONArray;
 import org.json.JSONObject;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.stereotype.Component;
+import org.springframework.web.bind.annotation.RequestBody;
 import org.w3c.dom.Element;
 
 import java.io.File;
@@ -12,7 +15,9 @@ import java.io.IOException;
 import java.net.URL;
 import java.nio.channels.Channels;
 import java.nio.channels.ReadableByteChannel;
+import java.util.ArrayList;
 
+@Component
 public class Util {
     private static final Logger LOG = LoggerFactory.getLogger(Util.class);
 
@@ -78,17 +83,6 @@ public class Util {
         return "";
     }
 
-    void incErrorType(SeverityCounter oSeverityCounter, int nPriority) {
-        /* Count every Error Type we have found in the XML */
-        if (nPriority == 1) {
-            oSeverityCounter.incIgnoreCount();
-        } else if (nPriority == 2) {
-            oSeverityCounter.incWarningCount();
-        } else if (nPriority == 3) {
-            oSeverityCounter.incErrorCount();
-        }
-    }
-
     int getParsableElement(Element eElement, String sAttribute) {
         if (isParsable(eElement.getAttribute(sAttribute))) {
             return Integer.parseInt(eElement.getAttribute(sAttribute));
@@ -139,5 +133,16 @@ public class Util {
 
             oZip.unzipFile(sPmdDir);
         }
+    }
+
+    ArrayList<String> getRepositoriesFromRequestBody(@RequestBody String data) throws JSONException {
+        JSONObject object = new JSONObject(data);
+        JSONArray array = object.getJSONArray("repositories");
+        ArrayList<String> repositories = new ArrayList();
+        int len = array.length();
+        for (int i = 0; i < len; i++) {
+            repositories.add(array.getJSONObject(i).getString("repository"));
+        }
+        return repositories;
     }
 }
