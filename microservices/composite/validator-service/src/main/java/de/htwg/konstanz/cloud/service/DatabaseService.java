@@ -15,6 +15,8 @@ import org.springframework.stereotype.Service;
 import org.springframework.web.client.RestTemplate;
 
 import javax.annotation.PostConstruct;
+import java.nio.charset.Charset;
+import java.util.Arrays;
 import java.util.concurrent.Future;
 
 @Service
@@ -60,11 +62,10 @@ public class DatabaseService {
             // POST to request url and get String (JSON)
             HttpHeaders headers = new HttpHeaders();
             headers.setContentType(MediaType.APPLICATION_JSON);
+            headers.setAcceptCharset(Arrays.asList(Charset.forName("UTF-8")));
             HttpEntity<String> entity = new HttpEntity<>(result, headers);
-
             // post to service and return response
-            ResponseEntity<String> obj = restTemplate.postForEntity(requestUrl, entity, String.class);
-            return new AsyncResult<>(obj.getBody());
+            return new AsyncResult<>(restTemplate.postForObject(requestUrl, entity, String.class));
         }
         throw new InstantiationException("service is not available");
     }
