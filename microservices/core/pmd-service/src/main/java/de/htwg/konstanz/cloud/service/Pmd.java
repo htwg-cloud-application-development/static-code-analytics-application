@@ -24,9 +24,6 @@ import javax.xml.parsers.DocumentBuilder;
 import javax.xml.parsers.DocumentBuilderFactory;
 import javax.xml.parsers.ParserConfigurationException;
 import java.io.*;
-import java.net.URL;
-import java.nio.channels.Channels;
-import java.nio.channels.ReadableByteChannel;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -82,7 +79,7 @@ public class Pmd {
         StringBuilder oStringBuilder = new StringBuilder();
 
         LOG.info("Repository URL: " + sRepoUrl);
-        checkLocalPmd();
+        util.checkLocalPmd();
         oRepoDir = util.createDirectory("repositories");
 
         /* Svn Checkout */
@@ -180,29 +177,6 @@ public class Pmd {
         }
 
         return javaFiles;
-    }
-
-    private void checkLocalPmd() throws IOException {
-        Zip oZip = new Zip();
-        final String sPmdDir = "pmd-bin-5.4.2.zip";
-        final String sDownloadPmd = "https://github.com/pmd/pmd/releases/download/pmd_releases%2F5.4.2/pmd-bin-5.4.2.zip";
-
-        File oFile = new File(sPmdDir);
-        ReadableByteChannel oReadableByteChannel;
-        FileOutputStream oFileOutput;
-        URL oUrl;
-
-        if (oFile.exists()) {
-            LOG.info("Pmd Directory already exists!");
-        } else {
-            LOG.info("Pmd Directory does not exists, Starting download");
-            oUrl = new URL(sDownloadPmd);
-            oReadableByteChannel = Channels.newChannel(oUrl.openStream());
-            oFileOutput = new FileOutputStream(sPmdDir);
-            oFileOutput.getChannel().transferFrom(oReadableByteChannel, 0, Long.MAX_VALUE);
-
-            oZip.unzipFile(sPmdDir);
-        }
     }
 
     private JSONObject runPmd(List<List<String>> lRepoList, String gitRepository, SeverityCounter oSeverityCounter,
