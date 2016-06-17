@@ -137,8 +137,8 @@ public class CustomScheduler {
                         validateWithAvailableInstance(checkstyleTaskList, availableCheckstyleInstancesList, blockedCheckstyleInstancesList, task.toString());
                         validateWithAvailableInstance(pmdTaskList, availablePmdInstancesList, blockedPmdInstancesList, task.toString());
 
-                        removeFirstElementFormList(availableCheckstyleInstancesList);
-                        removeFirstElementFormList(availablePmdInstancesList);
+                        util.removeFirstElementFormList(availableCheckstyleInstancesList);
+                        util.removeFirstElementFormList(availablePmdInstancesList);
 
                         isExecute = true;
                     }
@@ -250,15 +250,6 @@ public class CustomScheduler {
         Future<String> checkstyleFuture = validateRepositoryService.validateRepository(taskToExecute, availableCheckstyleInstancesList.get(0));
         blockedCheckstyleInstancesList.put(availableCheckstyleInstancesList.remove(0), taskToExecute);
         checkstyleTaskList.add(checkstyleFuture);
-    }
-
-    private void removeFirstElementFormList(List<URI> availableCheckstyleInstancesList) {
-        // remove first element of available Instance list
-        Iterator<URI> it = availableCheckstyleInstancesList.iterator();
-        if (it.hasNext()) {
-            it.next();
-            it.remove();
-        }
     }
 
     private URI getUriWithValue(Map<URI, String> blockedInstancesList, String s) throws JSONException {
