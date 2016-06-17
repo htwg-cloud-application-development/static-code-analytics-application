@@ -9,6 +9,7 @@ import org.json.JSONArray;
 import org.json.JSONObject;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Component;
 import org.w3c.dom.Document;
@@ -31,13 +32,15 @@ import java.util.List;
 
 @Component
 public class Pmd {
+
+    @Autowired
+    Util util;
+
     private static final Logger LOG = LoggerFactory.getLogger(Pmd.class);
 
     private final List<Class> lFormattedClassList = new ArrayList<>();
 
     private final OperatingSystemCheck oOperatingSystemCheck = new OperatingSystemCheck();
-
-    private final Util oUtil = new Util();
 
     private File oRepoDir;
 
@@ -66,7 +69,7 @@ public class Pmd {
             FileUtils.deleteDirectory(oRepoDir);
         }
 
-        sResult = oUtil.checkJsonResult(oJsonResult);
+        sResult = util.checkJsonResult(oJsonResult);
 
         return sResult;
     }
@@ -80,7 +83,7 @@ public class Pmd {
 
         LOG.info("Repository URL: " + sRepoUrl);
         checkLocalPmd();
-        oRepoDir = oUtil.createDirectory("repositories");
+        oRepoDir = util.createDirectory("repositories");
 
         /* Svn Checkout */
         if (sRepoUrl.contains(SVN_IP_C)) {
@@ -119,7 +122,7 @@ public class Pmd {
         File mainDir;
         LOG.info("Local Directory: " + sLocalDirectory);
 
-        mainDir = oUtil.checkLocalSrcDir(sLocalDirectory);
+        mainDir = util.checkLocalSrcDir(sLocalDirectory);
 
         /* List all files for CheckstyleService */
         if (mainDir.exists()) {
@@ -227,7 +230,7 @@ public class Pmd {
                     + "-encoding UTF-8 -rulesets " + ruleSetPath + " -r " + sFullPath + ".xml";
             LOG.info("Pmd execution path: " + sPmdCommand);
 
-            oUtil.execCommand(sPmdCommand);
+            util.execCommand(sPmdCommand);
 
 			/* Checkstyle Informationen eintragen */
             storePmdInformation(sFullPath + ".xml", nClassPos, oSeverityCounter);
@@ -285,18 +288,18 @@ public class Pmd {
 
             String sMessage = eElement.getFirstChild().getTextContent();
 
-            int nLineBegin = oUtil.getParsableElement(eElement, "beginline");
-            int nLineEnd = oUtil.getParsableElement(eElement, "endline");
-            int nColumnBegin = oUtil.getParsableElement(eElement, "begincolumn");
-            int nColumnEnd = oUtil.getParsableElement(eElement, "endcolumn");
-            int nPriority = oUtil.getParsableElement(eElement, "priority");
+            int nLineBegin = util.getParsableElement(eElement, "beginline");
+            int nLineEnd = util.getParsableElement(eElement, "endline");
+            int nColumnBegin = util.getParsableElement(eElement, "begincolumn");
+            int nColumnEnd = util.getParsableElement(eElement, "endcolumn");
+            int nPriority = util.getParsableElement(eElement, "priority");
 
-            oUtil.incErrorType(oSeverityCounter, nPriority);
+            util.incErrorType(oSeverityCounter, nPriority);
 
-            String sClassName = oUtil.getNonEmptyElement(eElement, "class");
-            String sRule = oUtil.getNonEmptyElement(eElement, "rule");
-            String sRuleset = oUtil.getNonEmptyElement(eElement, "ruleset");
-            String sPackage = oUtil.getNonEmptyElement(eElement, "package");
+            String sClassName = util.getNonEmptyElement(eElement, "class");
+            String sRule = util.getNonEmptyElement(eElement, "rule");
+            String sRuleset = util.getNonEmptyElement(eElement, "ruleset");
+            String sPackage = util.getNonEmptyElement(eElement, "package");
 
             Error oError = new Error(nLineBegin, nLineEnd, nColumnBegin, nColumnEnd, nPriority,
                     sRule, sClassName, sPackage, sRuleset, sMessage);
@@ -360,7 +363,7 @@ public class Pmd {
                     if (lJsonErrors.length() > 0) {
                         sTmpExcerciseName = sExcerciseName;
 
-                        String sFilePath = oUtil.removeUnnecessaryPathParts(lFormattedClassList.get(nClassPos).getFullPath());
+                        String sFilePath = util.removeUnnecessaryPathParts(lFormattedClassList.get(nClassPos).getFullPath());
                         oJsonClass.put("filepath", sFilePath);
                         oJsonClass.put("errors", lJsonErrors);
                         lJsonClasses.put(oJsonClass);

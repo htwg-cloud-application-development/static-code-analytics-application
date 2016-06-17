@@ -1,7 +1,5 @@
 package de.htwg.konstanz.cloud.service;
 
-import com.amazonaws.util.json.JSONArray;
-import com.amazonaws.util.json.JSONException;
 import de.htwg.konstanz.cloud.model.ValidationData;
 import lombok.Data;
 import org.eclipse.jgit.api.errors.GitAPIException;
@@ -22,7 +20,6 @@ import javax.xml.parsers.ParserConfigurationException;
 import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.net.MalformedURLException;
-import java.util.ArrayList;
 
 
 // to create a RESTful Controller (add Controller and ResponseBody)
@@ -33,6 +30,9 @@ public class PmdService {
 
     @Autowired
     Pmd pmd;
+
+    @Autowired
+    Util util;
 
     @RequestMapping(value = "/validate", method = RequestMethod.POST, produces = "application/json", consumes = "application/json")
     public ResponseEntity validate(@RequestBody ValidationData data) {
@@ -79,7 +79,7 @@ public class PmdService {
     @RequestMapping(value = "/validate/copypaste", method = RequestMethod.POST, produces = "application/json", consumes = "application/json")
     public ResponseEntity copypaste(@RequestBody String data) {
         try {
-            return ResponseEntity.ok(new Cpd().startIt(getRepositoriesFromRequestBody(data)));
+            return ResponseEntity.ok(new Cpd().startIt(util.getRepositoriesFromRequestBody(data)));
         } catch (ParserConfigurationException e) {
             LOG.error(e.getMessage());
             return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(e.getMessage());
@@ -112,15 +112,4 @@ public class PmdService {
             return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(e.getMessage());
         }
     }
-    ArrayList<String> getRepositoriesFromRequestBody(@RequestBody String data) throws JSONException {
-        com.amazonaws.util.json.JSONObject object = new com.amazonaws.util.json.JSONObject(data);
-        JSONArray array = new JSONArray(object.getJSONArray("repositories"));
-        ArrayList<String> repositories = new ArrayList<String>();
-        int len = array.length();
-        for (int i = 0; i < len; i++) {
-            repositories.add(array.get(i).toString());
-        }
-        return repositories;
-    }
-
 }

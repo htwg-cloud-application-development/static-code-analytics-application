@@ -1,9 +1,13 @@
 package de.htwg.konstanz.cloud.service;
 
+import com.amazonaws.util.json.JSONArray;
+import com.amazonaws.util.json.JSONException;
 import de.htwg.konstanz.cloud.model.SeverityCounter;
 import org.json.JSONObject;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.stereotype.Component;
+import org.springframework.web.bind.annotation.RequestBody;
 import org.w3c.dom.Element;
 
 import java.io.File;
@@ -12,7 +16,9 @@ import java.io.IOException;
 import java.net.URL;
 import java.nio.channels.Channels;
 import java.nio.channels.ReadableByteChannel;
+import java.util.ArrayList;
 
+@Component
 public class Util {
     private static final Logger LOG = LoggerFactory.getLogger(Util.class);
 
@@ -141,5 +147,14 @@ public class Util {
         }
     }
 
-
+    ArrayList<String> getRepositoriesFromRequestBody(@RequestBody String data) throws JSONException {
+        com.amazonaws.util.json.JSONObject object = new com.amazonaws.util.json.JSONObject(data);
+        JSONArray array = new JSONArray(object.getJSONArray("repositories"));
+        ArrayList<String> repositories = new ArrayList<String>();
+        int len = array.length();
+        for (int i = 0; i < len; i++) {
+            repositories.add(array.get(i).toString());
+        }
+        return repositories;
+    }
 }
