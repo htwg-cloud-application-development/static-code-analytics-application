@@ -42,7 +42,7 @@ public class CourseService {
         userRepo.save(user);
     }
 
-    //Returns one course without assignements of pmd and checkstyle
+    //Returns one course without errors of pmd and checkstyle
     @RequestMapping(value = "/{courseId}", method = RequestMethod.GET)
     public String getCourse(@PathVariable final String courseId) throws IOException {
 
@@ -50,7 +50,7 @@ public class CourseService {
         return goToPmdAndCheckstyleInJson(course).toString();
     }
 
-    //Returns all courses without assingments of pmd and checkstyle
+    //Returns all courses without errors of pmd and checkstyle
     @RequestMapping(method = RequestMethod.GET)
     public String getAllCourses() {
 
