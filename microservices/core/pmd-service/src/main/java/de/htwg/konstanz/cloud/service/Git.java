@@ -88,6 +88,10 @@ class Git {
         // String Magic
         String directoryName = gitRepo.substring(gitRepo.lastIndexOf("/"),
                 gitRepo.length()).replace(".", "_");
+
+        //test den ersten / removen
+        directoryName = directoryName.substring(1);
+
         String localDirectory = "repositories" + sFileSeparator + directoryName + "_"
                 + System.currentTimeMillis() + sFileSeparator;
 
