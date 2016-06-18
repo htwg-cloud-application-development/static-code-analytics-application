@@ -38,6 +38,8 @@ public class Cpd {
 
     private final Svn oSvn = new Svn();
 
+    private String sFileSeparator = "";
+
     @Value("${app.config.svn.ip}")
     private String SVN_IP_C;
 
@@ -46,6 +48,8 @@ public class Cpd {
         long lStartTime = System.currentTimeMillis();
         JSONObject oJsonResult;
         String sResult;
+        OperatingSystemCheck oOperatingSystemCheck = new OperatingSystemCheck();
+        sFileSeparator = oOperatingSystemCheck.getOperatingSystemSeparator();
 
         oJsonResult = determination(gitRepository, lStartTime);
         if (oRepoDir == null) {
@@ -112,7 +116,7 @@ public class Cpd {
         final String sOutputFileName = "Duplications.xml";
         String sStartScript = "";
         String sFilesDirs = "";
-        String sMainPath = "repositories/repositories-cpd";
+        String sMainPath = "repositories" + sFileSeparator + "repositories-cpd";
         JSONObject oJson = null;
 
         if (oOperatingSystemCheck.isWindows()) {
@@ -125,13 +129,13 @@ public class Cpd {
         oUtil.createDirectory(sMainPath);
 
         String sCpdCommand = sStartScript + " --minimum-tokens 75 --files " + oRepoDir.getAbsolutePath() + " --skip-lexical-errors "
-                + "--format xml > " + sMainPath + "/CpdCheck_" + sOutputFileName;
+                + "--format xml > " + sMainPath + sFileSeparator +"CpdCheck_" + sOutputFileName;
         LOG.info("Cpd execution path: " + sCpdCommand);
 
         oUtil.execCommand(sCpdCommand);
 
         /* Checkstyle Informationen eintragen */
-        storeCpdInformation(sMainPath + "/CpdCheck_" + sOutputFileName);
+        storeCpdInformation(sMainPath + sFileSeparator + "CpdCheck_" + sOutputFileName);
 
         if (lDuplications != null) {
             /* Schoene einheitliche JSON erstellen */

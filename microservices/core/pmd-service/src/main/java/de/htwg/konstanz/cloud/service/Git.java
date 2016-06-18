@@ -20,6 +20,8 @@ import java.net.URLConnection;
 class Git {
     private static final Logger LOG = LoggerFactory.getLogger(Git.class);
 
+    private String sFileSeparator = "";
+
     private boolean isValidRepository(URIish repoUri) {
         if (repoUri.isRemote()) {
             return isValidRemoteRepository(repoUri);
@@ -77,6 +79,8 @@ class Git {
     String [] downloadGITRepo(String gitRepo) throws GitAPIException, IOException {
         // Checkout Git-Repo
         org.eclipse.jgit.api.Git git = null;
+        OperatingSystemCheck oOperatingSystemCheck = new OperatingSystemCheck();
+        sFileSeparator = oOperatingSystemCheck.getOperatingSystemSeparator();
 
         // return Array
         String[] returnValue = null;
@@ -84,8 +88,8 @@ class Git {
         // String Magic
         String directoryName = gitRepo.substring(gitRepo.lastIndexOf("/"),
                 gitRepo.length()).replace(".", "_");
-        String localDirectory = "repositories/" + directoryName + "_"
-                + System.currentTimeMillis() + "/";
+        String localDirectory = "repositories" + sFileSeparator + directoryName + "_"
+                + System.currentTimeMillis() + sFileSeparator;
 
         // Clone Command with jGIT
         URL f = new URL(gitRepo);
