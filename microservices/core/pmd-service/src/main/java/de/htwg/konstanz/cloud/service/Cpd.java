@@ -63,6 +63,7 @@ public class Cpd {
             GitAPIException, ParserConfigurationException, SAXException {
         JSONObject oJson = null;
         String sLocalDir;
+        String[] sLocalDirArray;
         List<String> lRepoDirs = new ArrayList<>();
         StringBuilder oStringBuilder = new StringBuilder();
 
@@ -90,8 +91,8 @@ public class Cpd {
             /* Git */
             else if (sRepo.contains("github.com")) {
                 LOG.info("Git " + sRepo);
-                sLocalDir = oGit.downloadGITRepo(sRepo);
-                lRepoDirs.add(sLocalDir);
+                sLocalDirArray = oGit.downloadGITRepo(sRepo);
+                lRepoDirs.add(sLocalDirArray[0]);
             } else {
                 LOG.info("Repository URL has no valid Svn/Git attributes. (" + sRepoUrl + ")");
             }

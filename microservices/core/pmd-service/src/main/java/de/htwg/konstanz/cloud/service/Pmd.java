@@ -94,17 +94,15 @@ public class Pmd {
 
             LOG.info("Svn");
             sLocalDir = oSvn.downloadSvnRepo(oStringBuilder.toString());
-            oJson = (runPmd(generatePmdServiceData(sLocalDir), sRepoUrl, lStartTime));
+            oJson = (runPmd(generatePmdServiceData(sLocalDir), sRepoUrl, lStartTime, ""));
             oRepoDir = new File(sLocalDir);
         }
         /* Git Checkout */
         else if (sRepoUrl.contains("github.com")) {
             LOG.info("Git");
-            sLocalDir = oGit.downloadGITRepo(sRepoUrl);
-            oJson = (runPmd(generatePmdServiceData(sLocalDir), sRepoUrl, lStartTime));
-            //oRepoDir = new File(sLocalDirArray[0]);
-            //LOG.info("Array 0: "+sLocalDirArray[0]);
-            //LOG.info("Array 1: "+sLocalDirArray[1]);
+            sLocalDirArray = oGit.downloadGITRepo(sRepoUrl);
+            oJson = (runPmd(generatePmdServiceData(sLocalDirArray[0]), sRepoUrl, lStartTime, sLocalDirArray[1]));
+            oRepoDir = new File(sLocalDirArray[0]);
         } else {
             LOG.info("Repository URL has no valid Svn/Git attributes. (" + sRepoUrl + ")");
         }
@@ -178,7 +176,7 @@ public class Pmd {
         return javaFiles;
     }
 
-    private JSONObject runPmd(List<List<String>> lRepoList, String gitRepository, long lStartTime)
+    private JSONObject runPmd(List<List<String>> lRepoList, String gitRepository, long lStartTime, String sLastUpdateTime)
                                     throws ParserConfigurationException, SAXException, IOException {
 
         String sStartScript = "";
@@ -210,7 +208,7 @@ public class Pmd {
         }
 
         /* Schoene einheitliche JSON erstellen */
-        JSONObject oJson = buildJson(gitRepository, lStartTime);
+        JSONObject oJson = buildJson(gitRepository, lStartTime, sLastUpdateTime);
         /* JSON an Database weitersenden */
 
         return oJson;
@@ -281,7 +279,7 @@ public class Pmd {
         }
     }
 
-    private JSONObject buildJson(String sRepo, long lStartTime) {
+    private JSONObject buildJson(String sRepo, long lStartTime, String sLastRepoUpdateTime) {
         List<Error> lTmpErrorList;
         JSONObject oJsonRoot = new JSONObject();
         JSONObject oJsonExercise = new JSONObject();
@@ -308,6 +306,9 @@ public class Pmd {
         oJsonRoot.put("numberOfErrors", nTmpErrorCount);
         oJsonRoot.put("numberOfWarnings", nTmpWarningCount);
         oJsonRoot.put("numberOfIgnores", nTmpIgnoreCounter);
+
+        oJsonRoot.put("lastRepoUpdateTime", sLastRepoUpdateTime);
+        LOG.info("Last Update Time: " + sLastRepoUpdateTime);
 
 		/* all Classes */
         for (int nClassPos = 0; nClassPos < lFormattedClassList.size(); nClassPos++) {

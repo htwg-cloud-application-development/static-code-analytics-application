@@ -2,6 +2,7 @@ package de.htwg.konstanz.cloud.service;
 
 import org.eclipse.jgit.api.errors.GitAPIException;
 import org.eclipse.jgit.internal.storage.file.FileRepository;
+import org.eclipse.jgit.revwalk.RevCommit;
 import org.eclipse.jgit.transport.RemoteSession;
 import org.eclipse.jgit.transport.SshSessionFactory;
 import org.eclipse.jgit.transport.URIish;
@@ -39,33 +40,34 @@ class Git {
         return result;
     }
 
+    /*
     String downloadGITRepo(String gitRepo) throws GitAPIException, IOException {
-        /* Checkout Git-Repo */
+        // Checkout Git-Repo
         org.eclipse.jgit.api.Git git = null;
 
-        /* return Array */
+        // return Array
         String returnValue = null;
-        /* String Magic */
+        // String Magic
         String directoryName = gitRepo.substring(gitRepo.lastIndexOf("/"),
                 gitRepo.length()).replace(".", "_");
         String localDirectory = "repositories/" + directoryName + "_"
                 + System.currentTimeMillis() + "/";
 
-        /* Clone Command with jGIT */
+        // Clone Command with jGIT
         URL f = new URL(gitRepo);
         if (isValidRepository(new URIish(f))) {
             git = git.cloneRepository().setURI(gitRepo)
                     .setDirectory(new File(localDirectory)).call();
             returnValue = localDirectory;
         }
-        /* Closing Object that we can delete the whole directory later */
+        // Closing Object that we can delete the whole directory later
         git.getRepository().close();
 
-        /* Local Targetpath and Last Commit*/
+        // Local Targetpath and Last Commit
         return returnValue;
     }
+    */
 
-	/*
 	private String getLastCommit(org.eclipse.jgit.api.Git git) throws IOException, GitAPIException {
         //Get Last Commit of Git Repo
         Iterable<RevCommit> revCommits =git.log().call();
@@ -99,8 +101,6 @@ class Git {
         // Local Targetpath and Last Commit
         return returnValue;
     }
-
-	*/
 
     private boolean isValidRemoteRepository(URIish repoUri) {
         boolean result;
