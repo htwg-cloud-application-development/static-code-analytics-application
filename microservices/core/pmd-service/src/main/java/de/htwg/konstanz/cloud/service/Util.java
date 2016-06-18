@@ -24,11 +24,13 @@ public class Util {
 
     private final OperatingSystemCheck oOperatingSystemCheck = new OperatingSystemCheck();
 
+    private String sFileSeparator = oOperatingSystemCheck.getOperatingSystemSeparator();
+
     File checkLocalSrcDir(String sLocalDirectory) {
         File mainDir;/* Check if local /src-dir exists */
 
-        if (new File(sLocalDirectory + "/src").exists()) {
-            mainDir = new File(sLocalDirectory + "/src");
+        if (new File(sLocalDirectory + sFileSeparator + "src").exists()) {
+            mainDir = new File(sLocalDirectory + sFileSeparator + "src");
             LOG.info("Local SRC directory found");
         } else {
             mainDir = new File(sLocalDirectory);
@@ -99,7 +101,7 @@ public class Util {
                 /* last Part of the Path */
                 sShortenPath += sFilePathSplitArray[nPathPos];
             } else {
-                sShortenPath += sFilePathSplitArray[nPathPos] + "\\";
+                sShortenPath += sFilePathSplitArray[nPathPos] + sFileSeparator;
             }
         }
 
@@ -149,7 +151,7 @@ public class Util {
     }
 
     boolean checkIfDifferentReops(List<String> lFileList, String sCheckRepo){
-        String[] sSplitCheck = sCheckRepo.split("\\\\");
+        String[] sSplitCheck = sCheckRepo.split(sFileSeparator);
         for(String sFileRepo : lFileList){
             if(sFileRepo.contains(sSplitCheck[0])) {
                 return false;
