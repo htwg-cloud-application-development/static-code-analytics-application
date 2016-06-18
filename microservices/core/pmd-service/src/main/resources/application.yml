@@ -12,7 +12,7 @@ app:
     svn:
       ip: 141.37.122.26
     pmd:
-      ruleset:  java-basic,java-design,java-codesize
+      ruleset:  java-basic,java-design,java-codesize,java-optimizations,java-unnecessary,java-braces
 ---
 # profile for development
 spring:

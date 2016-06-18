@@ -99,8 +99,9 @@ public class Cpd {
         }
 
         /*Run CPD*/
-        if(!lRepoDirs.isEmpty())
+        if(!lRepoDirs.isEmpty()) {
             oJson = (runCpd(lStartTime));
+        }
 
         return oJson;
     }
@@ -195,8 +196,9 @@ public class Cpd {
                 }
 
                 //Create Duplication
-                if(lInvolvedData.size() > 1)
+                if(lInvolvedData.size() > 1) {
                     lDuplications.add(Duplication.getDupliactionInstance(nLinesCount, nTokens, lInvolvedData, sCodeFragment));
+                }
             }
         }
     }

@@ -108,8 +108,9 @@ public class Util {
 
     File createDirectory(String sDirectoy) {
         File dir = new File(sDirectoy);
-        if (!dir.exists())
+        if (!dir.exists()) {
             dir.mkdir();
+        }
         return dir;
     }
 
@@ -150,8 +151,9 @@ public class Util {
     boolean checkIfDifferentReops(List<String> lFileList, String sCheckRepo){
         String[] sSplitCheck = sCheckRepo.split("\\\\");
         for(String sFileRepo : lFileList){
-            if(sFileRepo.contains(sSplitCheck[0]))
+            if(sFileRepo.contains(sSplitCheck[0])) {
                 return false;
+            }
         }
         return true;
     }
