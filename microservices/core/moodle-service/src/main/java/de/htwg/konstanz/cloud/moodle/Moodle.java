@@ -16,20 +16,20 @@ public class Moodle {
 
     private final RestTemplate templ = new RestTemplate();
 
-    private String MOODLE_BASE_URL = "https://moodle.htwg-konstanz.de/moodle/webservice/rest/server.php?" +
-            "&moodlewsrestformat=json";
+    private String moodleBaseUrl = "https://moodle.htwg-konstanz.de/moodle/webservice/rest/server.php?"
+            + "&moodlewsrestformat=json";
 
     public Moodle(String token) {
-        this.MOODLE_BASE_URL += "&wstoken=" + token;
+        this.moodleBaseUrl += "&wstoken=" + token;
     }
 
 
     public GeneralMoodleInfo getMoodleInfoFromMoodleToken() {
 
         String service = "core_webservice_get_site_info";
-        String requestURL = MOODLE_BASE_URL + "&wsfunction=" + service;
+        String requestUrl = moodleBaseUrl + "&wsfunction=" + service;
 
-        GeneralMoodleInfo moodleInfo = templ.getForObject(requestURL, GeneralMoodleInfo.class);
+        GeneralMoodleInfo moodleInfo = templ.getForObject(requestUrl, GeneralMoodleInfo.class);
 
 
         return moodleInfo;
@@ -38,9 +38,9 @@ public class Moodle {
     public List<MoodleCourse> getCoursesOfMoodleUser(Integer userId) throws JsonProcessingException {
 
         String service = "core_enrol_get_users_courses";
-        String requestURL = MOODLE_BASE_URL + "&wsfunction=" + service + "&userid=" + userId;
+        String requestUrl = moodleBaseUrl + "&wsfunction=" + service + "&userid=" + userId;
 
-        JsonNode courses = templ.getForObject(requestURL, JsonNode.class);
+        JsonNode courses = templ.getForObject(requestUrl, JsonNode.class);
 
 
         ObjectMapper mapper = new ObjectMapper();
@@ -56,9 +56,9 @@ public class Moodle {
     public List<MoodleAssignment> getAssignmentsOfMoodleCourse(Integer courseId) throws JsonProcessingException {
 
         final String service = "mod_assign_get_assignments";
-        final String requestURL = MOODLE_BASE_URL + "&wsfunction=" + service + "&courseids[0]=" + courseId;
+        final String requestUrl = moodleBaseUrl + "&wsfunction=" + service + "&courseids[0]=" + courseId;
 
-        JsonNode course = templ.getForObject(requestURL, JsonNode.class);
+        JsonNode course = templ.getForObject(requestUrl, JsonNode.class);
 
         return findAssignmentsInCourse(course);
     }
@@ -66,9 +66,9 @@ public class Moodle {
     public List<MoodleSubmissionOfAssignmet> getSubmissionsOfAssignment(Integer assignmentId) throws JsonProcessingException {
 
         final String service = "mod_assign_get_submissions";
-        final String requestURL = MOODLE_BASE_URL + "&wsfunction=" + service + "&assignmentids[0]=" + assignmentId;
+        final String requestUrl = moodleBaseUrl + "&wsfunction=" + service + "&assignmentids[0]=" + assignmentId;
 
-        JsonNode assignment = templ.getForObject(requestURL, JsonNode.class).findPath("assignments");
+        JsonNode assignment = templ.getForObject(requestUrl, JsonNode.class).findPath("assignments");
 
         if (assignment.size() < 1) {
             return Collections.emptyList();
@@ -81,9 +81,9 @@ public class Moodle {
 
     public Boolean hasPermissionOnCourse(String courseId, Integer userId) {
         final String service = "core_enrol_get_enrolled_users";
-        final String requestURL = MOODLE_BASE_URL + "&wsfunction=" + service + "&courseid=" + courseId;
+        final String requestUrl = moodleBaseUrl + "&wsfunction=" + service + "&courseid=" + courseId;
 
-        JsonNode enrolledUser = templ.getForObject(requestURL, JsonNode.class);
+        JsonNode enrolledUser = templ.getForObject(requestUrl, JsonNode.class);
 
         Boolean hasPermission = false;
 
@@ -192,7 +192,7 @@ public class Moodle {
                             repo = repo.substring(0, repo.length() - 1);
 
                         }
-                        
+
                         return repo;
                     }
                 }
