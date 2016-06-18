@@ -17,8 +17,10 @@ import java.io.InputStream;
 import java.net.URL;
 import java.net.URLConnection;
 
-public class Git {
+class Git {
     private static final Logger LOG = LoggerFactory.getLogger(Git.class);
+
+    private final OperatingSystemCheck oOperatingSystemCheck = new OperatingSystemCheck();
 
     private boolean isValidRepository(URIish repoUri) {
         if (repoUri.isRemote()) {
@@ -56,8 +58,8 @@ public class Git {
         /* String Magic */
         String directoryName = gitRepo.substring(gitRepo.lastIndexOf("/"),
                 gitRepo.length()).replace(".", "_");
-        String localDirectory = "repositories/" + directoryName + "_"
-                + System.currentTimeMillis() + "/";
+        String localDirectory = "repositories" + oOperatingSystemCheck.getOperatingSystemSeparator() + directoryName + "_"
+                + System.currentTimeMillis() + oOperatingSystemCheck.getOperatingSystemSeparator();
 
         /* Clone Command with jGIT */
         URL f = new URL(gitRepo);

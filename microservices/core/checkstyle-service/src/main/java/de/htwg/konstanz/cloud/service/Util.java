@@ -59,8 +59,8 @@ class Util {
     File checkLocalSrcDir(String sLocalDirectory) {
         File mainDir;/* Check if local /src-dir exists */
 
-        if (new File(sLocalDirectory + "/src").exists()) {
-            mainDir = new File(sLocalDirectory + "/src");
+        if (new File(sLocalDirectory + oOperatingSystemCheck.getOperatingSystemSeparator() + "src").exists()) {
+            mainDir = new File(sLocalDirectory + oOperatingSystemCheck.getOperatingSystemSeparator() + "src");
             LOG.info("Local SRC directory found");
         } else {
             mainDir = new File(sLocalDirectory);
