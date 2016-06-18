@@ -11,5 +11,6 @@ import lombok.Data;
 public class MoodleFunction {
 
     String name;
+
     String version;
 }

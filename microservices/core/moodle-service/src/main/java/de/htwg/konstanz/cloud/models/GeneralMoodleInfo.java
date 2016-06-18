@@ -13,13 +13,21 @@ import java.util.List;
 public class GeneralMoodleInfo {
 
     String sitename;
+
     String username;
+
     String firstname;
+
     String lastname;
+
     String fullname;
+
     String lang;
+
     Integer userid;
+
     String siteurl;
+
     String userpictureurl;
 
 }

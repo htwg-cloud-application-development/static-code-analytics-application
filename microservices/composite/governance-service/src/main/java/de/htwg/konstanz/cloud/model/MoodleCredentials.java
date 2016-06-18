@@ -6,5 +6,6 @@ import lombok.Data;
 public class MoodleCredentials {
 
     String username;
+
     String password;
 }

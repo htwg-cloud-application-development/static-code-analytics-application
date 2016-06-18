@@ -11,10 +11,15 @@ import lombok.Data;
 public class MoodleCourse {
 
     Integer id;
+
     String shortname;
+
     String fullname;
+
     Integer enrolledusercount;
+
     String idnumber;
+
     Integer visible;
 
 }

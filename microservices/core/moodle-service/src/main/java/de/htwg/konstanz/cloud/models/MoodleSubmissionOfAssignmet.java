@@ -13,10 +13,16 @@ import java.util.List;
 public class MoodleSubmissionOfAssignmet {
 
     Integer id;
+
     Integer userid;
+
     Integer attemptnumber;
+
     Integer timecreated;
+
     Integer timemodified;
+
     String status;
+
     String repository;
 }
