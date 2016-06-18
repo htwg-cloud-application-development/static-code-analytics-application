@@ -94,7 +94,7 @@ public class Pmd {
 
             LOG.info("Svn");
             sLocalDir = oSvn.downloadSvnRepo(oStringBuilder.toString());
-            oJson = (runPmd(generatePmdServiceData(oStringBuilder.toString()), sRepoUrl, lStartTime));
+            oJson = (runPmd(generatePmdServiceData(sLocalDir), sRepoUrl, lStartTime));
             oRepoDir = new File(sLocalDir);
         }
         /* Git Checkout */

@@ -93,7 +93,7 @@ class Checkstyle {
             LOG.info("Svn");
             sLocalDir = oSvn.downloadSvnRepo(oStringBuilder.toString());
             /* Last Update Time SVN empty */
-            oJson = (checkStyle(generateCheckStyleServiceData(oStringBuilder.toString()), sRepoUrl, lStartTime, ""));
+            oJson = (checkStyle(generateCheckStyleServiceData(sLocalDir), sRepoUrl, lStartTime, ""));
             oRepoDir = new File(sLocalDir);
         }
         /* Git Checkout */

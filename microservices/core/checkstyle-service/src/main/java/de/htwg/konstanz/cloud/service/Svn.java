@@ -56,7 +56,7 @@ public class Svn {
             boolean bSuccess = dir1.mkdir();
 
             if(bSuccess) {
-                LOG.info("creating " + dir.toString() + " directory");
+                LOG.info("creating '" + dir.toString() + "' directory");
             }
             else {
                 LOG.info("Error while creating directory: " + dir.toString());
