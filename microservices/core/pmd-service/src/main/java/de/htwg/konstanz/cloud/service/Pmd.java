@@ -85,11 +85,13 @@ public class Pmd {
         if (sRepoUrl.contains(SVN_IP_C)) {
             /* URL needs to start with HTTP:// */
             if (!sRepoUrl.startsWith("http://")) {
-                oStringBuilder.append("http://").append(sRepoUrl);
+                oStringBuilder.append("http://");
             }
             /* remove the last / */
             if (sRepoUrl.endsWith("/")) {
                 oStringBuilder.append(sRepoUrl.substring(0, sRepoUrl.length() - 1));
+            } else {
+                oStringBuilder.append(sRepoUrl);
             }
 
             LOG.info("Svn");
@@ -177,7 +179,7 @@ public class Pmd {
     }
 
     private JSONObject runPmd(List<List<String>> lRepoList, String gitRepository, long lStartTime, String sLastUpdateTime)
-                                    throws ParserConfigurationException, SAXException, IOException {
+            throws ParserConfigurationException, SAXException, IOException {
 
         String sStartScript = "";
 
