@@ -83,11 +83,13 @@ class Checkstyle {
         if (sRepoUrl.contains(SVN_IP_C)) {
             /* URL needs to start with HTTP:// */
             if (!sRepoUrl.startsWith("http://")) {
-                oStringBuilder.append("http://").append(sRepoUrl);
+                oStringBuilder.append("http://");
             }
             /* remove the last / */
             if (sRepoUrl.endsWith("/")) {
                 oStringBuilder.append(sRepoUrl.substring(0, sRepoUrl.length() - 1));
+            } else {
+                oStringBuilder.append(sRepoUrl);
             }
 
             LOG.info("Svn");
