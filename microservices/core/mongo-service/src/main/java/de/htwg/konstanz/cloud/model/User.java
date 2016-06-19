@@ -13,14 +13,24 @@ public class User {
 
     @Id
     private String userid;
+
     private String sitename;
+
     private String username;
+
     private String firstname;
+
     private String lastname;
+
     private String fullname;
+
     private String lang;
+
     private String siteurl;
+
     private String userpictureurl;
+
     @DBRef
     private List<Course> courses;
+
 }

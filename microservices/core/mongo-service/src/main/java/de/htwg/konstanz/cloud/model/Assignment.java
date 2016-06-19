@@ -11,9 +11,14 @@ public class Assignment {
 
     @Id
     private String id;
+
     private String name;
+
     private String modicon;
+
     private String modname;
+
     private String modplural;
+
     private String indent;
 }

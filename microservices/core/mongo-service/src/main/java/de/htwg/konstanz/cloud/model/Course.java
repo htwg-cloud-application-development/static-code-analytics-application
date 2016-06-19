@@ -13,13 +13,20 @@ public class Course {
 
     @Id
     private String id;
+
     private String shortname;
+
     private String fullname;
+
     private String enrolledusercount;
+
     private String idnumber;
+
     private String visible;
+
     @DBRef
     private List<Assignment> assignments;
+
     @DBRef
     private List<Group> groups;
 }

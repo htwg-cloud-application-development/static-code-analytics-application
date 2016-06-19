@@ -11,13 +11,20 @@ public class Group {
 
     @Id
     private String userId;
+
     private String attemptnumber;
+
     private String timecreated;
+
     private String timemodified;
+
     private String status;
+
     private String repository;
+
     @DBRef
     private PMDResults pmd;
+
     @DBRef
     private CheckstyleResults checkstyle;
 
