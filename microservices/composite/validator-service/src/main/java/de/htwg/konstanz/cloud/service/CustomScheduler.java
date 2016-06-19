@@ -1,4 +1,4 @@
-package de.htwg.konstanz.cloud.service;
+package de.htwg.konstanz.cloud.service;//NOPMD
 
 import com.amazonaws.auth.EnvironmentVariableCredentialsProvider;
 import com.amazonaws.regions.Regions;
@@ -158,56 +158,63 @@ public class CustomScheduler {
             }
 
 
-            ArrayList<Integer> toDelete = new ArrayList<>();
+            runningTasks = checkRunningTasks(repoUserInformationMap, checkstyleTaskList, pmdTaskList, startTimeList,
+                    availableCheckstyleInstancesList, availablePmdInstancesList, blockedCheckstyleInstancesList,
+                    blockedPmdInstancesList, resultList, runningTasks);
 
-            for (int i = 0; i < runningTasks; i++) {
-                LOG.info("check running task nr: " + i);
-                if (checkstyleTaskList.get(i) != null && pmdTaskList.get(i) != null) {
-                    if (checkstyleTaskList.get(i).isDone() && pmdTaskList.get(i).isDone()) {
-                        LOG.info("checkstyle and pmd tasks are done");
-
-                        JSONObject checkstyleObj = new JSONObject(checkstyleTaskList.get(i).get());
-                        JSONObject pmdObj = new JSONObject(checkstyleTaskList.get(i).get());
-                        JSONObject result = new JSONObject();
-                        result.put("checkstyle", checkstyleObj);
-                        result.put("pmd", pmdObj);
-                        result.put("userId", repoUserInformationMap.get(checkstyleObj.getString("repository")));
-                        result.put("duration", (System.currentTimeMillis() - startTimeList.get(i)));
-                        result.put("repository", checkstyleObj.getString("repository"));
-                        ValidationData data = new ValidationData();
-                        data.setRepository(checkstyleObj.getString("repository"));
-
-                        URI availableCheckstyleUri = getUriWithValue(blockedCheckstyleInstancesList, data.toString());
-                        URI availablePmdUri = getUriWithValue(blockedPmdInstancesList, data.toString());
-
-                        availableCheckstyleInstancesList.add(availableCheckstyleUri);
-                        availablePmdInstancesList.add(availablePmdUri);
-
-                        // remove entry from blocked instance list
-                        removeEntryFromBlockedInstanceListe(blockedCheckstyleInstancesList, availableCheckstyleUri);
-                        removeEntryFromBlockedInstanceListe(blockedPmdInstancesList, availablePmdUri);
-
-                        resultList.add(result);
-
-                        if (resultList.size() == groups.length()) {
-                            noFinished = false;
-                        }
-                        toDelete.add(i);
-                        databaseService.saveCheckstleResult(checkstyleObj.toString());
-                        databaseService.savePmdResult(pmdObj.toString());
-                    }
-                }
-            }
-
-
-            if (!toDelete.isEmpty()) {
-                runningTasks = removeTaskFromLists(checkstyleTaskList, pmdTaskList, startTimeList, runningTasks, toDelete);
+            if (resultList.size() == groups.length()) {
+                noFinished = false;
             }
 
             // slepp 1 second
             Thread.sleep(1000);
         }
         return resultList;
+    }
+
+    private int checkRunningTasks(Map<String, String> repoUserInformationMap, List<Future<String>> checkstyleTaskList, List<Future<String>> pmdTaskList, List<Long> startTimeList, List<URI> availableCheckstyleInstancesList, List<URI> availablePmdInstancesList, Map<URI, String> blockedCheckstyleInstancesList, Map<URI, String> blockedPmdInstancesList, ArrayList<JSONObject> resultList, int runningTasks) throws JSONException, InterruptedException, ExecutionException, InstantiationException {
+        ArrayList<Integer> toDelete = new ArrayList<>();
+
+        for (int i = 0; i < runningTasks; i++) {
+            LOG.info("check running task nr: " + i);
+            if (checkstyleTaskList.get(i) != null && pmdTaskList.get(i) != null) {
+                if (checkstyleTaskList.get(i).isDone() && pmdTaskList.get(i).isDone()) {
+                    LOG.info("checkstyle and pmd tasks are done");
+
+                    JSONObject checkstyleObj = new JSONObject(checkstyleTaskList.get(i).get());
+                    JSONObject pmdObj = new JSONObject(checkstyleTaskList.get(i).get());
+                    JSONObject result = new JSONObject();
+                    result.put("checkstyle", checkstyleObj);
+                    result.put("pmd", pmdObj);
+                    result.put("userId", repoUserInformationMap.get(checkstyleObj.getString("repository")));
+                    result.put("duration", (System.currentTimeMillis() - startTimeList.get(i)));
+                    result.put("repository", checkstyleObj.getString("repository"));
+                    ValidationData data = new ValidationData();
+                    data.setRepository(checkstyleObj.getString("repository"));
+
+                    URI availableCheckstyleUri = getUriWithValue(blockedCheckstyleInstancesList, data.toString());
+                    URI availablePmdUri = getUriWithValue(blockedPmdInstancesList, data.toString());
+
+                    availableCheckstyleInstancesList.add(availableCheckstyleUri);
+                    availablePmdInstancesList.add(availablePmdUri);
+
+                    // remove entry from blocked instance list
+                    removeEntryFromBlockedInstanceListe(blockedCheckstyleInstancesList, availableCheckstyleUri);
+                    removeEntryFromBlockedInstanceListe(blockedPmdInstancesList, availablePmdUri);
+
+                    resultList.add(result);
+
+                    toDelete.add(i);
+                    databaseService.saveCheckstleResult(checkstyleObj.toString());
+                    databaseService.savePmdResult(pmdObj.toString());
+                }
+            }
+        }
+
+        if (!toDelete.isEmpty()) {
+            runningTasks = removeTaskFromLists(checkstyleTaskList, pmdTaskList, startTimeList, runningTasks, toDelete);
+        }
+        return runningTasks;
     }
 
     private int removeTaskFromLists(List<Future<String>> checkstyleTaskList, List<Future<String>> pmdTaskList, List<Long> startTimeList, int runningTasks, ArrayList<Integer> toDelete) {

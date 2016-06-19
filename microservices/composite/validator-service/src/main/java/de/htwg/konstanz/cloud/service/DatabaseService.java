@@ -30,7 +30,7 @@ public class DatabaseService {
     private LoadBalancerClient loadBalancer;
 
     @PostConstruct
-    private void init() {
+    private void init() {//NOPMD
         this.restTemplate = new RestTemplate();
         restTemplate.getMessageConverters().add(0, new StringHttpMessageConverter(Charset.forName("UTF-8")));
     }

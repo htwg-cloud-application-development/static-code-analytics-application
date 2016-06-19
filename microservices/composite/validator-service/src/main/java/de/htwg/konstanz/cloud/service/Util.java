@@ -97,9 +97,15 @@ class Util {
     }
 
     private RunInstancesResult runInstance(AmazonEC2 ec2, int minCount, int maxCount, String imageId, String keyName, String instanceType, String securityGroup) {
-        if (minCount < 1) minCount = 1;
-        if (maxCount < 1) maxCount = 1;
-        if (minCount > maxCount) maxCount = minCount;
+        if (minCount < 1) {
+            minCount = 1;
+        }
+        if (maxCount < 1) {
+            maxCount = 1;
+        }
+        if (minCount > maxCount) {
+            maxCount = minCount;
+        }
 
         RunInstancesRequest runInstancesRequest = new RunInstancesRequest()
                 .withInstanceType(instanceType)
@@ -142,11 +148,15 @@ class Util {
     }
 
     private int getNumberOfActiveInstances(AmazonEC2 ec2, String imageId) throws NoSuchFieldException {
-        if (null == imageId) throw new NoSuchFieldException("Missing Config Parameter [ImageId]");
+        if (null == imageId) {
+            throw new NoSuchFieldException("Missing Config Parameter [ImageId]");
+        }
         List<Instance> allActiveInstances = getAllActiveInstances(ec2);
         int numberOfInstances = 0;
         for (Instance instance : allActiveInstances) {
-            if (instance.getImageId().equals(pmdImageId)) numberOfInstances++;
+            if (instance.getImageId().equals(pmdImageId)) {
+                numberOfInstances++;
+            }
         }
         return numberOfInstances;
     }
