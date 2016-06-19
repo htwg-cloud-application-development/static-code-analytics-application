@@ -12,13 +12,13 @@ public class PMDResults {
 
     private String repository;
 
-    private String numberOfErrors;
+    private int numberOfErrors;
 
-    private String numberOfWarnings;
+    private int numberOfWarnings;
 
-    private String numberOfIgnores;
+    private int numberOfIgnores;
 
-    private String totalExpendedTime;
+    private long totalExpendedTime;
 
     private String timestamp;
 
