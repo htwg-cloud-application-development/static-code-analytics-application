@@ -75,23 +75,24 @@ public class Cpd {
         oUtil.checkLocalPmd();
         oRepoDir = oUtil.createDirectory("repositories");
 
-        /*Download SVN or Git Repos*/
+        /* Download SVN or Git Repos */
         for(String sRepo : sRepoUrl) {
-            /* Svn */
+            /* Svn Checkout */
             if (sRepo.contains(SVN_IP_C)) {
-            /* URL needs to start with HTTP:// */
+                /* URL needs to start with HTTP:// */
                 if (!sRepo.startsWith("http://")) {
-                    oStringBuilder.append("http://").append(sRepo);
+                    oStringBuilder.append("http://");
                 }
-            /* remove the last / */
+                /* remove the last / */
                 if (sRepo.endsWith("/")) {
                     oStringBuilder.append(sRepo.substring(0, sRepo.length() - 1));
+                } else {
+                    oStringBuilder.append(sRepo);
                 }
                 LOG.info("SVN " + oStringBuilder.toString());
                 sLocalDir = oSvn.downloadSvnRepo(oStringBuilder.toString());
                 lRepoDirs.add(sLocalDir);
             }
-
             /* Git */
             else if (sRepo.contains("github.com")) {
                 LOG.info("Git " + sRepo);
@@ -102,7 +103,7 @@ public class Cpd {
             }
         }
 
-        /*Run CPD*/
+        /* Run CPD */
         if(!lRepoDirs.isEmpty()) {
             oJson = (runCpd(lStartTime));
         }
