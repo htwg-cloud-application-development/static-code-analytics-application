@@ -37,20 +37,20 @@ public class DatabaseService {
 
     @Async
     public Future<String> saveResult(String result) throws InstantiationException {
-        String SAVE_ROUTE = "/addEntry";
-        return addResultToDatabase(result, SAVE_ROUTE);
+        String route = "/addEntry";
+        return addResultToDatabase(result, route);
     }
 
     @Async
     public Future<String> saveCheckstleResult(String result) throws InstantiationException {
-        String SAVE_ROUTE = "/addCheckstyleEntry";
-        return addResultToDatabase(result, SAVE_ROUTE);
+        String route = "/addCheckstyleEntry";
+        return addResultToDatabase(result, route);
     }
 
     @Async
     public Future<String> savePmdResult(String result) throws InstantiationException {
-        String SAVE_ROUTE = "/addPMDEntry";
-        return addResultToDatabase(result, SAVE_ROUTE);
+        String route = "/addPMDEntry";
+        return addResultToDatabase(result, route);
 
 
     }

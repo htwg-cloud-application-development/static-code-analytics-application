@@ -11,7 +11,9 @@ import lombok.Data;
 public class MoodleAssignment {
 
     Integer id;
+
     String name;
+
     Integer course;
 
 }

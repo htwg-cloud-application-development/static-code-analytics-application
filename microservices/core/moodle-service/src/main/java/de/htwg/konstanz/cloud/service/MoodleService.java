@@ -30,9 +30,9 @@ public class MoodleService {
 
         RestTemplate templ = new RestTemplate();
 
-        String url = "https://moodle.htwg-konstanz.de/moodle/login/token.php?" +
-                "moodlewsrestformat=json&service=moodle_mobile_app" +
-                "&username=" + credentials.getUsername() + "&password=" + credentials.getPassword();
+        String url = "https://moodle.htwg-konstanz.de/moodle/login/token.php?"
+                + "moodlewsrestformat=json&service=moodle_mobile_app"
+                + "&username=" + credentials.getUsername() + "&password=" + credentials.getPassword();
 
         MoodleToken token = templ.getForObject(url, MoodleToken.class);
 
@@ -49,8 +49,9 @@ public class MoodleService {
         Moodle moodle = new Moodle(token);
 
         GeneralMoodleInfo generalInfo = moodle.getMoodleInfoFromMoodleToken();
+        Boolean hasPermission = moodle.hasPermissionOnCourse(courseId, generalInfo.getUserid());
 
-        return new ResponseEntity<String>((moodle.hasPermissionOnCourse(courseId, generalInfo.getUserid())).toString(), HttpStatus.OK);
+        return new ResponseEntity<String>(hasPermission.toString(), HttpStatus.OK);
 
     }
 

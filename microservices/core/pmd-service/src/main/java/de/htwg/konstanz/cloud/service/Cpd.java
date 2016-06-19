@@ -38,6 +38,8 @@ public class Cpd {
 
     private final Svn oSvn = new Svn();
 
+    private String sFileSeparator = "";
+
     @Value("${app.config.svn.ip}")
     private String SVN_IP_C;
 
@@ -46,6 +48,8 @@ public class Cpd {
         long lStartTime = System.currentTimeMillis();
         JSONObject oJsonResult;
         String sResult;
+        OperatingSystemCheck oOperatingSystemCheck = new OperatingSystemCheck();
+        sFileSeparator = oOperatingSystemCheck.getOperatingSystemSeparator();
 
         oJsonResult = determination(gitRepository, lStartTime);
         if (oRepoDir == null) {
@@ -63,6 +67,7 @@ public class Cpd {
             GitAPIException, ParserConfigurationException, SAXException {
         JSONObject oJson = null;
         String sLocalDir;
+        String[] sLocalDirArray;
         List<String> lRepoDirs = new ArrayList<>();
         StringBuilder oStringBuilder = new StringBuilder();
 
@@ -70,36 +75,38 @@ public class Cpd {
         oUtil.checkLocalPmd();
         oRepoDir = oUtil.createDirectory("repositories");
 
-        /*Download SVN or Git Repos*/
+        /* Download SVN or Git Repos */
         for(String sRepo : sRepoUrl) {
-            /* Svn */
+            /* Svn Checkout */
             if (sRepo.contains(SVN_IP_C)) {
-            /* URL needs to start with HTTP:// */
+                /* URL needs to start with HTTP:// */
                 if (!sRepo.startsWith("http://")) {
-                    oStringBuilder.append("http://").append(sRepo);
+                    oStringBuilder.append("http://");
                 }
-            /* remove the last / */
+                /* remove the last / */
                 if (sRepo.endsWith("/")) {
                     oStringBuilder.append(sRepo.substring(0, sRepo.length() - 1));
+                } else {
+                    oStringBuilder.append(sRepo);
                 }
-
+                LOG.info("SVN " + oStringBuilder.toString());
                 sLocalDir = oSvn.downloadSvnRepo(oStringBuilder.toString());
                 lRepoDirs.add(sLocalDir);
             }
-
             /* Git */
             else if (sRepo.contains("github.com")) {
-                LOG.info("Git");
-                sLocalDir = oGit.downloadGITRepo(sRepo);
-                lRepoDirs.add(sLocalDir);
+                LOG.info("Git " + sRepo);
+                sLocalDirArray = oGit.downloadGITRepo(sRepo);
+                lRepoDirs.add(sLocalDirArray[0]);
             } else {
                 LOG.info("Repository URL has no valid Svn/Git attributes. (" + sRepoUrl + ")");
             }
         }
 
-        /*Run CPD*/
-        if(!lRepoDirs.isEmpty())
+        /* Run CPD */
+        if(!lRepoDirs.isEmpty()) {
             oJson = (runCpd(lStartTime));
+        }
 
         return oJson;
     }
@@ -109,8 +116,7 @@ public class Cpd {
         OperatingSystemCheck oOperatingSystemCheck = new OperatingSystemCheck();
         final String sOutputFileName = "Duplications.xml";
         String sStartScript = "";
-        String sFilesDirs = "";
-        String sMainPath = "repositories/repositories-cpd";
+        String sMainPath = "repositories" + sFileSeparator + "repositories-cpd";
         JSONObject oJson = null;
 
         if (oOperatingSystemCheck.isWindows()) {
@@ -123,13 +129,13 @@ public class Cpd {
         oUtil.createDirectory(sMainPath);
 
         String sCpdCommand = sStartScript + " --minimum-tokens 75 --files " + oRepoDir.getAbsolutePath() + " --skip-lexical-errors "
-                + "--format xml > " + sMainPath + "/CpdCheck_" + sOutputFileName;
+                + "--format xml > " + sMainPath + sFileSeparator +"CpdCheck_" + sOutputFileName;
         LOG.info("Cpd execution path: " + sCpdCommand);
 
         oUtil.execCommand(sCpdCommand);
 
         /* Checkstyle Informationen eintragen */
-        storeCpdInformation(sMainPath + "/CpdCheck_" + sOutputFileName);
+        storeCpdInformation(sMainPath + sFileSeparator + "CpdCheck_" + sOutputFileName);
 
         if (lDuplications != null) {
             /* Schoene einheitliche JSON erstellen */
@@ -171,11 +177,9 @@ public class Cpd {
                 //Duplication Infos
                 if (oUtil.isParsable(eNodeElement.getAttribute("lines"))) {
                     nLinesCount = Integer.parseInt(eNodeElement.getAttribute("lines"));
-                    LOG.info(eNodeElement.getAttribute("lines"));
                 }
                 if (oUtil.isParsable(eNodeElement.getAttribute("tokens"))) {
                     nTokens = Integer.parseInt(eNodeElement.getAttribute("tokens"));
-                    LOG.info(eNodeElement.getAttribute("tokens"));
                 }
 
                 //CheckFileNodes
@@ -183,7 +187,10 @@ public class Cpd {
                 for (int nNodeFilePos = 0; nNodeFilePos < nNodeFiles.getLength(); nNodeFilePos++) {
                     Node nNodeFile = nNodeFiles.item(nNodeFilePos);
                     Element eNodeFileElement = (Element) nNodeFile;
-                    lInvolvedData.add(String.valueOf(eNodeFileElement.getAttribute("path")));
+                    String sRepoString = String.valueOf(eNodeFileElement.getAttribute("path")).substring(String.valueOf(eNodeFileElement.getAttribute("path")).indexOf("repositories") + ("repositories").length() + 1);
+                    if(oUtil.checkIfDifferentReops(lInvolvedData, sRepoString)){
+                        lInvolvedData.add(sRepoString);
+                    }
                 }
 
                 //CheckCodefragment
@@ -193,18 +200,20 @@ public class Cpd {
                 }
 
                 //Create Duplication
-                lDuplications.add(Duplication.getDupliactionInstance(nLinesCount, nTokens, lInvolvedData, sCodeFragment));
+                if(lInvolvedData.size() > 1) {
+                    lDuplications.add(Duplication.getDupliactionInstance(nLinesCount, nTokens, lInvolvedData, sCodeFragment));
+                }
             }
         }
     }
 
     private JSONObject buildJson(String sMainDir, long lStartTime) {
         JSONObject oJsonRoot = new JSONObject();
+        int nDuplicationCounter = 0;
 
 		/* add general information to the JSON object */
         oJsonRoot.put("duplicationCursPath", sMainDir);
-
-        LOG.info(String.valueOf(lDuplications.size()));
+    
 		/* all Classes */
         JSONArray lJsonDuplicatiions = new JSONArray();
         for (Duplication oDuplaction : lDuplications) {
@@ -217,18 +226,19 @@ public class Cpd {
             //New Json Array with involved Paths
             JSONArray lJsonFilePaths = new JSONArray();
             for (String sDuplicationFilePath : oDuplaction.getInvolvedData()) {
-                LOG.info(sDuplicationFilePath);
                 lJsonFilePaths.put(new JSONObject().put("filePath", sDuplicationFilePath));
             }
             oJsonDuplication.put("filePaths", lJsonFilePaths);
             oJsonDuplication.put("codefragment", oDuplaction.getDuplicatedCode());
             lJsonDuplicatiions.put(new  JSONObject().put("duplication", oJsonDuplication));
+            nDuplicationCounter++;
         }
         oJsonRoot.put("duplications", lJsonDuplicatiions);
 
         long lEndTime = System.currentTimeMillis();
         long lTotalTime = (lEndTime - lStartTime);
 
+        oJsonRoot.put("numberOfDuplications", nDuplicationCounter);
         oJsonRoot.put("totalExpendedTime", lTotalTime);
         oJsonRoot.put("assignments", "Copy Paste Check for " + sMainDir);
 

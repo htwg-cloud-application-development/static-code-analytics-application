@@ -10,13 +10,21 @@ public class CheckstyleResults {
 
     @Id
     private String id;
+
     private String repository;
-    private String numberOfErrors;
-    private String numberOfWarnings;
-    private String numberOfIgnores;
-    private String totalExpendedTime;
+
+    private int numberOfErrors;
+
+    private int numberOfWarnings;
+
+    private int numberOfIgnores;
+
+    private long totalExpendedTime;
+
     private String timestamp;
+
     private String userId;
+
     private Object assignments;
 
 }

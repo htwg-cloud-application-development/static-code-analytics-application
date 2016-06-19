@@ -16,6 +16,7 @@ import java.net.URL;
 import java.nio.channels.Channels;
 import java.nio.channels.ReadableByteChannel;
 import java.util.ArrayList;
+import java.util.List;
 
 @Component
 public class Util {
@@ -23,11 +24,13 @@ public class Util {
 
     private final OperatingSystemCheck oOperatingSystemCheck = new OperatingSystemCheck();
 
+    private String sFileSeparator = oOperatingSystemCheck.getOperatingSystemSeparator();
+
     File checkLocalSrcDir(String sLocalDirectory) {
         File mainDir;/* Check if local /src-dir exists */
 
-        if (new File(sLocalDirectory + "/src").exists()) {
-            mainDir = new File(sLocalDirectory + "/src");
+        if (new File(sLocalDirectory + sFileSeparator + "src").exists()) {
+            mainDir = new File(sLocalDirectory + sFileSeparator + "src");
             LOG.info("Local SRC directory found");
         } else {
             mainDir = new File(sLocalDirectory);
@@ -98,7 +101,7 @@ public class Util {
                 /* last Part of the Path */
                 sShortenPath += sFilePathSplitArray[nPathPos];
             } else {
-                sShortenPath += sFilePathSplitArray[nPathPos] + "\\";
+                sShortenPath += sFilePathSplitArray[nPathPos] + sFileSeparator;
             }
         }
 
@@ -107,8 +110,9 @@ public class Util {
 
     File createDirectory(String sDirectoy) {
         File dir = new File(sDirectoy);
-        if (!dir.exists())
+        if (!dir.exists()) {
             dir.mkdir();
+        }
         return dir;
     }
 
@@ -144,5 +148,15 @@ public class Util {
             repositories.add(array.getJSONObject(i).getString("repository"));
         }
         return repositories;
+    }
+
+    boolean checkIfDifferentReops(List<String> lFileList, String sCheckRepo){
+        String[] sSplitCheck = sCheckRepo.split(sFileSeparator);
+        for(String sFileRepo : lFileList){
+            if(sFileRepo.contains(sSplitCheck[0])) {
+                return false;
+            }
+        }
+        return true;
     }
 }

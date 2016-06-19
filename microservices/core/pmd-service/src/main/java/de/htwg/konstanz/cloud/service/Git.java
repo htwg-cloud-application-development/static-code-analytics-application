@@ -2,6 +2,7 @@ package de.htwg.konstanz.cloud.service;
 
 import org.eclipse.jgit.api.errors.GitAPIException;
 import org.eclipse.jgit.internal.storage.file.FileRepository;
+import org.eclipse.jgit.revwalk.RevCommit;
 import org.eclipse.jgit.transport.RemoteSession;
 import org.eclipse.jgit.transport.SshSessionFactory;
 import org.eclipse.jgit.transport.URIish;
@@ -18,6 +19,8 @@ import java.net.URLConnection;
 
 class Git {
     private static final Logger LOG = LoggerFactory.getLogger(Git.class);
+
+    private String sFileSeparator = "";
 
     private boolean isValidRepository(URIish repoUri) {
         if (repoUri.isRemote()) {
@@ -39,33 +42,34 @@ class Git {
         return result;
     }
 
+    /*
     String downloadGITRepo(String gitRepo) throws GitAPIException, IOException {
-        /* Checkout Git-Repo */
+        // Checkout Git-Repo
         org.eclipse.jgit.api.Git git = null;
 
-        /* return Array */
+        // return Array
         String returnValue = null;
-        /* String Magic */
+        // String Magic
         String directoryName = gitRepo.substring(gitRepo.lastIndexOf("/"),
                 gitRepo.length()).replace(".", "_");
         String localDirectory = "repositories/" + directoryName + "_"
                 + System.currentTimeMillis() + "/";
 
-        /* Clone Command with jGIT */
+        // Clone Command with jGIT
         URL f = new URL(gitRepo);
         if (isValidRepository(new URIish(f))) {
             git = git.cloneRepository().setURI(gitRepo)
                     .setDirectory(new File(localDirectory)).call();
             returnValue = localDirectory;
         }
-        /* Closing Object that we can delete the whole directory later */
+        // Closing Object that we can delete the whole directory later
         git.getRepository().close();
 
-        /* Local Targetpath and Last Commit*/
+        // Local Targetpath and Last Commit
         return returnValue;
     }
+    */
 
-	/*
 	private String getLastCommit(org.eclipse.jgit.api.Git git) throws IOException, GitAPIException {
         //Get Last Commit of Git Repo
         Iterable<RevCommit> revCommits =git.log().call();
@@ -75,6 +79,8 @@ class Git {
     String [] downloadGITRepo(String gitRepo) throws GitAPIException, IOException {
         // Checkout Git-Repo
         org.eclipse.jgit.api.Git git = null;
+        OperatingSystemCheck oOperatingSystemCheck = new OperatingSystemCheck();
+        sFileSeparator = oOperatingSystemCheck.getOperatingSystemSeparator();
 
         // return Array
         String[] returnValue = null;
@@ -82,8 +88,12 @@ class Git {
         // String Magic
         String directoryName = gitRepo.substring(gitRepo.lastIndexOf("/"),
                 gitRepo.length()).replace(".", "_");
-        String localDirectory = "repositories/" + directoryName + "_"
-                + System.currentTimeMillis() + "/";
+
+        //test den ersten / removen
+        directoryName = directoryName.substring(1);
+
+        String localDirectory = "repositories" + sFileSeparator + directoryName + "_"
+                + System.currentTimeMillis() + sFileSeparator;
 
         // Clone Command with jGIT
         URL f = new URL(gitRepo);
@@ -99,8 +109,6 @@ class Git {
         // Local Targetpath and Last Commit
         return returnValue;
     }
-
-	*/
 
     private boolean isValidRemoteRepository(URIish repoUri) {
         boolean result;
