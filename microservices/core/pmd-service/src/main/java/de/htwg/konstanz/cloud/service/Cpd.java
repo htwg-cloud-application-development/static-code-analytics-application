@@ -116,7 +116,6 @@ public class Cpd {
         OperatingSystemCheck oOperatingSystemCheck = new OperatingSystemCheck();
         final String sOutputFileName = "Duplications.xml";
         String sStartScript = "";
-        String sFilesDirs = "";
         String sMainPath = "repositories" + sFileSeparator + "repositories-cpd";
         JSONObject oJson = null;
 
@@ -210,6 +209,7 @@ public class Cpd {
 
     private JSONObject buildJson(String sMainDir, long lStartTime) {
         JSONObject oJsonRoot = new JSONObject();
+        int nDuplicationCounter = 0;
 
 		/* add general information to the JSON object */
         oJsonRoot.put("duplicationCursPath", sMainDir);
@@ -231,12 +231,14 @@ public class Cpd {
             oJsonDuplication.put("filePaths", lJsonFilePaths);
             oJsonDuplication.put("codefragment", oDuplaction.getDuplicatedCode());
             lJsonDuplicatiions.put(new  JSONObject().put("duplication", oJsonDuplication));
+            nDuplicationCounter++;
         }
         oJsonRoot.put("duplications", lJsonDuplicatiions);
 
         long lEndTime = System.currentTimeMillis();
         long lTotalTime = (lEndTime - lStartTime);
 
+        oJsonRoot.put("numberOfDuplications", nDuplicationCounter);
         oJsonRoot.put("totalExpendedTime", lTotalTime);
         oJsonRoot.put("assignments", "Copy Paste Check for " + sMainDir);
 
