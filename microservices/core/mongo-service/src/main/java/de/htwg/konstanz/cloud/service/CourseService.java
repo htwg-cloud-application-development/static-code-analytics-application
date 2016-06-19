@@ -81,16 +81,16 @@ public class CourseService {
 
         //Remove assignments from checkstyle and pmd
         final JSONObject jCourse = new JSONObject(course);
+        final String assignments = "assignments";
 
         if (jCourse.has("groups")) {
 
             final JSONArray groups = jCourse.getJSONArray("groups");
+            JSONObject group;
 
             for (int i = 0; i < groups.length(); i++) {
 
-                final JSONObject group = groups.getJSONObject(i);
-                final String assignments = "assignments";
-
+                group = groups.getJSONObject(i);
 
                 if (group.has("pmd")) {
                     JSONObject pmd = group.getJSONObject("pmd");
