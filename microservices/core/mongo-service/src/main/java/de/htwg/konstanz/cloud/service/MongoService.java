@@ -2,7 +2,7 @@ package de.htwg.konstanz.cloud.service;
 
 import de.htwg.konstanz.cloud.model.CheckstyleResults;
 import de.htwg.konstanz.cloud.model.Group;
-import de.htwg.konstanz.cloud.model.PMDResults;
+import de.htwg.konstanz.cloud.model.PmdResults;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Sort;
 import org.springframework.data.mongodb.core.MongoOperations;
@@ -27,7 +27,7 @@ public class MongoService {
     CheckstyleResultsRepository checkstyleRepo;
 
     @Autowired
-    PMDResultsRepository pmdRepo;
+    PmdResultsRepository pmdRepo;
 
     @Autowired
     GroupRepository groupRepo;
@@ -66,14 +66,14 @@ public class MongoService {
 
     @RequestMapping(value = "/courses/{userId}/findLastPmdResult", method = RequestMethod.GET)
     public
-    ResponseEntity<PMDResults> getLastPMDGroupResult(@PathVariable("userId") final String userId) {
+    ResponseEntity<PmdResults> getLastPmdGroupResult(@PathVariable("userId") final String userId) {
 
-        ResponseEntity<PMDResults> responseEntity;
-        final List<PMDResults> pmdResults = mongo
+        ResponseEntity<PmdResults> responseEntity;
+        final List<PmdResults> pmdResults = mongo
                 .find(Query
                         .query(Criteria.where("userId").is(userId))
                         .with(new Sort(Sort.Direction.DESC, "timestamp"))
-                        .limit(1), PMDResults.class);
+                        .limit(1), PmdResults.class);
 
         if (pmdResults.size() > 0){
             responseEntity = new ResponseEntity<>(pmdResults.get(0), HttpStatus.OK);
@@ -85,7 +85,7 @@ public class MongoService {
     }
 
     @RequestMapping(value = "/addPMDEntry", method = RequestMethod.POST, consumes = "application/json")
-    public void addPMDEntry(@RequestBody final PMDResults pmdResults) {
+    public void addPMDEntry(@RequestBody final PmdResults pmdResults) {
         pmdResults.setTimestamp(String.valueOf(new Date().getTime()));
         pmdRepo.save(pmdResults);
 
