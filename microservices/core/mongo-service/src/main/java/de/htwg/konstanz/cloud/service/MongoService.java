@@ -2,7 +2,7 @@ package de.htwg.konstanz.cloud.service;
 
 import de.htwg.konstanz.cloud.model.CheckstyleResults;
 import de.htwg.konstanz.cloud.model.Group;
-import de.htwg.konstanz.cloud.model.PMDResults;
+import de.htwg.konstanz.cloud.model.PmdResults;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Sort;
 import org.springframework.data.mongodb.core.MongoOperations;
@@ -27,25 +27,40 @@ public class MongoService {
     CheckstyleResultsRepository checkstyleRepo;
 
     @Autowired
-    PMDResultsRepository pmdRepo;
+    PmdResultsRepository pmdRepo;
 
     @Autowired
     GroupRepository groupRepo;
 
+
+    //Add CheckstyleEntry to DB
+    //Finds associated group over "userId" key in requestBody
+    //Saves in checkStyleResults & Group
     @RequestMapping(value = "/addCheckstyleEntry", method = RequestMethod.POST, consumes = "application/json")
-    public void addCheckstyleEntry(@RequestBody final CheckstyleResults checkstyleResults) {
+    public ResponseEntity addCheckstyleEntry(@RequestBody final CheckstyleResults checkstyleResults) {
 
-
+        ResponseEntity responseEntity;
         checkstyleResults.setTimestamp(String.valueOf(new Date().getTime()));
-        checkstyleRepo.save(checkstyleResults);
 
         final String userId = checkstyleResults.getUserId();
         final Group group = mongo.findOne(Query.query(Criteria.where("userId").is(userId)), Group.class);
 
-        group.setCheckstyle(checkstyleResults);
-        groupRepo.save(group);
+        if (null == group){
+            responseEntity = new ResponseEntity(HttpStatus.NO_CONTENT);
+
+        } else {
+            checkstyleRepo.save(checkstyleResults);
+
+            group.setCheckstyle(checkstyleResults);
+            groupRepo.save(group);
+
+            responseEntity = new ResponseEntity(HttpStatus.OK);
+        }
+
+        return responseEntity;
     }
 
+    // Finds the last added CheckstyleResult for specific userId
     @RequestMapping(value = "/courses/{userId}/findLastCheckstyleResult", method = RequestMethod.GET)
     public ResponseEntity<CheckstyleResults> getLastCheckstyleGroupResult(@PathVariable("userId") final String userId) {
 
@@ -56,7 +71,7 @@ public class MongoService {
                         .with(new Sort(Sort.Direction.DESC, "timestamp"))
                         .limit(1), CheckstyleResults.class);
 
-        if (checkstyleResults.size() > 0){
+        if (!checkstyleResults.isEmpty()){
             responseEntity = new ResponseEntity<>(checkstyleResults.get(0), HttpStatus.OK);
         } else {
             responseEntity =  new ResponseEntity<>(HttpStatus.NO_CONTENT);
@@ -64,38 +79,48 @@ public class MongoService {
         return  responseEntity;
     }
 
-    @RequestMapping(value = "/courses/{userId}/findLastPmdResult", method = RequestMethod.GET)
-    public
-    ResponseEntity<PMDResults> getLastPMDGroupResult(@PathVariable("userId") final String userId) {
-
-        ResponseEntity<PMDResults> responseEntity;
-        final List<PMDResults> pmdResults = mongo
-                .find(Query
-                        .query(Criteria.where("userId").is(userId))
-                        .with(new Sort(Sort.Direction.DESC, "timestamp"))
-                        .limit(1), PMDResults.class);
-
-        if (pmdResults.size() > 0){
-            responseEntity = new ResponseEntity<>(pmdResults.get(0), HttpStatus.OK);
-        } else {
-            responseEntity = new ResponseEntity<>(HttpStatus.NO_CONTENT);
-        }
-
-        return responseEntity;
-    }
-
+    //Add PmdEntry to DB
+    //Finds associated group over "userId" key in requestBody
+    //Saves in PmdResults & Group
     @RequestMapping(value = "/addPMDEntry", method = RequestMethod.POST, consumes = "application/json")
-    public void addPMDEntry(@RequestBody final PMDResults pmdResults) {
+    public ResponseEntity addPMDEntry(@RequestBody final PmdResults pmdResults) {
+
+        ResponseEntity responseEntity;
         pmdResults.setTimestamp(String.valueOf(new Date().getTime()));
-        pmdRepo.save(pmdResults);
 
         final String userId = pmdResults.getUserId();
         final Group group = mongo.findOne(Query.query(Criteria.where("userId").is(userId)), Group.class);
 
-        group.setPmd(pmdResults);
-        groupRepo.save(group);
+        if (null == group){
+            responseEntity = new ResponseEntity(HttpStatus.NO_CONTENT);
+        } else {
+            pmdRepo.save(pmdResults);
+
+            group.setPmd(pmdResults);
+            groupRepo.save(group);
+
+            responseEntity = new ResponseEntity(HttpStatus.OK);
+        }
+        return responseEntity;
     }
 
+    // Finds the last added PmdResult for specific userId
+    @RequestMapping(value = "/courses/{userId}/findLastPmdResult", method = RequestMethod.GET)
+    public
+    ResponseEntity<PmdResults> getLastPmdGroupResult(@PathVariable("userId") final String userId) {
 
+        ResponseEntity<PmdResults> responseEntity;
+        final List<PmdResults> pmdResults = mongo
+                .find(Query
+                        .query(Criteria.where("userId").is(userId))
+                        .with(new Sort(Sort.Direction.DESC, "timestamp"))
+                        .limit(1), PmdResults.class);
 
+        if (!pmdResults.isEmpty()){
+            responseEntity = new ResponseEntity<>(pmdResults.get(0), HttpStatus.OK);
+        } else {
+            responseEntity = new ResponseEntity<>(HttpStatus.NO_CONTENT);
+        }
+        return responseEntity;
+    }
 }

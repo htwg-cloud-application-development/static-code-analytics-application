@@ -6,7 +6,7 @@ import org.springframework.data.mongodb.core.mapping.Document;
 
 @Data
 @Document
-public class PMDResults {
+public class PmdResults {
     @Id
     private String id;
 

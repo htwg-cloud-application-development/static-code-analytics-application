@@ -27,13 +27,13 @@ public class Class {
         this.nIgnoreCount = 0;
     }
 
-    public void incErrorType(int Priority) {
+    public void incErrorType(int nPriority) {
         /* Count every Error Type we have found in the XML */
-        if (Priority == 3) {
+        if (nPriority == 3) {
             incErrorCount();
-        } else if (Priority == 2) {
+        } else if (nPriority == 2) {
             incWarningCount();
-        } else if (Priority == 1) {
+        } else if (nPriority == 1) {
             incIgnoreCount();
         }
     }
@@ -46,23 +46,19 @@ public class Class {
         return lError;
     }
 
-    public String getClassName() {
-        return sClassName;
-    }
-
     public String getsExcerciseName() {
         return sExerciseName;
     }
 
-    public void incErrorCount() {
+    private void incErrorCount() {
         this.nErrorCount++;
     }
 
-    public void incWarningCount() {
+    private void incWarningCount() {
         this.nWarningCount++;
     }
 
-    public void incIgnoreCount() {
+    private void incIgnoreCount() {
         this.nIgnoreCount++;
     }
 

@@ -102,7 +102,7 @@ public class Pmd {
         /* Git Checkout */
         else if (sRepoUrl.contains("github.com")) {
             LOG.info("Git");
-            sLocalDirArray = oGit.downloadGITRepo(sRepoUrl);
+            sLocalDirArray = oGit.downloadGitRepo(sRepoUrl);
             oJson = (runPmd(generatePmdServiceData(sLocalDirArray[0]), sRepoUrl, lStartTime, sLocalDirArray[1]));
             oRepoDir = new File(sLocalDirArray[0]);
         } else {
@@ -298,7 +298,6 @@ public class Pmd {
 		/* add general information to the JSON object */
         oJsonRoot.put("repository", sRepo);
 
-
         /* get severities of the whole project */
         for (Class oFormattedClassList : lFormattedClassList) {
             nTmpErrorCount += oFormattedClassList.getErrorCount();
@@ -357,18 +356,17 @@ public class Pmd {
 
                         lJsonClasses.put(oJsonClass);
                     }
+                }
 
-				    /* last run if different exercises were found */
-                    if (bLastRun) {
-                        oJsonExercise.put(sTmpExcerciseName, lJsonClasses);
-                        lJsonExercises.put(oJsonExercise);
-                    }
-
-				    /* last run if there was just one exercise */
-                    if ((nClassPos + 1) == lFormattedClassList.size() && bExcerciseNeverChanged) {
-                        oJsonExercise.put(sTmpExcerciseName, lJsonClasses);
-                        lJsonExercises.put(oJsonExercise);
-                    }
+                /* last run if different exercises were found */
+                if (bLastRun) {
+                    oJsonExercise.put(sTmpExcerciseName, lJsonClasses);
+                    lJsonExercises.put(oJsonExercise);
+                }
+                /* last run if there was just one exercise */
+                if ((nClassPos + 1) == lFormattedClassList.size() && bExcerciseNeverChanged) {
+                    oJsonExercise.put(sTmpExcerciseName, lJsonClasses);
+                    lJsonExercises.put(oJsonExercise);
                 }
             }
             /* swap for a different exercise */

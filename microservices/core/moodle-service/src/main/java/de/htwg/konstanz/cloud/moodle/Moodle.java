@@ -16,11 +16,12 @@ public class Moodle {
 
     private final RestTemplate templ = new RestTemplate();
 
-    private String moodleBaseUrl = "https://moodle.htwg-konstanz.de/moodle/webservice/rest/server.php?"
-            + "&moodlewsrestformat=json";
+    private final String moodleBaseUrl;
+
 
     public Moodle(String token) {
-        this.moodleBaseUrl += "&wstoken=" + token;
+        this.moodleBaseUrl = "https://moodle.htwg-konstanz.de/moodle/webservice/rest/server.php?"
+                + "&moodlewsrestformat=json&wstoken=" + token;
     }
 
 
@@ -185,21 +186,31 @@ public class Moodle {
                     JsonNode actualSubmit = field.findPath("text");
 
                     if (!actualSubmit.isMissingNode()) {
+
+                        // get the actual submit and remove html
                         String repo = Jsoup.parse(actualSubmit.asText()).text();
 
-                        // remove last dash if present
-                        if (repo.endsWith("/")) {
-                            repo = repo.substring(0, repo.length() - 1);
-
-                        }
-
-                        return repo;
+                        // return and remove last slash if present
+                        return removeLastSlashIfPresent(repo);
                     }
                 }
 
             }
         }
         return "";
+    }
+
+    private String removeLastSlashIfPresent(String repository) {
+
+        String repo = repository;
+
+        // remove last slash if present
+        if (repo.endsWith("/")) {
+            repo = repo.substring(0, repo.length() - 1);
+
+        }
+
+        return repo;
     }
 
 

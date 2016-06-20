@@ -23,7 +23,7 @@ public class Group {
     private String repository;
 
     @DBRef
-    private PMDResults pmd;
+    private PmdResults pmd;
 
     @DBRef
     private CheckstyleResults checkstyle;

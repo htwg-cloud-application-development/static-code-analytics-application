@@ -20,8 +20,6 @@ import java.net.URLConnection;
 class Git {
     private static final Logger LOG = LoggerFactory.getLogger(Git.class);
 
-    private String sFileSeparator = "";
-
     private boolean isValidRepository(URIish repoUri) {
         if (repoUri.isRemote()) {
             return isValidRemoteRepository(repoUri);
@@ -43,7 +41,7 @@ class Git {
     }
 
     /*
-    String downloadGITRepo(String gitRepo) throws GitAPIException, IOException {
+    String downloadGitRepo(String gitRepo) throws GitAPIException, IOException {
         // Checkout Git-Repo
         org.eclipse.jgit.api.Git git = null;
 
@@ -76,11 +74,10 @@ class Git {
         return String.valueOf(revCommits.iterator().next().getCommitTime());
     }
 
-    String [] downloadGITRepo(String gitRepo) throws GitAPIException, IOException {
+    String [] downloadGitRepo(String gitRepo) throws GitAPIException, IOException {
         // Checkout Git-Repo
-        org.eclipse.jgit.api.Git git = null;
         OperatingSystemCheck oOperatingSystemCheck = new OperatingSystemCheck();
-        sFileSeparator = oOperatingSystemCheck.getOperatingSystemSeparator();
+        String sFileSeparator = oOperatingSystemCheck.getOperatingSystemSeparator();
 
         // return Array
         String[] returnValue = null;
@@ -98,13 +95,14 @@ class Git {
         // Clone Command with jGIT
         URL f = new URL(gitRepo);
         if (isValidRepository(new URIish(f))) {
-            git = org.eclipse.jgit.api.Git.cloneRepository().setURI(gitRepo)
+            org.eclipse.jgit.api.Git git = org.eclipse.jgit.api.Git.cloneRepository().setURI(gitRepo)
                     .setDirectory(new File(localDirectory)).call();
             returnValue= new String[]{localDirectory, getLastCommit(git)};
-        }
 
-        // Closing Object that we can delete the whole directory later
-        git.getRepository().close();
+            // Closing Object that we can delete the whole directory later
+            git.getRepository().close();
+
+        }
 
         // Local Targetpath and Last Commit
         return returnValue;

@@ -58,10 +58,10 @@ public class GovernanceUtil {
 
     private ServiceInstance getInstanceOfService(String service) throws InstantiationException {
         ServiceInstance instance = loadBalancer.choose(service);
-        if (null != instance) {
-            return instance;
-        } else {
+        if (null == instance) {
             throw new InstantiationException("service is not available");
+        } else {
+            return instance;
         }
     }
 }

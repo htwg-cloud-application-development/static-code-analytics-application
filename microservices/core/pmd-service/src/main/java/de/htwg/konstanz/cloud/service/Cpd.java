@@ -96,7 +96,7 @@ public class Cpd {
             /* Git */
             else if (sRepo.contains("github.com")) {
                 LOG.info("Git " + sRepo);
-                sLocalDirArray = oGit.downloadGITRepo(sRepo);
+                sLocalDirArray = oGit.downloadGitRepo(sRepo);
                 lRepoDirs.add(sLocalDirArray[0]);
             } else {
                 LOG.info("Repository URL has no valid Svn/Git attributes. (" + sRepoUrl + ")");
@@ -118,21 +118,29 @@ public class Cpd {
         String sStartScript = "";
         String sMainPath = "repositories" + sFileSeparator + "repositories-cpd";
         JSONObject oJson = null;
+        ProcessBuilder oCommandExecure;
+        String[] sProcessBuilder = new String[3];
 
         if (oOperatingSystemCheck.isWindows()) {
             sStartScript = "pmd-bin-5.4.2\\bin\\cpd.bat";
+            sProcessBuilder[0] = "cmd";
         } else if (oOperatingSystemCheck.isLinux()) {
             sStartScript = "pmd-bin-5.4.2/bin/run.sh cpd";
+            sProcessBuilder[0] = "bash";
         }
+        sProcessBuilder[1] = "/c";
 
         /* Check if Dir exists and if needed create new*/
-        oUtil.createDirectory(sMainPath);
+        File oFileDirectoy = oUtil.createDirectory(sMainPath);
 
-        String sCpdCommand = sStartScript + " --minimum-tokens 75 --files " + oRepoDir.getAbsolutePath() + " --skip-lexical-errors "
-                + "--format xml > " + sMainPath + sFileSeparator +"CpdCheck_" + sOutputFileName;
+        String sCpdCommand = sStartScript + " --minimum-tokens 75 --files " + oRepoDir.getAbsolutePath() + " --skip-lexical-errors --format xml";
         LOG.info("Cpd execution path: " + sCpdCommand);
 
-        oUtil.execCommand(sCpdCommand);
+        sProcessBuilder[2] = sCpdCommand;
+        //oUtil.execCommand(sCpdCommand);
+        oCommandExecure = new ProcessBuilder(sProcessBuilder);
+        oCommandExecure.redirectOutput(new File(oFileDirectoy.getAbsolutePath() + sFileSeparator +"CpdCheck_" + sOutputFileName));
+        oCommandExecure.start();
 
         /* Checkstyle Informationen eintragen */
         storeCpdInformation(sMainPath + sFileSeparator + "CpdCheck_" + sOutputFileName);

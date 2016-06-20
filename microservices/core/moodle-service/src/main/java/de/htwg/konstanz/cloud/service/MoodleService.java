@@ -63,7 +63,7 @@ public class MoodleService {
 
         Moodle moodle = new Moodle(token);
 
-        return new ResponseEntity<String>((moodle.hasPermissionOnCourse(courseId, userId)).toString(), HttpStatus.OK);
+        return new ResponseEntity<String>(moodle.hasPermissionOnCourse(courseId, userId).toString(), HttpStatus.OK);
 
     }
 

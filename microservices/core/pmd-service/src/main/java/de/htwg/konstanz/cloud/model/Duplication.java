@@ -18,7 +18,8 @@ public class Duplication {
         this.sDuplicatedCode = sDuplicatedCode;
     }
 
-    public static Duplication getDupliactionInstance(int sDupilcatedLine, int sTokens, List<String> lInvolvedData, String sDuplicatedCode){
+    public static Duplication getDupliactionInstance(int sDupilcatedLine, int sTokens,
+                                                     List<String> lInvolvedData, String sDuplicatedCode){
         return new Duplication(sDupilcatedLine,sTokens,lInvolvedData,sDuplicatedCode);
     }
 

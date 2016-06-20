@@ -36,7 +36,6 @@ public class CourseService {
         if (null == courses) {
             courses = new ArrayList<>();
         }
-
         courses.add(course);
         user.setCourses(courses);
         userRepo.save(user);
