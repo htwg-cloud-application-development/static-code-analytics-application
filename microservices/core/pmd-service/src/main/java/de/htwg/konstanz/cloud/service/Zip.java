@@ -3,9 +3,9 @@ package de.htwg.konstanz.cloud.service;
 import net.lingala.zip4j.core.ZipFile;
 import net.lingala.zip4j.exception.ZipException;
 
-public class Zip {
+class Zip {
 
-    public void unzipFile(String sZipFile) {
+    void unzipFile(String sZipFile) {
         try {
             ZipFile oZipFile = new ZipFile(sZipFile);
 

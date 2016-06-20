@@ -102,7 +102,7 @@ public class Pmd {
         /* Git Checkout */
         else if (sRepoUrl.contains("github.com")) {
             LOG.info("Git");
-            sLocalDirArray = oGit.downloadGITRepo(sRepoUrl);
+            sLocalDirArray = oGit.downloadGitRepo(sRepoUrl);
             oJson = (runPmd(generatePmdServiceData(sLocalDirArray[0]), sRepoUrl, lStartTime, sLocalDirArray[1]));
             oRepoDir = new File(sLocalDirArray[0]);
         } else {
@@ -297,7 +297,6 @@ public class Pmd {
 
 		/* add general information to the JSON object */
         oJsonRoot.put("repository", sRepo);
-
 
         /* get severities of the whole project */
         for (Class oFormattedClassList : lFormattedClassList) {

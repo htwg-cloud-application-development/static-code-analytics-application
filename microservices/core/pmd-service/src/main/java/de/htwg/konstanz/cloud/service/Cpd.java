@@ -96,7 +96,7 @@ public class Cpd {
             /* Git */
             else if (sRepo.contains("github.com")) {
                 LOG.info("Git " + sRepo);
-                sLocalDirArray = oGit.downloadGITRepo(sRepo);
+                sLocalDirArray = oGit.downloadGitRepo(sRepo);
                 lRepoDirs.add(sLocalDirArray[0]);
             } else {
                 LOG.info("Repository URL has no valid Svn/Git attributes. (" + sRepoUrl + ")");
