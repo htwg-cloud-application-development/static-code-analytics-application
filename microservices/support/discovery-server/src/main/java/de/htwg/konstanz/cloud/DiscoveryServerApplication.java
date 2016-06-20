@@ -10,9 +10,9 @@ import org.springframework.context.annotation.Profile;
 
 @EnableEurekaServer
 @SpringBootApplication
-public class DiscoveryServerApplication {
+public class DiscoveryServerApplication {//NOPMD
 
-    public static void main(String[] args) {
+    public static void main(String... args) {
         SpringApplication.run(DiscoveryServerApplication.class, args);
     }
 

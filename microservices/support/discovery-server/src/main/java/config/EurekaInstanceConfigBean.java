@@ -38,7 +38,7 @@ import java.util.Map;
  */
 @Data
 @ConfigurationProperties("eureka.instance")
-public class EurekaInstanceConfigBean implements CloudEurekaInstanceConfig {
+public class EurekaInstanceConfigBean implements CloudEurekaInstanceConfig {//NOPMD
 
     @Getter(AccessLevel.PRIVATE)
     @Setter(AccessLevel.PRIVATE)
@@ -46,13 +46,13 @@ public class EurekaInstanceConfigBean implements CloudEurekaInstanceConfig {
 
     @Getter(AccessLevel.PRIVATE)
     @Setter(AccessLevel.PRIVATE)
-    private InetUtils inetUtils;
+    private InetUtils inetUtils;//NOPMD
 
     /**
      * Get the name of the application to be registered with eureka.
      */
     @Value("${spring.application.name:unknown}")
-    private String appname = "unknown";
+    private String appname = "unknown";//NOPMD
 
     /**
      * Get the name of the application group to be registered with eureka.
@@ -69,17 +69,17 @@ public class EurekaInstanceConfigBean implements CloudEurekaInstanceConfig {
     /**
      * Get the non-secure port on which the instance should receive traffic.
      */
-    private int nonSecurePort = 80;
+    private int nonSecurePort = 80;//NOPMD
 
     /**
      * Get the Secure port on which the instance should receive traffic.
      */
-    private int securePort = 443;
+    private int securePort = 443;//NOPMD
 
     /**
      * Indicates whether the non-secure port should be enabled for traffic or not.
      */
-    private boolean nonSecurePortEnabled = true;
+    private boolean nonSecurePortEnabled = true;//NOPMD
 
     /**
      * Indicates whether the secure port should be enabled for traffic or not.
@@ -96,7 +96,7 @@ public class EurekaInstanceConfigBean implements CloudEurekaInstanceConfig {
      * Note that the instance could still not take traffic if it implements
      * HealthCheckCallback and then decides to make itself unavailable.
      */
-    private int leaseRenewalIntervalInSeconds = 30;
+    private int leaseRenewalIntervalInSeconds = 30;//NOPMD
 
     /**
      * Indicates the time in seconds that the eureka server waits since it received the
@@ -109,7 +109,7 @@ public class EurekaInstanceConfigBean implements CloudEurekaInstanceConfig {
      * glitches.This value to be set to atleast higher than the value specified in
      * leaseRenewalIntervalInSeconds.
      */
-    private int leaseExpirationDurationInSeconds = 90;
+    private int leaseExpirationDurationInSeconds = 90;//NOPMD
 
     /**
      * Gets the virtual host name defined for this instance.
@@ -148,13 +148,13 @@ public class EurekaInstanceConfigBean implements CloudEurekaInstanceConfig {
      * Gets the metadata name/value pairs associated with this instance. This information
      * is sent to eureka server and can be used by other instances.
      */
-    private Map<String, String> metadataMap = new HashMap<>();
+    private Map<String, String> metadataMap = new HashMap<>();//NOPMD
 
     /**
      * Returns the data center this instance is deployed. This information is used to get
      * some AWS specific instance information if the instance is deployed in AWS.
      */
-    private DataCenterInfo dataCenterInfo = new MyDataCenterInfo(
+    private DataCenterInfo dataCenterInfo = new MyDataCenterInfo(//NOPMD
             DataCenterInfo.Name.MyOwn);
 
     /**
@@ -173,7 +173,7 @@ public class EurekaInstanceConfigBean implements CloudEurekaInstanceConfig {
      * status of this instance. Users can provide a simple HTML indicating what is the
      * current status of the instance.
      */
-    private String statusPageUrlPath = "/info";
+    private String statusPageUrlPath = "/info";//NOPMD
 
     /**
      * Gets the absolute status page URL path for this instance. The users can provide the
@@ -194,7 +194,7 @@ public class EurekaInstanceConfigBean implements CloudEurekaInstanceConfig {
      * It is normally used for informational purposes for other services to use it as a
      * landing page.
      */
-    private String homePageUrlPath = "/";
+    private String homePageUrlPath = "/";//NOPMD
 
     /**
      * Gets the absolute home page URL for this instance. The users can provide the
@@ -217,7 +217,7 @@ public class EurekaInstanceConfigBean implements CloudEurekaInstanceConfig {
      * instance - for example, it can be used to determine whether to proceed deployments
      * to an entire farm or stop the deployments without causing further damage.
      */
-    private String healthCheckUrlPath = "/health";
+    private String healthCheckUrlPath = "/health";//NOPMD
 
     /**
      * Gets the absolute health check page URL for this instance. The users can provide
@@ -254,7 +254,7 @@ public class EurekaInstanceConfigBean implements CloudEurekaInstanceConfig {
     /**
      * Get the namespace used to find properties. Ignored in Spring Cloud.
      */
-    private String namespace = "eureka";
+    private String namespace = "eureka";//NOPMD
 
     /**
      * The hostname if it can be determined at configuration time (otherwise it will be
@@ -266,24 +266,24 @@ public class EurekaInstanceConfigBean implements CloudEurekaInstanceConfig {
      * Flag to say that, when guessing a hostname, the IP address of the server should be
      * used in prference to the hostname reported by the OS.
      */
-    private boolean preferIpAddress = false;
+    private boolean preferIpAddress = false;//NOPMD
 
     /**
      * Initial status to register with rmeote Eureka server.
      */
-    private InstanceStatus initialStatus = InstanceStatus.UP;
+    private InstanceStatus initialStatus = InstanceStatus.UP;//NOPMD
 
-    private String[] defaultAddressResolutionOrder = new String[0];
+    private String[] defaultAddressResolutionOrder = new String[0];//NOPMD
 
     public String getHostname() {
         return getHostName(false);
     }
 
     @SuppressWarnings("unused")
-    public EurekaInstanceConfigBean() {
+    public EurekaInstanceConfigBean() {//NOPMD
     }
 
-    public EurekaInstanceConfigBean(InetUtils inetUtils) {
+    public EurekaInstanceConfigBean(InetUtils inetUtils) {//NOPMD
         this.inetUtils = inetUtils;
         this.hostInfo = this.inetUtils.findFirstNonLoopbackHostInfo();
         this.ipAddress = this.hostInfo.getIpAddress();
@@ -303,18 +303,18 @@ public class EurekaInstanceConfigBean implements CloudEurekaInstanceConfig {
         return this.securePortEnabled;
     }
 
-    public void setHostname(String hostname) {
+    public void setHostname(String hostname) {//NOPMD
         this.hostname = hostname;
         this.hostInfo.override = true;
     }
 
-    public void setIpAddress(String ipAddress) {
+    public void setIpAddress(String ipAddress) {//NOPMD
         this.ipAddress = ipAddress;
         this.hostInfo.override = true;
     }
 
     @Override
-    public String getHostName(boolean refresh) {
+    public String getHostName(boolean refresh) {//NOPMD
         if (refresh && !this.hostInfo.override) {
             this.ipAddress = this.hostInfo.getIpAddress();
             this.hostname = this.hostInfo.getHostname();
