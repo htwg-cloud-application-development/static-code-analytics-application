@@ -131,10 +131,10 @@ public class Cpd {
         sProcessBuilder[1] = "/c";
 
         /* Check if Dir exists and if needed create new*/
-        File f = oUtil.createDirectory(sMainPath);
+        File oFileDirectoy = oUtil.createDirectory(sMainPath);
 
         String sCpdCommand = sStartScript + " --minimum-tokens 75 --files " + oRepoDir.getAbsolutePath() + " --skip-lexical-errors "
-                + "--format xml > " + f.getAbsolutePath() + sFileSeparator +"CpdCheck_" + sOutputFileName;
+                + "--format xml > " + oFileDirectoy.getAbsolutePath() + sFileSeparator +"CpdCheck_" + sOutputFileName;
         LOG.info("Cpd execution path: " + sCpdCommand);
 
         sProcessBuilder[2] = sCpdCommand;
@@ -143,7 +143,7 @@ public class Cpd {
         oCommandExecure.start();
 
         /* Checkstyle Informationen eintragen */
-        storeCpdInformation(f.getAbsolutePath() + sFileSeparator + "CpdCheck_" + sOutputFileName);
+        storeCpdInformation(sMainPath + sFileSeparator + "CpdCheck_" + sOutputFileName);
 
         if (lDuplications != null) {
             /* Schoene einheitliche JSON erstellen */
