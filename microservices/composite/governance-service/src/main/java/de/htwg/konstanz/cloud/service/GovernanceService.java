@@ -18,18 +18,19 @@ import java.util.HashMap;
 @RestController
 public class GovernanceService {
 
-
-    @RequestMapping(value = "/info", method = RequestMethod.GET)
-    public String info() {
-        return "governance";
-    }
-
     @Autowired
     DatabaseService databaseService;
 
     @Autowired
     MoodleService moodleService;
 
+
+    @RequestMapping(value = "/info", method = RequestMethod.GET)
+    public String info() {
+        return "governance";
+    }
+
+    
     @RequestMapping(value = "/courses", method = RequestMethod.GET, produces = "application/json")
     public ResponseEntity<String> getCouses() {
         try {
