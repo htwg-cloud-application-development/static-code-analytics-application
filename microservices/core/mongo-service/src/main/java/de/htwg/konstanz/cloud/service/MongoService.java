@@ -56,7 +56,7 @@ public class MongoService {
                         .with(new Sort(Sort.Direction.DESC, "timestamp"))
                         .limit(1), CheckstyleResults.class);
 
-        if (checkstyleResults.size() > 0){
+        if (!checkstyleResults.isEmpty()){
             responseEntity = new ResponseEntity<>(checkstyleResults.get(0), HttpStatus.OK);
         } else {
             responseEntity =  new ResponseEntity<>(HttpStatus.NO_CONTENT);
@@ -75,7 +75,7 @@ public class MongoService {
                         .with(new Sort(Sort.Direction.DESC, "timestamp"))
                         .limit(1), PmdResults.class);
 
-        if (pmdResults.size() > 0){
+        if (!pmdResults.isEmpty()){
             responseEntity = new ResponseEntity<>(pmdResults.get(0), HttpStatus.OK);
         } else {
             responseEntity = new ResponseEntity<>(HttpStatus.NO_CONTENT);
