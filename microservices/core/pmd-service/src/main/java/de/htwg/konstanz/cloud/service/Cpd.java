@@ -133,13 +133,13 @@ public class Cpd {
         /* Check if Dir exists and if needed create new*/
         File oFileDirectoy = oUtil.createDirectory(sMainPath);
 
-        String sCpdCommand = sStartScript + " --minimum-tokens 75 --files " + oRepoDir.getAbsolutePath() + " --skip-lexical-errors "
-                + "--format xml > " + oFileDirectoy.getAbsolutePath() + sFileSeparator +"CpdCheck_" + sOutputFileName;
+        String sCpdCommand = sStartScript + " --minimum-tokens 75 --files " + oRepoDir.getAbsolutePath() + " --skip-lexical-errors --format xml";
         LOG.info("Cpd execution path: " + sCpdCommand);
 
         sProcessBuilder[2] = sCpdCommand;
         //oUtil.execCommand(sCpdCommand);
         oCommandExecure = new ProcessBuilder(sProcessBuilder);
+        oCommandExecure.redirectOutput(new File(oFileDirectoy.getAbsolutePath() + sFileSeparator +"CpdCheck_" + sOutputFileName));
         oCommandExecure.start();
 
         /* Checkstyle Informationen eintragen */
