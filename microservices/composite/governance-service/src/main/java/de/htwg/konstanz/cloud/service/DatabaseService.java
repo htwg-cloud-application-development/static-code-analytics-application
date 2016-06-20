@@ -50,8 +50,8 @@ public class DatabaseService {
     }
 
 
-    private String callDatabaseFor(String ROUTE) throws InstantiationException {
-        return util.getFromService(ROUTE, "mongo");
+    private String callDatabaseFor(String route) throws InstantiationException {
+        return util.getFromService(route, "mongo");
     }
 }
 

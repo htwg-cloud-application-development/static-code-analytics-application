@@ -67,39 +67,52 @@ class Util {
     }
 
     RunInstancesResult runNewCheckstyleInstance(AmazonEC2 ec2, int minCount, int maxCount) throws NoSuchFieldException {
-        if (null != securityGroup && null != checkstyleImageId
-                && null != checkstyleInstanceType && null != checkstyleKeyName) {
+        if (null == securityGroup && null == checkstyleImageId
+                && null == checkstyleInstanceType && null == checkstyleKeyName) {
 
-            return runInstance(ec2, minCount, maxCount, checkstyleImageId, checkstyleKeyName, checkstyleInstanceType, securityGroup);
-
-        } else {
             throw new NoSuchFieldException("Missing Config Parameter for one of following parameter:\n " +
                     "[securityGroup=" + securityGroup +
                     "|checkstyleImageId=" + checkstyleImageId +
                     "|checkstyleInstanceType=" + checkstyleInstanceType +
                     "|checkstyleKeyName=" + checkstyleKeyName + "]");
+
+        } else {
+            return runInstance(ec2, minCount, maxCount, checkstyleImageId, checkstyleKeyName, checkstyleInstanceType, securityGroup);
         }
     }
 
     RunInstancesResult runNewPmdInstance(AmazonEC2 ec2, int minCount, int maxCount) throws NoSuchFieldException {
-        if (null != securityGroup && null != pmdImageId
-                && null != pmdKeyName && null != pmdInstanceType) {
+        if (null == securityGroup && null == pmdImageId
+                && null == pmdKeyName && null == pmdInstanceType) {
 
-            return runInstance(ec2, minCount, maxCount, pmdImageId, pmdKeyName, pmdInstanceType, securityGroup);
-
-        } else {
             throw new NoSuchFieldException("Missing Config Parameter for one of following parameter:\n " +
                     "[securityGroup=" + securityGroup +
                     "|pmdImageId=" + pmdImageId +
                     "|pmdInstanceType=" + pmdImageId +
                     "|pmdKeyName=" + pmdImageId + "]");
+
+        } else {
+            return runInstance(ec2, minCount, maxCount, pmdImageId, pmdKeyName, pmdInstanceType, securityGroup);
         }
     }
 
-    private RunInstancesResult runInstance(AmazonEC2 ec2, int minCount, int maxCount, String imageId, String keyName, String instanceType, String securityGroup) {
-        if (minCount < 1) minCount = 1;
-        if (maxCount < 1) maxCount = 1;
-        if (minCount > maxCount) maxCount = minCount;
+    private RunInstancesResult runInstance(AmazonEC2 ec2, int minCountParam, int maxCountParam, String imageId, String keyName, String instanceType, String securityGroup) {
+        int maxCount;
+        int minCount;
+        if (minCountParam < 1) {
+            minCount = 1;
+        } else {
+            minCount = minCountParam;
+        }
+        if (maxCountParam < 1) {
+            maxCount = 1;
+        } else {
+            if (minCountParam > maxCountParam) {
+                maxCount = minCountParam;
+            } else {
+                maxCount = maxCountParam;
+            }
+        }
 
         RunInstancesRequest runInstancesRequest = new RunInstancesRequest()
                 .withInstanceType(instanceType)
@@ -142,11 +155,15 @@ class Util {
     }
 
     private int getNumberOfActiveInstances(AmazonEC2 ec2, String imageId) throws NoSuchFieldException {
-        if (null == imageId) throw new NoSuchFieldException("Missing Config Parameter [ImageId]");
+        if (null == imageId) {
+            throw new NoSuchFieldException("Missing Config Parameter [ImageId]");
+        }
         List<Instance> allActiveInstances = getAllActiveInstances(ec2);
         int numberOfInstances = 0;
         for (Instance instance : allActiveInstances) {
-            if (instance.getImageId().equals(pmdImageId)) numberOfInstances++;
+            if (instance.getImageId().equals(pmdImageId)) {
+                numberOfInstances++;
+            }
         }
         return numberOfInstances;
     }
