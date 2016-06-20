@@ -118,29 +118,34 @@ public class Cpd {
         String sStartScript = "";
         String sMainPath = "repositories" + sFileSeparator + "repositories-cpd";
         JSONObject oJson = null;
-        ProcessBuilder oCommandExecure;
-        String[] sProcessBuilder = new String[3];
+
+
+
+        /* Check if Dir exists and if needed create new*/
+        oUtil.createDirectory(sMainPath);
 
         if (oOperatingSystemCheck.isWindows()) {
             sStartScript = "pmd-bin-5.4.2\\bin\\cpd.bat";
-            sProcessBuilder[0] = "cmd";
+            String sCpdCommand = sStartScript + " --minimum-tokens 75 --files " + oRepoDir.getAbsolutePath() + " --skip-lexical-errors --format xml > " + sMainPath + sFileSeparator +"CpdCheck_" + sOutputFileName;
+            oUtil.execCommand(sCpdCommand);
         } else if (oOperatingSystemCheck.isLinux()) {
-            sStartScript = "pmd-bin-5.4.2/bin/run.sh cpd";
-            sProcessBuilder[0] = "bash";
+            ArrayList<String> sProcessBuilder = new ArrayList<>();
+            ProcessBuilder oCommandExecure;
+            sStartScript = "pmd-bin-5.4.2/bin/run.sh";
+            sProcessBuilder.add(sStartScript);
+            sProcessBuilder.add("cpd");
+            sProcessBuilder.add("--minimum-tokens");
+            sProcessBuilder.add("75");
+            sProcessBuilder.add("--files");
+            sProcessBuilder.add(oRepoDir.getAbsolutePath());
+            sProcessBuilder.add("--skip-lexical-errors");
+            sProcessBuilder.add("--format");
+            sProcessBuilder.add("xml");
+
+            oCommandExecure = new ProcessBuilder(sProcessBuilder);
+            oCommandExecure.redirectOutput(new File(sMainPath + sFileSeparator +"CpdCheck_" + sOutputFileName));
+            oCommandExecure.start();
         }
-        sProcessBuilder[1] = "/c";
-
-        /* Check if Dir exists and if needed create new*/
-        File oFileDirectoy = oUtil.createDirectory(sMainPath);
-
-        String sCpdCommand = sStartScript + " --minimum-tokens 75 --files " + oRepoDir.getAbsolutePath() + " --skip-lexical-errors --format xml";
-        LOG.info("Cpd execution path: " + sCpdCommand);
-
-        sProcessBuilder[2] = sCpdCommand;
-        //oUtil.execCommand(sCpdCommand);
-        oCommandExecure = new ProcessBuilder(sProcessBuilder);
-        oCommandExecure.redirectOutput(new File(oFileDirectoy.getAbsolutePath() + sFileSeparator +"CpdCheck_" + sOutputFileName));
-        oCommandExecure.start();
 
         /* Checkstyle Informationen eintragen */
         storeCpdInformation(sMainPath + sFileSeparator + "CpdCheck_" + sOutputFileName);
