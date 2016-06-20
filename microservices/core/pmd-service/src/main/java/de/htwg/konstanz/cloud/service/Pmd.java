@@ -362,12 +362,12 @@ public class Pmd {
                         oJsonExercise.put(sTmpExcerciseName, lJsonClasses);
                         lJsonExercises.put(oJsonExercise);
                     }
+                }
 
 				    /* last run if there was just one exercise */
-                    if ((nClassPos + 1) == lFormattedClassList.size() && bExcerciseNeverChanged) {
-                        oJsonExercise.put(sTmpExcerciseName, lJsonClasses);
-                        lJsonExercises.put(oJsonExercise);
-                    }
+                if ((nClassPos + 1) == lFormattedClassList.size() && bExcerciseNeverChanged) {
+                    oJsonExercise.put(sTmpExcerciseName, lJsonClasses);
+                    lJsonExercises.put(oJsonExercise);
                 }
             }
             /* swap for a different exercise */
