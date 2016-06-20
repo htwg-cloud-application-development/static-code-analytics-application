@@ -118,24 +118,32 @@ public class Cpd {
         String sStartScript = "";
         String sMainPath = "repositories" + sFileSeparator + "repositories-cpd";
         JSONObject oJson = null;
+        ProcessBuilder oCommandExecure;
+        String[] sProcessBuilder = new String[3];
 
         if (oOperatingSystemCheck.isWindows()) {
             sStartScript = "pmd-bin-5.4.2\\bin\\cpd.bat";
+            sProcessBuilder[0] = "cmd";
         } else if (oOperatingSystemCheck.isLinux()) {
             sStartScript = "pmd-bin-5.4.2/bin/run.sh cpd";
+            sProcessBuilder[0] = "bash";
         }
+        sProcessBuilder[1] = "/c";
 
         /* Check if Dir exists and if needed create new*/
-        oUtil.createDirectory(sMainPath);
+        File f = oUtil.createDirectory(sMainPath);
 
         String sCpdCommand = sStartScript + " --minimum-tokens 75 --files " + oRepoDir.getAbsolutePath() + " --skip-lexical-errors "
-                + "--format xml > " + sMainPath + sFileSeparator +"CpdCheck_" + sOutputFileName;
+                + "--format xml > " + f.getAbsolutePath() + sFileSeparator +"CpdCheck_" + sOutputFileName;
         LOG.info("Cpd execution path: " + sCpdCommand);
 
-        oUtil.execCommand(sCpdCommand);
+        sProcessBuilder[2] = sCpdCommand;
+        //oUtil.execCommand(sCpdCommand);
+        oCommandExecure = new ProcessBuilder(sProcessBuilder);
+        oCommandExecure.start();
 
         /* Checkstyle Informationen eintragen */
-        storeCpdInformation(sMainPath + sFileSeparator + "CpdCheck_" + sOutputFileName);
+        storeCpdInformation(f.getAbsolutePath() + sFileSeparator + "CpdCheck_" + sOutputFileName);
 
         if (lDuplications != null) {
             /* Schoene einheitliche JSON erstellen */
