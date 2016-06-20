@@ -79,6 +79,9 @@ public class MongoService {
         return  responseEntity;
     }
 
+    //Add PmdEntry to DB
+    //Finds associated group over "userId" key in requestBody
+    //Saves in PmdResults & Group
     @RequestMapping(value = "/addPMDEntry", method = RequestMethod.POST, consumes = "application/json")
     public ResponseEntity addPMDEntry(@RequestBody final PmdResults pmdResults) {
 
