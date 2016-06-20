@@ -1,7 +1,5 @@
 package de.htwg.konstanz.cloud.service;
 
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.cloud.client.ServiceInstance;
 import org.springframework.cloud.client.loadbalancer.LoadBalancerClient;
@@ -22,7 +20,6 @@ import java.util.concurrent.Future;
 
 @Service
 public class DatabaseService {
-    private static final Logger LOG = LoggerFactory.getLogger(ValidateRepositoryService.class);
 
     private RestTemplate restTemplate;
 

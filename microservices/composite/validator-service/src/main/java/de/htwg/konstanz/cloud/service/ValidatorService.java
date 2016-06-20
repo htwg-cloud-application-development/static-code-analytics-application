@@ -27,6 +27,9 @@ import java.util.concurrent.Future;
 public class ValidatorService {
 
     private static final Logger LOG = LoggerFactory.getLogger(ValidatorService.class);
+    public static final String APPLICATION_JSON = "application/json";
+    public static final String CHECKSTYLE = "checkstyle";
+    public static final String PMD = "pmd";
 
     @Autowired
     private LoadBalancerClient loadBalancer;
@@ -50,7 +53,7 @@ public class ValidatorService {
     private String serviceName;
 
 
-    @RequestMapping(value = "/info", method = RequestMethod.GET, produces = "application/json")
+    @RequestMapping(value = "/info", method = RequestMethod.GET, produces = APPLICATION_JSON)
     public String info() {
         return "{\"timestamp\":\"" + new Date() + "\",\"serviceId\":\"" + serviceName + "\"}";
     }
@@ -93,8 +96,8 @@ public class ValidatorService {
             JSONObject jsonObject = new JSONObject(group);
             LOG.info("Validate: " + jsonObject.toString());
             // start execution measurement
-            ServiceInstance checkstyleInstance = loadBalancer.choose("checkstyle");
-            ServiceInstance pmdInstance = loadBalancer.choose("pmd");
+            ServiceInstance checkstyleInstance = loadBalancer.choose(CHECKSTYLE);
+            ServiceInstance pmdInstance = loadBalancer.choose(PMD);
 
             long startTime = System.currentTimeMillis();
             ValidationData repositoryData = new ValidationData();
@@ -128,8 +131,8 @@ public class ValidatorService {
             databaseService.savePmdResult(pmdResult.toString());
             databaseService.saveCheckstleResult(checkstyleResult.toString());
 
-            jsonObject.put("checkstyle", checkstyleResult);
-            jsonObject.put("pmd", pmdResult);
+            jsonObject.put(CHECKSTYLE, checkstyleResult);
+            jsonObject.put(PMD, pmdResult);
 
             return util.createResponse(jsonObject.toString(), HttpStatus.OK);
         } catch (InstantiationException e) {
@@ -141,11 +144,11 @@ public class ValidatorService {
         }
     }
 
-    @RequestMapping(value = "/validate", method = RequestMethod.POST, consumes = "application/json", produces = "application/json")
+    @RequestMapping(value = "/validate", method = RequestMethod.POST, consumes = APPLICATION_JSON, produces = APPLICATION_JSON)
     public ResponseEntity<String> validateGroupVerify(@RequestBody ValidationData data) {
         try {
-            ServiceInstance checkstyleInstance = loadBalancer.choose("checkstyle");
-            ServiceInstance pmdInstance = loadBalancer.choose("pmd");
+            ServiceInstance checkstyleInstance = loadBalancer.choose(CHECKSTYLE);
+            ServiceInstance pmdInstance = loadBalancer.choose(PMD);
 
             // Call validation asynchronous
             Future<String> checkstyleRepo = validateRepositoryService.validateRepository(data.toString(), checkstyleInstance.getUri());
@@ -162,18 +165,17 @@ public class ValidatorService {
             }
 
             JSONObject jsonObject = new JSONObject();
-            jsonObject.put("checkstyle", checkstyleRepo.get());
-            jsonObject.put("pmd", pmdRepo.get());
+            jsonObject.put(CHECKSTYLE, checkstyleRepo.get());
+            jsonObject.put(PMD, pmdRepo.get());
 
             return util.createResponse(jsonObject.toString(), HttpStatus.OK);
         } catch (Exception e) {
             LOG.error(e.getMessage());
-            e.printStackTrace();
             return util.createErrorResponse(e.getMessage(), HttpStatus.INTERNAL_SERVER_ERROR);
         }
     }
 
-    @RequestMapping(value = "/groups/{userId}/checkstyle/last-result", method = RequestMethod.GET, produces = "application/json")
+    @RequestMapping(value = "/groups/{userId}/checkstyle/last-result", method = RequestMethod.GET, produces = APPLICATION_JSON)
     public ResponseEntity<String> getLastCheckstyleResult(@PathVariable String userId) {
         try {
             return util.createResponse(databaseService.getLastCheckstyleResult(userId), HttpStatus.OK);
@@ -182,7 +184,7 @@ public class ValidatorService {
         }
     }
 
-    @RequestMapping(value = "/groups/{userId}/pmd/last-result", method = RequestMethod.GET, produces = "application/json")
+    @RequestMapping(value = "/groups/{userId}/pmd/last-result", method = RequestMethod.GET, produces = APPLICATION_JSON)
     public ResponseEntity<String> getLastPmdResult(@PathVariable String userId) {
         try {
             return util.createResponse(databaseService.getLastPmdResult(userId), HttpStatus.OK);
