@@ -10,6 +10,8 @@ import com.amazonaws.services.ec2.model.Instance;
 import com.amazonaws.services.ec2.model.Reservation;
 import com.amazonaws.services.ec2.model.RunInstancesRequest;
 import com.amazonaws.services.ec2.model.RunInstancesResult;
+import com.amazonaws.util.json.JSONArray;
+import com.amazonaws.util.json.JSONException;
 import com.amazonaws.util.json.JSONObject;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -197,5 +199,34 @@ class Util {
             it.next();
             it.remove();
         }
+    }
+
+    /**
+     * Get all repositories from json course object
+     *
+     * @param course JSON object of courses as String
+     * @return Arrays with all repositories. For each repository an object with repository.
+     * @throws JSONException
+     */
+    public JSONArray getRepositoriesFromJsonObject(String course) throws JSONException {
+        // Convert to json
+        JSONObject jsonObj = new JSONObject(course);
+        // get all grous
+        JSONArray groups = jsonObj.getJSONArray("groups");
+        // result json object
+        JSONArray result = new JSONArray();
+
+        // get repository url from obejct and save it to result array
+        for (int i = 0; i < groups.length(); i++) {
+            JSONObject obj = groups.getJSONObject(i);
+            JSONObject element = new JSONObject();
+            element.put("repository", obj.getString("repository"));
+            result.put(element);
+        }
+
+        // return json array with all repositories of course
+        return result;
+
+
     }
 }
