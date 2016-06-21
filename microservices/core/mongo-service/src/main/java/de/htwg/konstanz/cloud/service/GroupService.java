@@ -25,13 +25,11 @@ public class GroupService {
 
         // don't save empty groups
         if (groups.isEmpty()) {
-            System.out.println("groups.isEmpty" +  groups.isEmpty());
             return new ResponseEntity(HttpStatus.NOT_FOUND);
         }
 
         final Course course = courseRepo.findOne(courseId);
         if (null == course) {
-            System.out.println("null == course" +  course);
             return new ResponseEntity(HttpStatus.NOT_FOUND);
         }
 
