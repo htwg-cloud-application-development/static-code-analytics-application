@@ -3,6 +3,8 @@ package de.htwg.konstanz.cloud.service;
 import de.htwg.konstanz.cloud.model.Assignment;
 import de.htwg.konstanz.cloud.model.Course;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.http.HttpStatus;
+import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.ArrayList;
@@ -19,11 +21,11 @@ public class AssignmentService {
     AssignmentRepository assignmentRepo;
 
     @RequestMapping(path = "/{courseId}", method = RequestMethod.POST, consumes = "application/json")
-    public void create(@PathVariable final String courseId, @RequestBody final Assignment assignment) throws NoSuchFieldException {
+    public ResponseEntity create(@PathVariable final String courseId, @RequestBody final Assignment assignment) throws NoSuchFieldException {
 
         final Course course = courseRepo.findOne(courseId);
         if (null == course) {
-            throw new NoSuchFieldException("Course not found");
+            return new ResponseEntity(HttpStatus.NO_CONTENT);
         }
 
         assignmentRepo.save(assignment);
@@ -36,10 +38,11 @@ public class AssignmentService {
         assignments.add(assignment);
         course.setAssignments(assignments);
         courseRepo.save(course);
+        return new ResponseEntity(HttpStatus.OK);
     }
 
     @RequestMapping(path = "/{assignmentId}", method = RequestMethod.GET)
-    public Assignment getAssignment(@PathVariable final String assignmentId) {
-        return assignmentRepo.findOne(assignmentId);
+    public ResponseEntity<Assignment> getAssignment(@PathVariable final String assignmentId) {
+        return new ResponseEntity<Assignment>(assignmentRepo.findOne(assignmentId), HttpStatus.OK);
     }
 }

@@ -108,7 +108,6 @@ public class CourseService {
                     }
 
                 }
-
                 //checks if group has checkstyle result
                 if (group.has("checkstyle")) {
                     final JSONObject checkstyle = group.getJSONObject("checkstyle");
