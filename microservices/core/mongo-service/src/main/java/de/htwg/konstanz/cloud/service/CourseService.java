@@ -25,26 +25,30 @@ public class CourseService {
     @Autowired
     private CourseRepository courseRepo;
 
+    //creates a Course and attaches it to the given User
+    //if User doesn't exist returns NO_CONTENT
     @RequestMapping(path = "/{userId}", method = RequestMethod.POST, consumes = "application/json")
     public ResponseEntity create(@RequestBody final Course course, @PathVariable final String userId) throws NoSuchFieldException {
 
+        ResponseEntity responseEntity;
         //check if user exits
         final User user = userRepo.findOne(userId);
         if (null == user) {
-            return new ResponseEntity(HttpStatus.NO_CONTENT);
+            responseEntity = new ResponseEntity(HttpStatus.NO_CONTENT);
+        } else {
+
+            courseRepo.save(course);
+            List<Course> courses = user.getCourses();
+            //if no course attached to user first create List
+            if (null == courses) {
+                courses = new ArrayList<>();
+            }
+            courses.add(course);
+            user.setCourses(courses);
+            userRepo.save(user);
+            responseEntity = new ResponseEntity(HttpStatus.OK);
         }
-
-        courseRepo.save(course);
-        List<Course> courses = user.getCourses();
-
-        if (null == courses) {
-            courses = new ArrayList<>();
-        }
-
-        courses.add(course);
-        user.setCourses(courses);
-        userRepo.save(user);
-        return new ResponseEntity(HttpStatus.OK);
+        return responseEntity;
     }
 
     //Returns one course without errors of pmd and checkstyle

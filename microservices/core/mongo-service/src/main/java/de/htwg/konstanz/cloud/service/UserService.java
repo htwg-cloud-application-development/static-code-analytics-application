@@ -17,6 +17,7 @@ public class UserService {
     @Autowired
     UserRepository userRepo;
 
+    //creates user
     @RequestMapping(value = "/add", method = RequestMethod.POST)
     public ResponseEntity addUser(@RequestBody final User user) {
 
