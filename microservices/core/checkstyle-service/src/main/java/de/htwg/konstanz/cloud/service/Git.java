@@ -22,26 +22,6 @@ class Git {
 
     private final OperatingSystemCheck oOperatingSystemCheck = new OperatingSystemCheck();
 
-    private boolean isValidRepository(URIish repoUri) {
-        if (repoUri.isRemote()) {
-            return isValidRemoteRepository(repoUri);
-        } else {
-            return isValidLocalRepository(repoUri);
-        }
-    }
-
-    private boolean isValidLocalRepository(URIish repoUri) {
-        boolean result;
-
-        try {
-            result = new FileRepository(repoUri.getPath()).getObjectDatabase().exists();
-        } catch (IOException e) {
-            result = false;
-        }
-
-        return result;
-    }
-
     private String getLastCommit(org.eclipse.jgit.api.Git git) throws IOException, GitAPIException {
         //Get Last Commit of Git Repo
         Iterable<RevCommit> revCommits =git.log().call();
@@ -70,58 +50,81 @@ class Git {
         }
 
         /* Closing Object that we can delete the whole directory later */
-        git.getRepository().close();
-
+        if (null!=git) {
+            git.getRepository().close();
+        }
         /* Local Targetpath and Last Commit*/
         return returnValue;
     }
 
-    private boolean isValidRemoteRepository(URIish repoUri) {
+    private boolean isValidRepository(URIish repoUri) {
+        if (repoUri.isRemote()) {
+            return isValidRemoteRepository(repoUri);
+        } else {
+            return isValidLocalRepository(repoUri);
+        }
+    }
+
+    private boolean isValidLocalRepository(URIish repoUri) {
         boolean result;
 
+        try {
+            result = new FileRepository(repoUri.getPath()).getObjectDatabase().exists();
+        } catch (IOException e) {
+            result = false;
+        }
+
+        return result;
+    }
+
+    private boolean isValidRemoteRepository(URIish repoUri) {
+        boolean result;
+        /*  Check Repository URI */
         if (repoUri.getScheme().toLowerCase().startsWith("http") ) {
             String path = repoUri.getPath();
             URIish checkUri = repoUri.setPath(path);
 
             InputStream ins = null;
             try {
+                /* Check Connection */
                 URLConnection conn = new URL(checkUri.toString()).openConnection();
-
                 conn.setReadTimeout(1000);
                 ins = conn.getInputStream();
                 result = true;
             } catch (FileNotFoundException e) {
+                /* URI NOT FOUND */
                 LOG.info("URI not found: " + checkUri.toString());
                 result=false;
             } catch (IOException e) {
+                /* IO ERROR */
                 LOG.info("IO Error: " + checkUri.toString());
                 result = false;
-                //TODO:
             } finally {
+                /* Close InputStream  */
                 try {
-                    ins.close();
+                    if (null!=ins) {
+                        ins.close();
+                    }
                 }
                 catch (Exception e) {
                     /* ignore */
                 }
             }
         } else if (repoUri.getScheme().toLowerCase().startsWith("ssh") ) {
-
+            /* SSH-Validation */
             RemoteSession ssh = null;
             Process exec = null;
 
             try {
+                /* Check SSH-Connection */
                 ssh = SshSessionFactory.getInstance().getSession(repoUri, null, FS.detect(), 1000);
                 exec = ssh.exec("cd " + repoUri.getPath() + "; git rev-parse --git-dir", 1000);
 
-                Integer exitValue = null;
+                Integer exitValue;
                 do {
-                    try {
-                        exitValue = exec.exitValue();
-                    } catch (Exception e) {
-                        //TODO:
-                    }
-                } while (exitValue == null);
+                    exitValue = exec.exitValue();
+                   }
+                while (false);
 
                 result = exitValue == 0;
 
@@ -129,19 +132,26 @@ class Git {
                 result = false;
 
             } finally {
+                /* Close Process */
                 try {
-                    exec.destroy();
+                    if (exec!=null) {
+                        exec.destroy();
+                    }
                 } catch (Exception e) {
                     /* ignore */
                 }
+                /* Disconnect SSH */
                 try {
-                    ssh.disconnect();
+                    if (ssh!=null) {
+                        ssh.disconnect();
+                    }
                 } catch (Exception e) {
                     /* ignore */
                 }
             }
         } else {
             // TODO need to implement tests for other schemas
+            /* Not necessary at the Moment */
             result = true;
         }
 
