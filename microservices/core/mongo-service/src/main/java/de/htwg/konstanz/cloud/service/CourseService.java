@@ -53,7 +53,7 @@ public class CourseService {
 
     //Returns one course without errors of pmd and checkstyle
     @RequestMapping(value = "/{courseId}", method = RequestMethod.GET)
-    public ResponseEntity<String> getCourse(@PathVariable final String courseId) throws IOException {
+    public ResponseEntity<String> getCourse(@PathVariable final String courseId){
 
         final Course course = courseRepo.findOne(courseId);
         return new ResponseEntity<String>(goToPmdAndCheckstyleInJson(course).toString(), HttpStatus.OK);
