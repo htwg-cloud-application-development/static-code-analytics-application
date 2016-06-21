@@ -71,10 +71,10 @@ public class MongoService {
                         .with(new Sort(Sort.Direction.DESC, "timestamp"))
                         .limit(1), CheckstyleResults.class);
 
-        if (!checkstyleResults.isEmpty()){
-            responseEntity = new ResponseEntity<>(checkstyleResults.get(0), HttpStatus.OK);
-        } else {
+        if (checkstyleResults.isEmpty()){
             responseEntity =  new ResponseEntity<>(HttpStatus.NO_CONTENT);
+        } else {
+            responseEntity = new ResponseEntity<>(checkstyleResults.get(0), HttpStatus.OK);
         }
         return  responseEntity;
     }
@@ -116,10 +116,10 @@ public class MongoService {
                         .with(new Sort(Sort.Direction.DESC, "timestamp"))
                         .limit(1), PmdResults.class);
 
-        if (!pmdResults.isEmpty()){
-            responseEntity = new ResponseEntity<>(pmdResults.get(0), HttpStatus.OK);
-        } else {
+        if (pmdResults.isEmpty()){
             responseEntity = new ResponseEntity<>(HttpStatus.NO_CONTENT);
+        } else {
+            responseEntity = new ResponseEntity<>(pmdResults.get(0), HttpStatus.OK);
         }
         return responseEntity;
     }
