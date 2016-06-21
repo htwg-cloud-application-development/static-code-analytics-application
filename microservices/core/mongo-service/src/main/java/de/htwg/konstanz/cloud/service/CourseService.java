@@ -58,7 +58,7 @@ public class CourseService {
 
     //Returns all courses without errors of pmd and checkstyle
     @RequestMapping(method = RequestMethod.GET)
-    public String getAllCourses() {
+    public ResponseEntity<String> getAllCourses() {
 
         final List<Course> courses = courseRepo.findAll();
         final List<JSONObject> jsonObjects = new LinkedList<>();
@@ -66,21 +66,20 @@ public class CourseService {
         for (final Course course : courses) {
             jsonObjects.add(goToPmdAndCheckstyleInJson(course));
         }
-
-        return jsonObjects.toString();
+        return new ResponseEntity<String>(jsonObjects.toString(), HttpStatus.OK);
     }
 
 
     //Returns all groups to matching courseId
     @RequestMapping(value = "/groups/{courseId}", method = RequestMethod.GET)
-    public List<Group> getGroups(@PathVariable final String courseId) throws NoSuchFieldException {
+    public ResponseEntity<List<Group>> getGroups(@PathVariable final String courseId) throws NoSuchFieldException {
 
         final Course course = courseRepo.findOne(courseId);
         if (null == course) {
             throw new NoSuchFieldException("Course not found");
         }
 
-        return course.getGroups();
+        return new ResponseEntity<List<Group>>(course.getGroups(), HttpStatus.OK);
     }
 
     public JSONObject goToPmdAndCheckstyleInJson(final Course course) {
