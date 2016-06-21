@@ -20,27 +20,34 @@ public class AssignmentService {
     @Autowired
     AssignmentRepository assignmentRepo;
 
+    //creates an Assignment and matches it give Course
+    //if no course found return NO_CONTENT
     @RequestMapping(path = "/{courseId}", method = RequestMethod.POST, consumes = "application/json")
     public ResponseEntity create(@PathVariable final String courseId, @RequestBody final Assignment assignment) throws NoSuchFieldException {
 
+        ResponseEntity responseEntity;
         final Course course = courseRepo.findOne(courseId);
+        //if no course found
         if (null == course) {
-            return new ResponseEntity(HttpStatus.NO_CONTENT);
-        }
+            responseEntity = new ResponseEntity(HttpStatus.NO_CONTENT);
+        } else {
 
-        assignmentRepo.save(assignment);
+            assignmentRepo.save(assignment);
+            List<Assignment> assignments = course.getAssignments();
 
-        List<Assignment> assignments = course.getAssignments();
-        if (null == assignments) {
-            assignments = new ArrayList<>();
-        }
+            //if no previous assignments on course create ArrayList
+            if (null == assignments) {
+                assignments = new ArrayList<>();
+            }
+            assignments.add(assignment);
+            course.setAssignments(assignments);
+            courseRepo.save(course);
 
-        assignments.add(assignment);
-        course.setAssignments(assignments);
-        courseRepo.save(course);
-        return new ResponseEntity(HttpStatus.OK);
+            responseEntity = new ResponseEntity(HttpStatus.OK);
+        }return responseEntity;
     }
 
+    //returns search Assigmnet according to ID
     @RequestMapping(path = "/{assignmentId}", method = RequestMethod.GET)
     public ResponseEntity<Assignment> getAssignment(@PathVariable final String assignmentId) {
         return new ResponseEntity<Assignment>(assignmentRepo.findOne(assignmentId), HttpStatus.OK);
