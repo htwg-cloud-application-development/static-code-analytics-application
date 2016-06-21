@@ -36,10 +36,7 @@ public class GroupService {
 
         if (null != dbGroups) {
             //delete groups
-            System.out.println("-------------BÄM");
             groupRepository.delete(dbGroups);
-
-            System.out.println("----AFTER--------BÄM");
         }
 
         groupRepository.save(groups);

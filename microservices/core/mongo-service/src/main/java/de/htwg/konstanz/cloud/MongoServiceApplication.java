@@ -17,7 +17,7 @@ import static springfox.documentation.builders.PathSelectors.regex;
 @EnableSwagger2
 public class MongoServiceApplication {
 
-    public static void main(String[] args) {
+    public static void main(String... args) {
         SpringApplication.run(MongoServiceApplication.class, args);
     }
 

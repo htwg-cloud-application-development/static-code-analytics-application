@@ -78,7 +78,7 @@ public class CourseService {
 
     public JSONObject goToPmdAndCheckstyleInJson(final Course course) {
 
-        //Remove assignments from checkstyle and pmd
+        //go to assignments from checkstyle and pmd
         final JSONObject jCourse = new JSONObject(course);
         final String assignments = "assignments";
 
