@@ -20,6 +20,56 @@ import java.net.URLConnection;
 class Git {
     private static final Logger LOG = LoggerFactory.getLogger(Git.class);
 
+    private final OperatingSystemCheck oOperatingSystemCheck = new OperatingSystemCheck();
+
+    private String getLastCommit(org.eclipse.jgit.api.Git git) throws IOException, GitAPIException {
+        //Get Last Commit of Git Repo
+        Iterable<RevCommit> revCommits =git.log().call();
+        return String.valueOf(revCommits.iterator().next().getCommitTime());
+    }
+
+    String [] downloadGitRepo(String gitRepo) throws IOException, GitAPIException{
+        return downloadGitRepo(gitRepo,null);
+    }
+
+    String [] downloadGitRepo(String gitRepo, String sPcdString) throws GitAPIException, IOException {
+        // Checkout Git-Repo
+        OperatingSystemCheck oOperatingSystemCheck = new OperatingSystemCheck();
+        String sFileSeparator = oOperatingSystemCheck.getOperatingSystemSeparator();
+
+        // return Array
+        String[] returnValue = null;
+
+        // String Magic
+        String directoryName = gitRepo.substring(gitRepo.lastIndexOf("/"),
+                gitRepo.length()).replace(".", "_");
+
+        //test den ersten / removen
+        directoryName = directoryName.substring(1);
+        String localDirectory;
+        if(sPcdString == null) {
+            localDirectory = "repositories" + sFileSeparator + directoryName + "_"
+                    + System.currentTimeMillis() + sFileSeparator;
+        }
+        else{
+            localDirectory = sPcdString + sFileSeparator + directoryName + "_"
+                    + System.currentTimeMillis() + sFileSeparator;
+        }
+        LOG.info(localDirectory);
+        // Clone Command with jGIT
+        URL f = new URL(gitRepo);
+        if (isValidRepository(new URIish(f))) {
+            org.eclipse.jgit.api.Git git = org.eclipse.jgit.api.Git.cloneRepository().setURI(gitRepo)
+                    .setDirectory(new File(localDirectory)).call();
+            returnValue= new String[]{localDirectory, getLastCommit(git)};
+
+            // Closing Object that we can delete the whole directory later
+            git.getRepository().close();
+        }
+        // Local Targetpath and Last Commit
+        return returnValue;
+    }
+
     private boolean isValidRepository(URIish repoUri) {
         if (repoUri.isRemote()) {
             return isValidRemoteRepository(repoUri);
@@ -40,120 +90,54 @@ class Git {
         return result;
     }
 
-    /*
-    String downloadGitRepo(String gitRepo) throws GitAPIException, IOException {
-        // Checkout Git-Repo
-        org.eclipse.jgit.api.Git git = null;
-
-        // return Array
-        String returnValue = null;
-        // String Magic
-        String directoryName = gitRepo.substring(gitRepo.lastIndexOf("/"),
-                gitRepo.length()).replace(".", "_");
-        String localDirectory = "repositories/" + directoryName + "_"
-                + System.currentTimeMillis() + "/";
-
-        // Clone Command with jGIT
-        URL f = new URL(gitRepo);
-        if (isValidRepository(new URIish(f))) {
-            git = git.cloneRepository().setURI(gitRepo)
-                    .setDirectory(new File(localDirectory)).call();
-            returnValue = localDirectory;
-        }
-        // Closing Object that we can delete the whole directory later
-        git.getRepository().close();
-
-        // Local Targetpath and Last Commit
-        return returnValue;
-    }
-    */
-
-	private String getLastCommit(org.eclipse.jgit.api.Git git) throws IOException, GitAPIException {
-        //Get Last Commit of Git Repo
-        Iterable<RevCommit> revCommits =git.log().call();
-        return String.valueOf(revCommits.iterator().next().getCommitTime());
-    }
-
-    String [] downloadGitRepo(String gitRepo) throws GitAPIException, IOException {
-        // Checkout Git-Repo
-        OperatingSystemCheck oOperatingSystemCheck = new OperatingSystemCheck();
-        String sFileSeparator = oOperatingSystemCheck.getOperatingSystemSeparator();
-
-        // return Array
-        String[] returnValue = null;
-
-        // String Magic
-        String directoryName = gitRepo.substring(gitRepo.lastIndexOf("/"),
-                gitRepo.length()).replace(".", "_");
-
-        //test den ersten / removen
-        directoryName = directoryName.substring(1);
-
-        String localDirectory = "repositories" + sFileSeparator + directoryName + "_"
-                + System.currentTimeMillis() + sFileSeparator;
-
-        // Clone Command with jGIT
-        URL f = new URL(gitRepo);
-        if (isValidRepository(new URIish(f))) {
-            org.eclipse.jgit.api.Git git = org.eclipse.jgit.api.Git.cloneRepository().setURI(gitRepo)
-                    .setDirectory(new File(localDirectory)).call();
-            returnValue= new String[]{localDirectory, getLastCommit(git)};
-
-            // Closing Object that we can delete the whole directory later
-            git.getRepository().close();
-
-        }
-
-        // Local Targetpath and Last Commit
-        return returnValue;
-    }
-
     private boolean isValidRemoteRepository(URIish repoUri) {
         boolean result;
-
+        /*  Check Repository URI */
         if (repoUri.getScheme().toLowerCase().startsWith("http") ) {
             String path = repoUri.getPath();
             URIish checkUri = repoUri.setPath(path);
 
             InputStream ins = null;
             try {
+                /* Check Connection */
                 URLConnection conn = new URL(checkUri.toString()).openConnection();
-
                 conn.setReadTimeout(1000);
                 ins = conn.getInputStream();
                 result = true;
             } catch (FileNotFoundException e) {
+                /* URI NOT FOUND */
                 LOG.info("URI not found: " + checkUri.toString());
                 result=false;
             } catch (IOException e) {
+                /* IO ERROR */
                 LOG.info("IO Error: " + checkUri.toString());
                 result = false;
-                //TODO:
             } finally {
+                /* Close InputStream  */
                 try {
-                    ins.close();
+                    if (null!=ins) {
+                        ins.close();
+                    }
                 }
                 catch (Exception e) {
                     /* ignore */
                 }
             }
         } else if (repoUri.getScheme().toLowerCase().startsWith("ssh") ) {
-
+            /* SSH-Validation */
             RemoteSession ssh = null;
             Process exec = null;
 
             try {
+                /* Check SSH-Connection */
                 ssh = SshSessionFactory.getInstance().getSession(repoUri, null, FS.detect(), 1000);
                 exec = ssh.exec("cd " + repoUri.getPath() + "; git rev-parse --git-dir", 1000);
 
-                Integer exitValue = null;
+                Integer exitValue;
                 do {
-                    try {
-                        exitValue = exec.exitValue();
-                    } catch (Exception e) {
-                        //TODO:
-                    }
-                } while (exitValue == null);
+                    exitValue = exec.exitValue();
+                }
+                while (false);
 
                 result = exitValue == 0;
 
@@ -161,11 +145,26 @@ class Git {
                 result = false;
 
             } finally {
-                try { exec.destroy(); } catch (Exception e) { /* ignore */ }
-                try { ssh.disconnect(); } catch (Exception e) { /* ignore */ }
+                /* Close Process */
+                try {
+                    if (exec!=null) {
+                        exec.destroy();
+                    }
+                } catch (Exception e) {
+                    /* ignore */
+                }
+                /* Disconnect SSH */
+                try {
+                    if (ssh!=null) {
+                        ssh.disconnect();
+                    }
+                } catch (Exception e) {
+                    /* ignore */
+                }
             }
         } else {
             // TODO need to implement tests for other schemas
+            /* Not necessary at the Moment */
             result = true;
         }
 
