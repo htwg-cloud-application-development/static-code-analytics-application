@@ -100,6 +100,7 @@ public class CourseService {
 
                 group = groups.getJSONObject(i);
 
+                //checks if group has pmd result
                 if (group.has("pmd")) {
                     JSONObject pmd = group.getJSONObject("pmd");
                     if (pmd.has(assignments)){
@@ -108,6 +109,7 @@ public class CourseService {
 
                 }
 
+                //checks if group has checkstyle result
                 if (group.has("checkstyle")) {
                     final JSONObject checkstyle = group.getJSONObject("checkstyle");
                     if (checkstyle.has(assignments)) {
@@ -120,20 +122,20 @@ public class CourseService {
         return jCourse;
     }
 
-    //t
+    //removes extensive Errors
     public void removeErrorsInAssignments(JSONObject analysisResult){
 
-        // in assignments
+        // gets assignments
         JSONArray assignments = analysisResult.getJSONArray("assignments");
 
         for (int i = 0; i < assignments.length(); i++) {
             JSONObject assignment = assignments.getJSONObject(i);
 
-            //getting name of "key"
-            String[] keys = JSONObject.getNames(assignment);
+            //getting name of "key", which is assignment name
+            String[] assignmentName = JSONObject.getNames(assignment);
 
-            //getting array under "key"
-            JSONArray files = assignment.getJSONArray(keys[0]);
+            //getting array under assignment name
+            JSONArray files = assignment.getJSONArray(assignmentName[0]);
 
             //iterating over "key" array and remove errors
             for (int o = 0; o < files.length(); o++) {
