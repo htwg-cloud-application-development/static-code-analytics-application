@@ -123,14 +123,15 @@ class Checkstyle {
         /* List all files for CheckstyleService */
         if (mainDir.exists()) {
             File[] files = mainDir.listFiles();
-
+            //fill list with relevant Data
             if(files != null) {
                 for (File file : files) {
-
+                    //Head-Dir
                     File[] filesSub = new File(file.getPath()).listFiles();
                     List<String> pathsSub = new ArrayList<>();
 
                     if (filesSub != null) {
+                        //Class-Files
                         for (File aFilesSub : filesSub) {
                             if (aFilesSub.getPath().endsWith(".java")) {
                                 pathsSub.add(aFilesSub.getPath());
@@ -145,6 +146,7 @@ class Checkstyle {
         }
         /* Other Structure Workaround */
         if(list.isEmpty()){
+            //Unregular Repo
             LOG.info("unregular repository");
             List<String> javaFiles=new ArrayList<>();
             list.add(walk(localDirectory,javaFiles));
@@ -153,18 +155,22 @@ class Checkstyle {
         return list;
     }
 
+
     private List<String> walk(String path, List<String> javaFiles) {
+        //crawl Method to detect .java Files
         File root = new File(path);
         File[] list = root.listFiles();
 
         if (list != null) {
             for (File f : list) {
                 if (f.isDirectory()) {
+                    //ignore git folder (Speedreasons)
                     if (!f.getPath().contains(".git")) {
-
+                            //Crawling
                             walk(f.getPath(),javaFiles);
                     }
                 } else {
+                    //Add .java Files to List
                     if(f.getPath().endsWith(".java")) {
                         javaFiles.add(f.getPath());
                     }
