@@ -15,7 +15,7 @@ import org.springframework.web.client.RestTemplate;
 
 import javax.annotation.PostConstruct;
 import java.nio.charset.Charset;
-import java.util.Arrays;
+import java.util.Collections;
 import java.util.concurrent.Future;
 
 @Service
@@ -61,7 +61,7 @@ public class DatabaseService {
             // POST to request url and get String (JSON)
             HttpHeaders headers = new HttpHeaders();
             headers.setContentType(MediaType.APPLICATION_JSON);
-            headers.setAcceptCharset(Arrays.asList(Charset.forName("UTF-8")));
+            headers.setAcceptCharset(Collections.singletonList(Charset.forName("UTF-8")));
             HttpEntity<String> entity = new HttpEntity<>(result, headers);
             // post to service and return response
             return new AsyncResult<>(restTemplate.postForObject(requestUrl, entity, String.class));

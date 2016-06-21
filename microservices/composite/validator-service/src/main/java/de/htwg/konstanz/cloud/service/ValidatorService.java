@@ -27,9 +27,9 @@ import java.util.concurrent.Future;
 public class ValidatorService {
 
     private static final Logger LOG = LoggerFactory.getLogger(ValidatorService.class);
-    public static final String APPLICATION_JSON = "application/json";
-    public static final String CHECKSTYLE = "checkstyle";
-    public static final String PMD = "pmd";
+    private static final String APPLICATION_JSON = "application/json";
+    private static final String CHECKSTYLE = "checkstyle";
+    private static final String PMD = "pmd";
 
     @Autowired
     private LoadBalancerClient loadBalancer;
@@ -256,7 +256,7 @@ public class ValidatorService {
     /**
      * return last pmd result of specific user
      *
-     * @param userId alias groupid
+     * @param userId alias groupd
      * @return last result for user with userId
      */
     @RequestMapping(value = "/groups/{userId}/pmd/last-result", method = RequestMethod.GET, produces = APPLICATION_JSON)
