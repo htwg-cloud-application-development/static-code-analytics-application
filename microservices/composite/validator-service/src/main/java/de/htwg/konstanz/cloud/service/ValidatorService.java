@@ -194,7 +194,7 @@ public class ValidatorService {
 
             // build result
             JSONObject jsonObject = new JSONObject();
-            jsonObject.put("duplication", pmdRepo.get());
+            jsonObject.putOpt("duplication", pmdRepo.get());
 
             return util.createResponse(jsonObject.toString(), HttpStatus.OK);
         } catch (Exception e) {

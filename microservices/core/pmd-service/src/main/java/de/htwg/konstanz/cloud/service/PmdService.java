@@ -80,7 +80,7 @@ public class PmdService {
     }
 
     @RequestMapping(value = "/validate/copypaste", method = RequestMethod.POST, produces = "application/json", consumes = "application/json")
-    public ResponseEntity copypaste(@RequestBody String data) {
+    public ResponseEntity<String> copypaste(@RequestBody String data) {
         try {
             return ResponseEntity.ok(cpd.startIt(util.getRepositoriesFromRequestBody(data)));
         } catch (ParserConfigurationException e) {
