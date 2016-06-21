@@ -3,6 +3,8 @@ package de.htwg.konstanz.cloud.service;
 import de.htwg.konstanz.cloud.model.Course;
 import de.htwg.konstanz.cloud.model.Group;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.http.HttpStatus;
+import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
@@ -17,41 +19,37 @@ public class GroupService {
     @Autowired
     private CourseRepository courseRepo;
 
+    //create group to matching course
     @RequestMapping(path = "/{courseId}", method = RequestMethod.POST, consumes = "application/json")
-    public void create(@RequestBody final List<Group> groups, @PathVariable final String courseId) throws NoSuchFieldException {
+    public ResponseEntity create(@RequestBody final List<Group> groups, @PathVariable final String courseId) throws NoSuchFieldException {
 
-        if (groups.isEmpty()) { // don't save empty groups
-            return;
+        // don't save empty groups
+        if (groups.isEmpty()) {
+            return new ResponseEntity(HttpStatus.NOT_FOUND);
         }
-
 
         final Course course = courseRepo.findOne(courseId);
         if (null == course) {
-            throw new NoSuchFieldException("Course not found");
+            return new ResponseEntity(HttpStatus.NOT_FOUND);
         }
 
         final List<Group> dbGroups = course.getGroups();
 
-        //System.out.println("____________ " + dbGroups);
-
         if (null != dbGroups) {
-            //delete groups
-            System.out.println("-------------BÄM");
+            //delete old groups
             groupRepository.delete(dbGroups);
-
-            System.out.println("----AFTER--------BÄM");
         }
 
         groupRepository.save(groups);
-
         course.setGroups(groups);
         courseRepo.save(course);
+
+        return new ResponseEntity(HttpStatus.OK);
     }
 
-
+    // return group with associated userId
     @RequestMapping(value = "{userId}", method = RequestMethod.GET)
-    public Group getGroup(@PathVariable final String userId) {
-
-        return groupRepository.findOne(userId);
+    public ResponseEntity<Group> getGroup(@PathVariable final String userId) {
+        return new ResponseEntity<Group>(groupRepository.findOne(userId), HttpStatus.OK);
     }
 }

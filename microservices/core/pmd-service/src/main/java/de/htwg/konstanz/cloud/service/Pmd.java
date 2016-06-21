@@ -117,37 +117,42 @@ public class Pmd {
         List<List<String>> list = new ArrayList<>();
         File mainDir;
         LOG.info("Local Directory: " + sLocalDirectory);
-
+        //Check if Src-Dir exists
         mainDir = util.checkLocalSrcDir(sLocalDirectory);
 
         /* List all files for CheckstyleService */
-        if (mainDir.exists()) {
-            File[] files = mainDir.listFiles();
 
-            if (files != null) {
-                for (File file : mainDir.listFiles()) {
-                    if (file != null) {
-                        File[] filesSub = new File(file.getPath()).listFiles();
-                        List<String> pathsSub = new ArrayList<>();
+            if (mainDir.exists()) {
+                File[] files = mainDir.listFiles();
 
-                        if (filesSub != null) {
-                            for (File aFilesSub : filesSub) {
-                                if (aFilesSub.getPath().endsWith(".java")) {
-                                    pathsSub.add(aFilesSub.getPath());
+                if (files != null && mainDir!=null) {
+
+                    for (File file : mainDir.listFiles()) {
+                        if (file != null) {
+                            //Head-Dirs
+                            File[] filesSub = new File(file.getPath()).listFiles();
+                            List<String> pathsSub = new ArrayList<>();
+
+                            if (filesSub != null) {
+                                for (File aFilesSub : filesSub) {
+                                    //Java-Files
+                                    if (aFilesSub.getPath().endsWith(".java")) {
+                                        pathsSub.add(aFilesSub.getPath());
+                                    }
                                 }
                             }
-                        }
 
-                        if (!pathsSub.isEmpty()) {
-                            list.add(pathsSub);
+                            if (!pathsSub.isEmpty()) {
+                                list.add(pathsSub);
+                            }
                         }
                     }
                 }
-            }
         }
 
         /* Other Structure Workaround */
         if (list.isEmpty()) {
+            //Unregular Repo
             LOG.info("unregular repository");
             List<String> javaFiles = new ArrayList<>();
             list.add(walk(sLocalDirectory, javaFiles));
@@ -157,17 +162,20 @@ public class Pmd {
     }
 
     private List<String> walk(String path, List<String> javaFiles) throws FileNotFoundException {
+        //Crawler
         File root = new File(path);
         File[] list = root.listFiles();
 
         if (list != null) {
             for (File tmpFile : list) {
                 if (tmpFile.isDirectory()) {
+                    //Ignore Git-Dir
                     if (!tmpFile.getPath().contains(".git")) {
-
+                        //rekursiv crawle
                         walk(tmpFile.getPath(), javaFiles);
                     }
                 } else {
+                    //add Class-Files
                     if (tmpFile.getPath().endsWith(".java")) {
                         javaFiles.add(tmpFile.getPath());
                     }
