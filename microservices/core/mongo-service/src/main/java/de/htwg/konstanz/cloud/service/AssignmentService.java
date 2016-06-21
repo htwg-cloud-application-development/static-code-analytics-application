@@ -23,7 +23,7 @@ public class AssignmentService {
     //creates an Assignment and matches it give Course
     //if no course found return NO_CONTENT
     @RequestMapping(path = "/{courseId}", method = RequestMethod.POST, consumes = "application/json")
-    public ResponseEntity create(@PathVariable final String courseId, @RequestBody final Assignment assignment) throws NoSuchFieldException {
+    public ResponseEntity create(@PathVariable final String courseId, @RequestBody final Assignment assignment) {
 
         ResponseEntity responseEntity;
         final Course course = courseRepo.findOne(courseId);

@@ -21,7 +21,7 @@ public class GroupService {
 
     //create group to matching course
     @RequestMapping(path = "/{courseId}", method = RequestMethod.POST, consumes = "application/json")
-    public ResponseEntity create(@RequestBody final List<Group> groups, @PathVariable final String courseId) throws NoSuchFieldException {
+    public ResponseEntity create(@RequestBody final List<Group> groups, @PathVariable final String courseId) {
         ResponseEntity responseEntity;
         final Course course = courseRepo.findOne(courseId);
 

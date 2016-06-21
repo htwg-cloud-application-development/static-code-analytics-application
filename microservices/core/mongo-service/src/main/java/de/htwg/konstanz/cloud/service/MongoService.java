@@ -56,7 +56,6 @@ public class MongoService {
 
             responseEntity = new ResponseEntity(HttpStatus.OK);
         }
-
         return responseEntity;
     }
 

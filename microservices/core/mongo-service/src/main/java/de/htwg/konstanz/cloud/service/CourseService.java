@@ -27,7 +27,7 @@ public class CourseService {
     //creates a Course and attaches it to the given User
     //if User doesn't exist returns NO_CONTENT
     @RequestMapping(path = "/{userId}", method = RequestMethod.POST, consumes = "application/json")
-    public ResponseEntity create(@RequestBody final Course course, @PathVariable final String userId) throws NoSuchFieldException {
+    public ResponseEntity create(@RequestBody final Course course, @PathVariable final String userId) {
 
         ResponseEntity responseEntity;
         //check if user exits
