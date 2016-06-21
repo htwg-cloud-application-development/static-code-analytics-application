@@ -6,6 +6,8 @@ import de.htwg.konstanz.cloud.model.User;
 import org.json.JSONArray;
 import org.json.JSONObject;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.http.HttpStatus;
+import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
 import java.io.IOException;
@@ -24,11 +26,12 @@ public class CourseService {
     private CourseRepository courseRepo;
 
     @RequestMapping(path = "/{userId}", method = RequestMethod.POST, consumes = "application/json")
-    public void create(@RequestBody final Course course, @PathVariable final String userId) throws NoSuchFieldException {
+    public ResponseEntity create(@RequestBody final Course course, @PathVariable final String userId) throws NoSuchFieldException {
 
+        //check if user exits
         final User user = userRepo.findOne(userId);
         if (null == user) {
-            throw new NoSuchFieldException("User not found");
+            return new ResponseEntity(HttpStatus.NO_CONTENT);
         }
         courseRepo.save(course);
 
@@ -39,14 +42,18 @@ public class CourseService {
         courses.add(course);
         user.setCourses(courses);
         userRepo.save(user);
+
+        return new ResponseEntity(HttpStatus.OK);
     }
 
     //Returns one course without errors of pmd and checkstyle
     @RequestMapping(value = "/{courseId}", method = RequestMethod.GET)
-    public String getCourse(@PathVariable final String courseId) throws IOException {
+    public ResponseEntity<String> getCourse(@PathVariable final String courseId) throws IOException {
 
         final Course course = courseRepo.findOne(courseId);
-        return goToPmdAndCheckstyleInJson(course).toString();
+
+        ResponseEntity<String> responseEntity = new ResponseEntity<String>(goToPmdAndCheckstyleInJson(course).toString(), HttpStatus.OK);
+        return responseEntity;
     }
 
     //Returns all courses without errors of pmd and checkstyle
