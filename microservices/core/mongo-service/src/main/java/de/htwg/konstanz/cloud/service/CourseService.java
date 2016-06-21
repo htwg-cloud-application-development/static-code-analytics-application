@@ -33,16 +33,17 @@ public class CourseService {
         if (null == user) {
             return new ResponseEntity(HttpStatus.NO_CONTENT);
         }
-        courseRepo.save(course);
 
+        courseRepo.save(course);
         List<Course> courses = user.getCourses();
+
         if (null == courses) {
             courses = new ArrayList<>();
         }
+
         courses.add(course);
         user.setCourses(courses);
         userRepo.save(user);
-
         return new ResponseEntity(HttpStatus.OK);
     }
 
@@ -51,7 +52,6 @@ public class CourseService {
     public ResponseEntity<String> getCourse(@PathVariable final String courseId) throws IOException {
 
         final Course course = courseRepo.findOne(courseId);
-
         ResponseEntity<String> responseEntity = new ResponseEntity<String>(goToPmdAndCheckstyleInJson(course).toString(), HttpStatus.OK);
         return responseEntity;
     }
@@ -82,6 +82,9 @@ public class CourseService {
         return new ResponseEntity<List<Group>>(course.getGroups(), HttpStatus.OK);
     }
 
+    //converts course to JSON
+    //navigates to groups.pmd.assignments and groups.checkstyle.assignments
+    //in assignments inovkes removeErrosInAssignment()
     public JSONObject goToPmdAndCheckstyleInJson(final Course course) {
 
         //go to assignments from checkstyle and pmd
@@ -117,27 +120,25 @@ public class CourseService {
         return jCourse;
     }
 
+    //t
     public void removeErrorsInAssignments(JSONObject analysisResult){
 
-        if (analysisResult.has("assignments")){
+        // in assignments
+        JSONArray assignments = analysisResult.getJSONArray("assignments");
 
-            // in assignments
-            JSONArray assignments = analysisResult.getJSONArray("assignments");
+        for (int i = 0; i < assignments.length(); i++) {
+            JSONObject assignment = assignments.getJSONObject(i);
 
-            for (int i = 0; i < assignments.length(); i++) {
-                JSONObject assignment = assignments.getJSONObject(i);
+            //getting name of "key"
+            String[] keys = JSONObject.getNames(assignment);
 
-                //getting name of "key"
-                String[] keys = JSONObject.getNames(assignment);
+            //getting array under "key"
+            JSONArray files = assignment.getJSONArray(keys[0]);
 
-                //getting array under "key"
-                JSONArray files = assignment.getJSONArray(keys[0]);
-
-                //iterating over "key" array and remove errors
-                for (int o = 0; o < files.length(); o++) {
-                    JSONObject file = files.getJSONObject(o);
-                    file.remove("errors");
-                }
+            //iterating over "key" array and remove errors
+            for (int o = 0; o < files.length(); o++) {
+            JSONObject file = files.getJSONObject(o);
+            file.remove("errors");
             }
         }
     }
