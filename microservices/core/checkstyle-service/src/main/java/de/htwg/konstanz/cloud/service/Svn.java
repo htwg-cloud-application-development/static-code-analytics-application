@@ -15,7 +15,7 @@ import java.net.URLDecoder;
 import java.util.ArrayList;
 import java.util.List;
 
-public class Svn {
+class Svn {
     private static final Logger LOG = LoggerFactory.getLogger(Svn.class);
 
     private String sFileSeparator = "";
@@ -28,10 +28,11 @@ public class Svn {
         String name = System.getenv("SVN_USER");
         String password = System.getenv("SVN_PASSWORD");
         File dir = new File("repositories");
-
+        //Check if MainDirectory exists
         if(dir.exists()) {
             LOG.info("Main Directory " + dir.toString() + " already exists");
         }
+        //if not create Dir
         else {
             boolean bSuccess = dir.mkdir();
 
@@ -42,16 +43,17 @@ public class Svn {
                 LOG.info("Error while creating directory: " + dir.toString());
             }
         }
-
+        //Check VPN Credentials
         if((name == null) && (password == null)) {
             LOG.info("invalid VPN credentials");
         }
         else {
             /* Split URL at every Slash */
-            String[] parts = svnLink.split("\\/");
+            String[] parts = svnLink.split("/");
 
             local = local + parts[parts.length - 1];
             local = "repositories" + sFileSeparator + local + "_" + System.currentTimeMillis() + sFileSeparator;
+            //Create Repo-Directory
             File dir1 = new File(local);
             boolean bSuccess = dir1.mkdir();
 
@@ -61,7 +63,7 @@ public class Svn {
             else {
                 LOG.info("Error while creating directory: " + dir.toString());
             }
-
+            //Start Checkout Logic
             svnCheckout(svnLink, genAuthString(name, password), local);
         }
 
@@ -81,6 +83,7 @@ public class Svn {
         // Generate and open the URL Connection
         URL url = new URL(mainUrl);
         URLConnection urlConnection = url.openConnection();
+        //Authenticate
         urlConnection.setRequestProperty("Authorization", "Basic "
                 + authStringEnc);
         // read HTML File
@@ -91,13 +94,14 @@ public class Svn {
         HTMLDocument htmlDoc = new HTMLDocument();
         htmlDoc.putProperty("IgnoreCharsetDirective", Boolean.TRUE);
         editorKit.read(br, htmlDoc, 0);
+        //Get Strings from HTML-TAG A
         HTMLDocument.Iterator iter = htmlDoc.getIterator(HTML.Tag.A);
         List<String> listValue = iterToList(iter);
-
+        //Start Crawling
         for (String aListValue : listValue) {
             if (URLDecoder.decode(aListValue, "UTF-8").endsWith("/")) {
                 // String Magic
-                String[] parts = URLDecoder.decode(aListValue, "UTF-8").split("\\/");
+                String[] parts = URLDecoder.decode(aListValue, "UTF-8").split("/");
                 String localPathn = localPath + sFileSeparator + parts[parts.length - 1];
                 // Create new Dir
                 boolean bSuccess = new File(localPathn).mkdir();
@@ -158,6 +162,7 @@ public class Svn {
         } catch (IOException e) {
             /* ignore */
         } finally {
+            //Close InputStream
             if (is != null) {
                 try {
                     is.close();
@@ -165,6 +170,7 @@ public class Svn {
                 /* ignore */
                 }
             }
+            //close Outputstream
             if (outputStream != null) {
                 try {
                     outputStream.close();

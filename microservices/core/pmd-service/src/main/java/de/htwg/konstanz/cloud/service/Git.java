@@ -20,8 +20,6 @@ import java.net.URLConnection;
 class Git {
     private static final Logger LOG = LoggerFactory.getLogger(Git.class);
 
-    private final OperatingSystemCheck oOperatingSystemCheck = new OperatingSystemCheck();
-
     private String getLastCommit(org.eclipse.jgit.api.Git git) throws IOException, GitAPIException {
         //Get Last Commit of Git Repo
         Iterable<RevCommit> revCommits =git.log().call();
@@ -29,6 +27,7 @@ class Git {
     }
 
     String [] downloadGitRepo(String gitRepo) throws IOException, GitAPIException{
+        //Second Parameter changes the local Target-Path
         return downloadGitRepo(gitRepo,null);
     }
 
@@ -37,21 +36,21 @@ class Git {
         OperatingSystemCheck oOperatingSystemCheck = new OperatingSystemCheck();
         String sFileSeparator = oOperatingSystemCheck.getOperatingSystemSeparator();
 
-        // return Array
+        // Return Array
         String[] returnValue = null;
 
         // String Magic
         String directoryName = gitRepo.substring(gitRepo.lastIndexOf("/"),
                 gitRepo.length()).replace(".", "_");
-
-        //test den ersten / removen
         directoryName = directoryName.substring(1);
         String localDirectory;
         if(sPcdString == null) {
+            //Build Local Target-Path
             localDirectory = "repositories" + sFileSeparator + directoryName + "_"
                     + System.currentTimeMillis() + sFileSeparator;
         }
         else{
+            //Build Local Target-Path
             localDirectory = sPcdString + sFileSeparator + directoryName + "_"
                     + System.currentTimeMillis() + sFileSeparator;
         }
@@ -71,6 +70,7 @@ class Git {
     }
 
     private boolean isValidRepository(URIish repoUri) {
+        //Logic to Validate the Repository-URI
         if (repoUri.isRemote()) {
             return isValidRemoteRepository(repoUri);
         } else {
@@ -79,14 +79,13 @@ class Git {
     }
 
     private boolean isValidLocalRepository(URIish repoUri) {
+        //Check Repository-URI
         boolean result;
-
         try {
             result = new FileRepository(repoUri.getPath()).getObjectDatabase().exists();
         } catch (IOException e) {
             result = false;
         }
-
         return result;
     }
 
@@ -146,20 +145,21 @@ class Git {
 
             } finally {
                 /* Close Process */
+                if (exec!=null) {
                 try {
-                    if (exec!=null) {
                         exec.destroy();
-                    }
                 } catch (Exception e) {
                     /* ignore */
                 }
+                }
                 /* Disconnect SSH */
+                if (ssh!=null) {
                 try {
-                    if (ssh!=null) {
                         ssh.disconnect();
-                    }
+
                 } catch (Exception e) {
                     /* ignore */
+                }
                 }
             }
         } else {
