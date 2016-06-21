@@ -55,6 +55,7 @@ public class ValidatorService {
 
     /**
      * Default route to check if service allive
+     *
      * @return timetamp and service id
      */
     @RequestMapping(value = "/info", method = RequestMethod.GET, produces = APPLICATION_JSON)
@@ -65,6 +66,7 @@ public class ValidatorService {
 
     /**
      * Validate all groups of a specific course
+     *
      * @param courseId course id from moodle
      * @return List of checkstyle and pmd result for all groups
      */
@@ -102,6 +104,7 @@ public class ValidatorService {
 
     /**
      * Route to validate a specific group
+     *
      * @param userId alias group id from moodle
      * @return checkstyle and pmd result
      */
@@ -169,13 +172,40 @@ public class ValidatorService {
         }
     }
 
-    /**
-     * Route to test checkstyle and pmd validation
-     * @param data json with property "repository"
-     * @return result of checkstyle and pmd
-     */
+    @RequestMapping(value = "/courses/{courseId}/validate/duplication", method = RequestMethod.POST)
+    public ResponseEntity<String> validateDuplication(@PathVariable String courseId) {
+        try {
+            // get course with all groups from database
+            String course = databaseService.getCourse(courseId);
+
+            // get pmd instance from eureka
+            ServiceInstance pmdInstance = loadBalancer.choose(PMD);
+            // get json object with array of repositores to call code dublication service
+            JSONObject repositories = new JSONObject().put("repositories", util.getRepositoriesFromJsonObject(course));
+
+            // Call validation asynchronous
+            Future<String> pmdRepo = validateRepositoryService.validateCodeDublication(repositories.toString(), pmdInstance.getUri());
+
+            // Wait until they are done
+            while (!pmdRepo.isDone()) {
+                //10-millisecond pause between each check
+                Thread.sleep(500);
+            }
+
+            // build result
+            JSONObject jsonObject = new JSONObject();
+            jsonObject.put("duplication", pmdRepo.get());
+
+            return util.createResponse(jsonObject.toString(), HttpStatus.OK);
+        } catch (Exception e) {
+            LOG.error(e.getMessage());
+            return util.createErrorResponse(e.getMessage(), HttpStatus.INTERNAL_SERVER_ERROR);
+        }
+    }
+
+
     @RequestMapping(value = "/validate", method = RequestMethod.POST, consumes = APPLICATION_JSON, produces = APPLICATION_JSON)
-    public ResponseEntity<String> validateGroupVerify(@RequestBody ValidationData data) {
+    public ResponseEntity<String> validateCodeDublication(@RequestBody ValidationData data) {
         try {
             // get checkstyle and pmd instance from eureka
             ServiceInstance checkstyleInstance = loadBalancer.choose(CHECKSTYLE);
@@ -209,6 +239,7 @@ public class ValidatorService {
 
     /**
      * return last checkstyle result of specific user
+     *
      * @param userId alias groupId
      * @return last result for user with userId
      */
@@ -224,6 +255,7 @@ public class ValidatorService {
 
     /**
      * return last pmd result of specific user
+     *
      * @param userId alias groupid
      * @return last result for user with userId
      */
@@ -236,4 +268,6 @@ public class ValidatorService {
             return util.createErrorResponse(e.getMessage(), HttpStatus.INTERNAL_SERVER_ERROR);
         }
     }
+
+
 }
