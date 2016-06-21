@@ -20,6 +20,10 @@ public class Svn {
     private String sFileSeparator = "";
 
     String downloadSvnRepo(String svnLink) throws IOException, BadLocationException {
+        return downloadSvnRepo(svnLink,null);
+    }
+
+    String downloadSvnRepo(String svnLink, String sPcdString) throws IOException, BadLocationException {
         OperatingSystemCheck oOperatingSystemCheck = new OperatingSystemCheck();
         sFileSeparator = oOperatingSystemCheck.getOperatingSystemSeparator();
         //Parameters to access svn
@@ -35,7 +39,12 @@ public class Svn {
             String[] parts = svnLink.split("\\/");
 
             local = local + parts[parts.length - 1];
-            local = "repositories" + sFileSeparator + local + "_" + System.currentTimeMillis() + sFileSeparator;
+            if(sPcdString == null){
+                local = "repositories" + sFileSeparator + local + "_" + System.currentTimeMillis() + sFileSeparator;
+            }
+            else {
+                local = sPcdString + sFileSeparator + local + "_" + System.currentTimeMillis() + sFileSeparator;
+            }
             File dir1 = new File(local);
             dir1.mkdir();
 

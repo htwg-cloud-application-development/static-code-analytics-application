@@ -28,32 +28,45 @@ class Git {
         return String.valueOf(revCommits.iterator().next().getCommitTime());
     }
 
-    String [] downloadGitRepo(String gitRepo) throws GitAPIException, IOException {
-        /* Checkout Git-Repo */
-        org.eclipse.jgit.api.Git git = null;
+    String [] downloadGitRepo(String gitRepo) throws IOException, GitAPIException{
+        return downloadGitRepo(gitRepo,null);
+    }
 
-        /* return Array */
+    String [] downloadGitRepo(String gitRepo, String sPcdString) throws GitAPIException, IOException {
+        // Checkout Git-Repo
+        OperatingSystemCheck oOperatingSystemCheck = new OperatingSystemCheck();
+        String sFileSeparator = oOperatingSystemCheck.getOperatingSystemSeparator();
+
+        // return Array
         String[] returnValue = null;
 
-        /* String Magic */
+        // String Magic
         String directoryName = gitRepo.substring(gitRepo.lastIndexOf("/"),
                 gitRepo.length()).replace(".", "_");
-        String localDirectory = "repositories" + oOperatingSystemCheck.getOperatingSystemSeparator() + directoryName + "_"
-                + System.currentTimeMillis() + oOperatingSystemCheck.getOperatingSystemSeparator();
 
-        /* Clone Command with jGIT */
+        //test den ersten / removen
+        directoryName = directoryName.substring(1);
+        String localDirectory;
+        if(sPcdString == null) {
+            localDirectory = "repositories" + sFileSeparator + directoryName + "_"
+                    + System.currentTimeMillis() + sFileSeparator;
+        }
+        else{
+            localDirectory = sPcdString + sFileSeparator + directoryName + "_"
+                    + System.currentTimeMillis() + sFileSeparator;
+        }
+        LOG.info(localDirectory);
+        // Clone Command with jGIT
         URL f = new URL(gitRepo);
         if (isValidRepository(new URIish(f))) {
-            git = org.eclipse.jgit.api.Git.cloneRepository().setURI(gitRepo)
+            org.eclipse.jgit.api.Git git = org.eclipse.jgit.api.Git.cloneRepository().setURI(gitRepo)
                     .setDirectory(new File(localDirectory)).call();
             returnValue= new String[]{localDirectory, getLastCommit(git)};
-        }
 
-        /* Closing Object that we can delete the whole directory later */
-        if (null!=git) {
+            // Closing Object that we can delete the whole directory later
             git.getRepository().close();
         }
-        /* Local Targetpath and Last Commit*/
+        // Local Targetpath and Last Commit
         return returnValue;
     }
 
