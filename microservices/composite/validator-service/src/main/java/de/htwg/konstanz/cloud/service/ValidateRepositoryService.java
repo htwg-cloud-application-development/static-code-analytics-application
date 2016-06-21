@@ -45,6 +45,13 @@ public class ValidateRepositoryService {
     }
 
     @Async
+    public Future<String> validateCodeDublication(String repositoryUrlJsonObj, URI requestUri) throws InstantiationException {
+        String VALIDATE_ROUTE = "/validate/copypaste";
+        LOG.info("Validate dublication for " + repositoryUrlJsonObj);
+        return executePostRequest(repositoryUrlJsonObj, requestUri + VALIDATE_ROUTE);
+    }
+
+    @Async
     public Future<String> validateRepository(String repositoryUrlJsonObj, URI requestUri) {
         String VALIDATE_ROUTE = "/validate";
         LOG.info("Validate " + repositoryUrlJsonObj);
