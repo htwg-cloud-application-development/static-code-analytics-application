@@ -52,8 +52,7 @@ public class CourseService {
     public ResponseEntity<String> getCourse(@PathVariable final String courseId) throws IOException {
 
         final Course course = courseRepo.findOne(courseId);
-        ResponseEntity<String> responseEntity = new ResponseEntity<String>(goToPmdAndCheckstyleInJson(course).toString(), HttpStatus.OK);
-        return responseEntity;
+        return new ResponseEntity<String>(goToPmdAndCheckstyleInJson(course).toString(), HttpStatus.OK);
     }
 
     //Returns all courses without errors of pmd and checkstyle
@@ -74,12 +73,14 @@ public class CourseService {
     @RequestMapping(value = "/groups/{courseId}", method = RequestMethod.GET)
     public ResponseEntity<List<Group>> getGroups(@PathVariable final String courseId) throws NoSuchFieldException {
 
+        ResponseEntity<List<Group>> responseEntity;
         final Course course = courseRepo.findOne(courseId);
         if (null == course) {
-            throw new NoSuchFieldException("Course not found");
+            responseEntity = new ResponseEntity<List<Group>>(HttpStatus.NO_CONTENT);
+        } else {
+            responseEntity = new ResponseEntity<List<Group>>(course.getGroups(), HttpStatus.OK);
         }
-
-        return new ResponseEntity<List<Group>>(course.getGroups(), HttpStatus.OK);
+        return responseEntity;
     }
 
     //converts course to JSON
