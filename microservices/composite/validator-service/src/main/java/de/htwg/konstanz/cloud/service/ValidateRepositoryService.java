@@ -36,33 +36,34 @@ public class ValidateRepositoryService {
 
     @Async
     public Future<String> validateRepository(String repositoryUrlJsonObj) throws InstantiationException {
-        String VALIDATE_ROUTE = "/validate";
+        String validateRoute = "/validate";
         LOG.info("Validate " + repositoryUrlJsonObj);
 
         // get checkstyle service instance
         ServiceInstance instance = loadBalancer.choose("checkstyle");
-        return postForValidation(repositoryUrlJsonObj, instance, VALIDATE_ROUTE);
+        return postForValidation(repositoryUrlJsonObj, instance, validateRoute);
     }
 
     @Async
     public Future<String> validateCodeDublication(String repositoryUrlJsonObj, URI requestUri) {
-        String VALIDATE_ROUTE = "/validate/copypaste";
+        String validateRoute = "/validate/copypaste";
         LOG.info("Validate dublication for " + repositoryUrlJsonObj);
-        return executePostRequest(repositoryUrlJsonObj, requestUri + VALIDATE_ROUTE);
+        return executePostRequest(repositoryUrlJsonObj, requestUri + validateRoute);
     }
 
     @Async
     public Future<String> validateRepository(String repositoryUrlJsonObj, URI requestUri) {
-        String VALIDATE_ROUTE = "/validate";
+        String validateRoute = "/validate";
         LOG.info("Validate " + repositoryUrlJsonObj);
-        return executePostRequest(repositoryUrlJsonObj, requestUri + VALIDATE_ROUTE);
+        return executePostRequest(repositoryUrlJsonObj, requestUri + validateRoute);
     }
 
 
-    private Future<String> postForValidation(String repositoryUrlJsonObj, ServiceInstance instance, String VALIDATE_ROUTE) throws InstantiationException {
+    private Future<String> postForValidation(String repositoryUrlJsonObj, ServiceInstance instance, String validateRoute)
+            throws InstantiationException {
         if (null != instance) {
             // build request url
-            String requestUrl = instance.getUri() + VALIDATE_ROUTE;
+            String requestUrl = instance.getUri() + validateRoute;
             // POST to request url and get String (JSON)
             LOG.debug("repository: " + repositoryUrlJsonObj);
             return executePostRequest(repositoryUrlJsonObj, requestUrl);
