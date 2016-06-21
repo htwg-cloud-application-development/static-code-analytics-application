@@ -49,21 +49,32 @@ public class ValidatorService {
     @Autowired
     CustomScheduler customScheduler;
 
+    // config property from application yml
     @Value("${spring.application.name}")
     private String serviceName;
 
-
+    /**
+     * Default route to check if service allive
+     * @return timetamp and service id
+     */
     @RequestMapping(value = "/info", method = RequestMethod.GET, produces = APPLICATION_JSON)
     public String info() {
         return "{\"timestamp\":\"" + new Date() + "\",\"serviceId\":\"" + serviceName + "\"}";
     }
 
 
+    /**
+     * Validate all groups of a specific course
+     * @param courseId course id from moodle
+     * @return List of checkstyle and pmd result for all groups
+     */
     @RequestMapping(value = "/courses/{courseId}/validate", method = RequestMethod.POST)
     public ResponseEntity<String> validateCourse(@PathVariable String courseId) {
 
         try {
+            // call database to get all courses
             String course = databaseService.getCourse(courseId);
+            // Convert to json
             JSONObject jsonObj = new JSONObject(course);
             JSONArray groups = jsonObj.getJSONArray("groups");
 
@@ -71,41 +82,53 @@ public class ValidatorService {
             ArrayList<JSONObject> result = new ArrayList<>();
             // check if service runs on aws
             if (environment.getActiveProfiles()[0].equals("aws")) {
+                // run custom scheduler
                 result = customScheduler.runValidationSchedulerOnAws(groups);
             }
 
-
+            // return json result
             return util.createResponse(result.toString(), HttpStatus.OK);
 
         } catch (InstantiationException e) {
+            // Service unavailable
             LOG.error(Arrays.toString(e.getStackTrace()));
             return util.createErrorResponse(e.getMessage(), HttpStatus.SERVICE_UNAVAILABLE);
         } catch (Exception e) {
+            // Internal server error
             LOG.error(Arrays.toString(e.getStackTrace()));
             return util.createErrorResponse(e.getMessage(), HttpStatus.INTERNAL_SERVER_ERROR);
         }
     }
 
-
+    /**
+     * Route to validate a specific group
+     * @param userId alias group id from moodle
+     * @return checkstyle and pmd result
+     */
     @ApiOperation(value = "validate", nickname = "validate")
     @RequestMapping(value = "/groups/{userId}/validate", method = RequestMethod.POST)
     @ApiResponse(code = 200, message = "Success", response = String.class)
     public ResponseEntity<String> validateGroup(@PathVariable String userId) {
         try {
+            // call database to get course
             String group = databaseService.getGroup(userId);
+            // build json with result
             JSONObject jsonObject = new JSONObject(group);
             LOG.info("Validate: " + jsonObject.toString());
-            // start execution measurement
+            // get instances
             ServiceInstance checkstyleInstance = loadBalancer.choose(CHECKSTYLE);
             ServiceInstance pmdInstance = loadBalancer.choose(PMD);
 
+            // start time measurement
             long startTime = System.currentTimeMillis();
             ValidationData repositoryData = new ValidationData();
             repositoryData.setRepository(jsonObject.getString("repository"));
 
+            // execute checkstyle and pmd validation and save future
             Future<String> checkstyleRepo = validateRepositoryService.validateRepository(repositoryData.toString(), checkstyleInstance.getUri());
             Future<String> pmdRepo = validateRepositoryService.validateRepository(repositoryData.toString(), pmdInstance.getUri());
 
+            // check if services available
             if (checkstyleRepo == null || pmdRepo == null) {
                 return util.createErrorResponse("Validation services not found!", HttpStatus.SERVICE_UNAVAILABLE);
             }
@@ -120,6 +143,7 @@ public class ValidatorService {
                 Thread.sleep(500);
             }
 
+            // build result json
             JSONObject checkstyleResult = new JSONObject(checkstyleRepo.get());
             checkstyleResult.put("userId", userId);
             checkstyleResult.put("duration", (System.currentTimeMillis() - startTime));
@@ -128,6 +152,7 @@ public class ValidatorService {
             pmdResult.put("userId", userId);
             pmdResult.put("duration", (System.currentTimeMillis() - startTime));
 
+            // save results into database
             databaseService.savePmdResult(pmdResult.toString());
             databaseService.saveCheckstleResult(checkstyleResult.toString());
 
@@ -144,9 +169,15 @@ public class ValidatorService {
         }
     }
 
+    /**
+     * Route to test checkstyle and pmd validation
+     * @param data json with property "repository"
+     * @return result of checkstyle and pmd
+     */
     @RequestMapping(value = "/validate", method = RequestMethod.POST, consumes = APPLICATION_JSON, produces = APPLICATION_JSON)
     public ResponseEntity<String> validateGroupVerify(@RequestBody ValidationData data) {
         try {
+            // get checkstyle and pmd instance from eureka
             ServiceInstance checkstyleInstance = loadBalancer.choose(CHECKSTYLE);
             ServiceInstance pmdInstance = loadBalancer.choose(PMD);
 
@@ -164,6 +195,7 @@ public class ValidatorService {
                 Thread.sleep(500);
             }
 
+            // build result
             JSONObject jsonObject = new JSONObject();
             jsonObject.put(CHECKSTYLE, checkstyleRepo.get());
             jsonObject.put(PMD, pmdRepo.get());
@@ -175,18 +207,30 @@ public class ValidatorService {
         }
     }
 
+    /**
+     * return last checkstyle result of specific user
+     * @param userId alias groupId
+     * @return last result for user with userId
+     */
     @RequestMapping(value = "/groups/{userId}/checkstyle/last-result", method = RequestMethod.GET, produces = APPLICATION_JSON)
     public ResponseEntity<String> getLastCheckstyleResult(@PathVariable String userId) {
         try {
+            // call database to get last result
             return util.createResponse(databaseService.getLastCheckstyleResult(userId), HttpStatus.OK);
         } catch (InstantiationException e) {
             return util.createErrorResponse(e.getMessage(), HttpStatus.INTERNAL_SERVER_ERROR);
         }
     }
 
+    /**
+     * return last pmd result of specific user
+     * @param userId alias groupid
+     * @return last result for user with userId
+     */
     @RequestMapping(value = "/groups/{userId}/pmd/last-result", method = RequestMethod.GET, produces = APPLICATION_JSON)
     public ResponseEntity<String> getLastPmdResult(@PathVariable String userId) {
         try {
+            // call database to get last result
             return util.createResponse(databaseService.getLastPmdResult(userId), HttpStatus.OK);
         } catch (InstantiationException e) {
             return util.createErrorResponse(e.getMessage(), HttpStatus.INTERNAL_SERVER_ERROR);
