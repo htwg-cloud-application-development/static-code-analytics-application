@@ -10,7 +10,6 @@ import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
-import java.io.IOException;
 import java.util.ArrayList;
 import java.util.LinkedList;
 import java.util.List;
@@ -56,7 +55,7 @@ public class CourseService {
     public ResponseEntity<String> getCourse(@PathVariable final String courseId){
 
         final Course course = courseRepo.findOne(courseId);
-        return new ResponseEntity<String>(goToPmdAndCheckstyleInJson(course).toString(), HttpStatus.OK);
+        return new ResponseEntity<String>(removeErrors(course).toString(), HttpStatus.OK);
     }
 
     //Returns all courses without errors of pmd and checkstyle
@@ -67,7 +66,7 @@ public class CourseService {
         final List<JSONObject> jsonObjects = new LinkedList<>();
 
         for (final Course course : courses) {
-            jsonObjects.add(goToPmdAndCheckstyleInJson(course));
+            jsonObjects.add(removeErrors(course));
         }
         return new ResponseEntity<String>(jsonObjects.toString(), HttpStatus.OK);
     }
@@ -90,7 +89,7 @@ public class CourseService {
     //converts course to JSON
     //navigates to groups.pmd.assignments and groups.checkstyle.assignments
     //in assignments inovkes removeErrosInAssignment()
-    public JSONObject goToPmdAndCheckstyleInJson(final Course course) {
+    public JSONObject removeErrors(final Course course) {
 
         //go to assignments from checkstyle and pmd
         final JSONObject jCourse = new JSONObject(course);
