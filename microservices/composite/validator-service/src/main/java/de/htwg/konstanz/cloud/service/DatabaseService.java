@@ -46,7 +46,7 @@ public class DatabaseService {
 
     @Async
     public Future<String> savePmdResult(String result) throws InstantiationException {
-        String route = "/addPMDEntry";
+        String route = "/addPmdEntry";
         return addResultToDatabase(result, route);
 
 
