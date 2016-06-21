@@ -56,7 +56,6 @@ public class MongoService {
 
             responseEntity = new ResponseEntity(HttpStatus.OK);
         }
-
         return responseEntity;
     }
 
@@ -82,8 +81,8 @@ public class MongoService {
     //Add PmdEntry to DB
     //Finds associated group over "userId" key in requestBody
     //Saves in PmdResults & Group
-    @RequestMapping(value = "/addPMDEntry", method = RequestMethod.POST, consumes = "application/json")
-    public ResponseEntity addPMDEntry(@RequestBody final PmdResults pmdResults) {
+    @RequestMapping(value = "/addPmdEntry", method = RequestMethod.POST, consumes = "application/json")
+    public ResponseEntity addPmdEntry(@RequestBody final PmdResults pmdResults) {
 
         ResponseEntity responseEntity;
         pmdResults.setTimestamp(String.valueOf(new Date().getTime()));

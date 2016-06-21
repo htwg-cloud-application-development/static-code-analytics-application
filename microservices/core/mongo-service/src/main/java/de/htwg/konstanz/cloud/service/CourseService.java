@@ -6,9 +6,10 @@ import de.htwg.konstanz.cloud.model.User;
 import org.json.JSONArray;
 import org.json.JSONObject;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.http.HttpStatus;
+import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
-import java.io.IOException;
 import java.util.ArrayList;
 import java.util.LinkedList;
 import java.util.List;
@@ -23,60 +24,72 @@ public class CourseService {
     @Autowired
     private CourseRepository courseRepo;
 
+    //creates a Course and attaches it to the given User
+    //if User doesn't exist returns NO_CONTENT
     @RequestMapping(path = "/{userId}", method = RequestMethod.POST, consumes = "application/json")
-    public void create(@RequestBody final Course course, @PathVariable final String userId) throws NoSuchFieldException {
+    public ResponseEntity create(@RequestBody final Course course, @PathVariable final String userId) {
 
+        ResponseEntity responseEntity;
+        //check if user exits
         final User user = userRepo.findOne(userId);
         if (null == user) {
-            throw new NoSuchFieldException("User not found");
-        }
-        courseRepo.save(course);
+            responseEntity = new ResponseEntity(HttpStatus.NO_CONTENT);
+        } else {
 
-        List<Course> courses = user.getCourses();
-        if (null == courses) {
-            courses = new ArrayList<>();
+            courseRepo.save(course);
+            List<Course> courses = user.getCourses();
+            //if no course attached to user first create List
+            if (null == courses) {
+                courses = new ArrayList<>();
+            }
+            courses.add(course);
+            user.setCourses(courses);
+            userRepo.save(user);
+            responseEntity = new ResponseEntity(HttpStatus.OK);
         }
-        courses.add(course);
-        user.setCourses(courses);
-        userRepo.save(user);
+        return responseEntity;
     }
 
     //Returns one course without errors of pmd and checkstyle
     @RequestMapping(value = "/{courseId}", method = RequestMethod.GET)
-    public String getCourse(@PathVariable final String courseId) throws IOException {
+    public ResponseEntity<String> getCourse(@PathVariable final String courseId){
 
         final Course course = courseRepo.findOne(courseId);
-        return goToPmdAndCheckstyleInJson(course).toString();
+        return new ResponseEntity<String>(removeErrors(course).toString(), HttpStatus.OK);
     }
 
     //Returns all courses without errors of pmd and checkstyle
     @RequestMapping(method = RequestMethod.GET)
-    public String getAllCourses() {
+    public ResponseEntity<String> getAllCourses() {
 
         final List<Course> courses = courseRepo.findAll();
         final List<JSONObject> jsonObjects = new LinkedList<>();
 
         for (final Course course : courses) {
-            jsonObjects.add(goToPmdAndCheckstyleInJson(course));
+            jsonObjects.add(removeErrors(course));
         }
-
-        return jsonObjects.toString();
+        return new ResponseEntity<String>(jsonObjects.toString(), HttpStatus.OK);
     }
 
 
     //Returns all groups to matching courseId
     @RequestMapping(value = "/groups/{courseId}", method = RequestMethod.GET)
-    public List<Group> getGroups(@PathVariable final String courseId) throws NoSuchFieldException {
+    public ResponseEntity<List<Group>> getGroups(@PathVariable final String courseId) throws NoSuchFieldException {
 
+        ResponseEntity<List<Group>> responseEntity;
         final Course course = courseRepo.findOne(courseId);
         if (null == course) {
-            throw new NoSuchFieldException("Course not found");
+            responseEntity = new ResponseEntity<List<Group>>(HttpStatus.NO_CONTENT);
+        } else {
+            responseEntity = new ResponseEntity<List<Group>>(course.getGroups(), HttpStatus.OK);
         }
-
-        return course.getGroups();
+        return responseEntity;
     }
 
-    public JSONObject goToPmdAndCheckstyleInJson(final Course course) {
+    //converts course to JSON
+    //navigates to groups.pmd.assignments and groups.checkstyle.assignments
+    //in assignments inovkes removeErrosInAssignment()
+    public JSONObject removeErrors(final Course course) {
 
         //go to assignments from checkstyle and pmd
         final JSONObject jCourse = new JSONObject(course);
@@ -91,6 +104,7 @@ public class CourseService {
 
                 group = groups.getJSONObject(i);
 
+                //checks if group has pmd result
                 if (group.has("pmd")) {
                     JSONObject pmd = group.getJSONObject("pmd");
                     if (pmd.has(assignments)){
@@ -98,7 +112,7 @@ public class CourseService {
                     }
 
                 }
-
+                //checks if group has checkstyle result
                 if (group.has("checkstyle")) {
                     final JSONObject checkstyle = group.getJSONObject("checkstyle");
                     if (checkstyle.has(assignments)) {
@@ -111,27 +125,25 @@ public class CourseService {
         return jCourse;
     }
 
+    //removes extensive Errors
     public void removeErrorsInAssignments(JSONObject analysisResult){
 
-        if (analysisResult.has("assignments")){
+        // gets assignments
+        JSONArray assignments = analysisResult.getJSONArray("assignments");
 
-            // in assignments
-            JSONArray assignments = analysisResult.getJSONArray("assignments");
+        for (int i = 0; i < assignments.length(); i++) {
+            JSONObject assignment = assignments.getJSONObject(i);
 
-            for (int i = 0; i < assignments.length(); i++) {
-                JSONObject assignment = assignments.getJSONObject(i);
+            //getting name of "key", which is assignment name
+            String[] assignmentName = JSONObject.getNames(assignment);
 
-                //getting name of "key"
-                String[] keys = JSONObject.getNames(assignment);
+            //getting array under assignment name
+            JSONArray files = assignment.getJSONArray(assignmentName[0]);
 
-                //getting array under "key"
-                JSONArray files = assignment.getJSONArray(keys[0]);
-
-                //iterating over "key" array and remove errors
-                for (int o = 0; o < files.length(); o++) {
-                    JSONObject file = files.getJSONObject(o);
-                    file.remove("errors");
-                }
+            //iterating over "key" array and remove errors
+            for (int o = 0; o < files.length(); o++) {
+            JSONObject file = files.getJSONObject(o);
+            file.remove("errors");
             }
         }
     }

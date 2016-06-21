@@ -21,30 +21,28 @@ public class GroupService {
 
     //create group to matching course
     @RequestMapping(path = "/{courseId}", method = RequestMethod.POST, consumes = "application/json")
-    public ResponseEntity create(@RequestBody final List<Group> groups, @PathVariable final String courseId) throws NoSuchFieldException {
+    public ResponseEntity create(@RequestBody final List<Group> groups, @PathVariable final String courseId) {
+        ResponseEntity responseEntity;
+        final Course course = courseRepo.findOne(courseId);
 
         // don't save empty groups
-        if (groups.isEmpty()) {
-            return new ResponseEntity(HttpStatus.NOT_FOUND);
+        if (groups.isEmpty() || null == course) {
+            responseEntity = new ResponseEntity(HttpStatus.NO_CONTENT);
+        } else {
+
+            final List<Group> dbGroups = course.getGroups();
+
+            if (null != dbGroups) {
+                //delete old groups
+                groupRepository.delete(dbGroups);
+            }
+
+            groupRepository.save(groups);
+            course.setGroups(groups);
+            courseRepo.save(course);
+            responseEntity = new ResponseEntity(HttpStatus.OK);
         }
-
-        final Course course = courseRepo.findOne(courseId);
-        if (null == course) {
-            return new ResponseEntity(HttpStatus.NOT_FOUND);
-        }
-
-        final List<Group> dbGroups = course.getGroups();
-
-        if (null != dbGroups) {
-            //delete old groups
-            groupRepository.delete(dbGroups);
-        }
-
-        groupRepository.save(groups);
-        course.setGroups(groups);
-        courseRepo.save(course);
-
-        return new ResponseEntity(HttpStatus.OK);
+        return responseEntity;
     }
 
     // return group with associated userId
