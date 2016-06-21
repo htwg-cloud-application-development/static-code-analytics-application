@@ -25,6 +25,7 @@ import java.util.concurrent.Future;
 public class CustomScheduler {//NOPMD
 
     private static final Logger LOG = LoggerFactory.getLogger(CustomScheduler.class); //NOPMD
+
     private static final String REPOSITORY = "repository"; //NOPMD
 
     @Autowired
