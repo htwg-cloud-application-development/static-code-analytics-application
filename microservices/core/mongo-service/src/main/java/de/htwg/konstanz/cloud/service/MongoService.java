@@ -8,6 +8,7 @@ import org.springframework.data.domain.Sort;
 import org.springframework.data.mongodb.core.MongoOperations;
 import org.springframework.data.mongodb.core.query.Criteria;
 import org.springframework.data.mongodb.core.query.Query;
+import org.springframework.data.mongodb.core.query.Update;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
@@ -51,8 +52,9 @@ public class MongoService {
         } else {
             checkstyleRepo.save(checkstyleResults);
 
-            group.setCheckstyle(checkstyleResults);
-            groupRepo.save(group);
+            mongo.updateFirst(Query.query(Criteria.where("userId").is(userId)), Update.update("checkstyle", checkstyleResults), Group.class);
+            //group.setCheckstyle(checkstyleResults);
+            //groupRepo.save(group);
 
             responseEntity = new ResponseEntity(HttpStatus.OK);
         }
@@ -95,8 +97,9 @@ public class MongoService {
         } else {
             pmdRepo.save(pmdResults);
 
-            group.setPmd(pmdResults);
-            groupRepo.save(group);
+            mongo.updateFirst(Query.query(Criteria.where("userId").is(userId)), Update.update("pmd", pmdResults), Group.class);
+            //group.setPmd(pmdResults);
+            //groupRepo.save(group);
 
             responseEntity = new ResponseEntity(HttpStatus.OK);
         }
