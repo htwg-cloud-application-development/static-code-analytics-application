@@ -37,7 +37,8 @@ public class PmdService {
     @Autowired
     Util util;
 
-    @RequestMapping(value = "/validate", method = RequestMethod.POST, produces = "application/json", consumes = "application/json")
+    @RequestMapping(value = "/validate", method = RequestMethod.POST,
+            produces = "application/json", consumes = "application/json")
     public ResponseEntity validate(@RequestBody ValidationData data) {
         try {
             return ResponseEntity.ok(pmd.startIt(data.getRepository()));
@@ -79,7 +80,8 @@ public class PmdService {
         return "Pmd-Service";
     }
 
-    @RequestMapping(value = "/validate/copypaste", method = RequestMethod.POST, produces = "application/json", consumes = "application/json")
+    @RequestMapping(value = "/validate/copypaste", method = RequestMethod.POST,
+            produces = "application/json", consumes = "application/json")
     public ResponseEntity<String> copypaste(@RequestBody String data) {
         try {
             return ResponseEntity.ok(cpd.startIt(util.getRepositoriesFromRequestBody(data)));

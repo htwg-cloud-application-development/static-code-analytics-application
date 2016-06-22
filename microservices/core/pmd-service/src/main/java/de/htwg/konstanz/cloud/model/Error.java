@@ -1,15 +1,15 @@
 package de.htwg.konstanz.cloud.model;
 
 public class Error {
-    private int nLineBegin;
+    private final int nLineBegin;
 
-    private int nLineEnd;
+    private final int nLineEnd;
 
-    private int nColumnBegin;
+    private final int nColumnBegin;
 
-    private int nColumnEnd;
+    private final int nColumnEnd;
 
-    private int nPriority;
+    private final int nPriority;
 
     private String sRule = "";
 
@@ -21,7 +21,8 @@ public class Error {
 
     private String sMessage = "";
 
-    public Error(int nLineBegin, int nLineEnd, int nColumnBegin, int nColumnEnd, int nPriority, String sRule, String sClassName, String sPackage, String sRuleset, String sMessage) {
+    public Error(int nLineBegin, int nLineEnd, int nColumnBegin, int nColumnEnd, int nPriority, String sRule,
+                                        String sClassName, String sPackage, String sRuleset, String sMessage) {
         this.nLineBegin = nLineBegin;
         this.nLineEnd = nLineEnd;
         this.nColumnBegin = nColumnBegin;
@@ -74,43 +75,7 @@ public class Error {
         return sMessage;
     }
 
-    public void setLineBegin(int nLineBegin) {
-        this.nLineBegin = nLineBegin;
-    }
-
-    public void setLineEnd(int nLineEnd) {
-        this.nLineEnd = nLineEnd;
-    }
-
-    public void setColumnBegin(int nColumnBegin) {
-        this.nColumnBegin = nColumnBegin;
-    }
-
-    public void setColumnEnd(int nColumnEnd) {
-        this.nColumnEnd = nColumnEnd;
-    }
-
-    public void setPriority(int nPriority) {
-        this.nPriority = nPriority;
-    }
-
-    public void setRule(String sRule) {
-        this.sRule = sRule;
-    }
-
-    public void setClassName(String sClassName) {
-        this.sClassName = sClassName;
-    }
-
     public void setPackage(String sPackage) {
         this.sPackage = sPackage;
-    }
-
-    public void setRuleset(String sRuleset) {
-        this.sRuleset = sRuleset;
-    }
-
-    public void setMessage(String sMessage) {
-        this.sMessage = sMessage;
     }
 }

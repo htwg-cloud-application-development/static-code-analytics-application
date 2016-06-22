@@ -106,7 +106,7 @@ public class Cpd {
 
         /* Run CPD */
         if(!lRepoDirs.isEmpty()) {
-            oJson = (runCpd(oRepoDir.getAbsolutePath(), lStartTime));
+            oJson = runCpd(oRepoDir.getAbsolutePath(), lStartTime);
         }
 
         return oJson;
@@ -181,19 +181,12 @@ public class Cpd {
                 Element eNodeElement = (Element) oNode;
 
 				/* Default Values */
-                int nLinesCount = 0;
-                int nTokens = 0;
                 List<String> lInvolvedData = new ArrayList<>();
                 String sCodeFragment = "";
 
-
                 //Duplication Infos
-                if (oUtil.isParsable(eNodeElement.getAttribute("lines"))) {
-                    nLinesCount = Integer.parseInt(eNodeElement.getAttribute("lines"));
-                }
-                if (oUtil.isParsable(eNodeElement.getAttribute("tokens"))) {
-                    nTokens = Integer.parseInt(eNodeElement.getAttribute("tokens"));
-                }
+                int nLinesCount = oUtil.getParsableElement(eNodeElement, "lines");
+                int nTokens = oUtil.getParsableElement(eNodeElement, "tokens");
 
                 //CheckFileNodes
                 NodeList nNodeFiles = eNodeElement.getElementsByTagName("file");
