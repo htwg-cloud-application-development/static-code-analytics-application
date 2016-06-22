@@ -146,20 +146,19 @@ class Git {
             } finally {
                 /* Close Process */
                 if (exec!=null) {
-                try {
+                    try {
                         exec.destroy();
-                } catch (Exception e) {
-                    /* ignore */
-                }
+                    } catch (Exception e) {
+                        /* ignore */
+                    }
                 }
                 /* Disconnect SSH */
                 if (ssh!=null) {
-                try {
+                    try {
                         ssh.disconnect();
-
-                } catch (Exception e) {
-                    /* ignore */
-                }
+                    } catch (Exception e) {
+                        /* ignore */
+                    }
                 }
             }
         } else {

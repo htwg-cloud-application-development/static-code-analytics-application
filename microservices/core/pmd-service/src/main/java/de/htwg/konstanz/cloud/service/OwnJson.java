@@ -46,7 +46,6 @@ class OwnJson {
     }
 
     JSONObject buildJson(String sRepo, long lStartTime, String sLastRepoUpdateTime, List<Class> lClassList) {
-        List<Error> lTmpErrorList;
         JSONObject oJsonRoot = new JSONObject();
         JSONObject oJsonExercise = new JSONObject();
         JSONArray lJsonClasses = new JSONArray();
@@ -55,14 +54,11 @@ class OwnJson {
         boolean bExerciseChange = false;
         boolean bLastRun = false;
         boolean bExerciseNeverChanged = true;
-        int nTmpErrorCount = 0;
-        int nTmpWarningCount = 0;
-        int nTmpIgnoreCounter = 0;
 
 		/* add general information to the JSON object */
         oJsonRoot.put("repository", sRepo);
 
-        getClassSeverities(lClassList, oJsonRoot, nTmpErrorCount, nTmpWarningCount, nTmpIgnoreCounter);
+        getClassSeverities(lClassList, oJsonRoot);
 
         oJsonRoot.put("lastRepoUpdateTime", sLastRepoUpdateTime);
         LOG.info("Last Update Time: " + sLastRepoUpdateTime);
@@ -78,10 +74,9 @@ class OwnJson {
 
 			/* first run the TmpName is empty */
             if (sExcerciseName.equals(sTmpExerciseName) || "".equals(sTmpExerciseName)) {
-                lTmpErrorList = lClassList.get(nClassPos).getErrorList();
 
-                sTmpExerciseName = analyzeErrors(lClassList, lTmpErrorList, lJsonClasses,
-                                                    sTmpExerciseName, nClassPos, sExcerciseName);
+                sTmpExerciseName = analyzeErrors(lClassList, lClassList.get(nClassPos).getErrorList(),
+                                                    lJsonClasses, sTmpExerciseName, nClassPos, sExcerciseName);
 
                 /* last run if different exercises were found */
                 if (bLastRun) {
@@ -125,9 +120,12 @@ class OwnJson {
         return oJsonRoot;
     }
 
-    private void getClassSeverities(List<Class> lClassList, JSONObject oJsonRoot, int nTmpErrorCount,
-                                                        int nTmpWarningCount, int nTmpIgnoreCounter) {
-    /* get severities of the whole project */
+    private void getClassSeverities(List<Class> lClassList, JSONObject oJsonRoot) {
+        int nTmpErrorCount = 0;
+        int nTmpWarningCount = 0;
+        int nTmpIgnoreCounter = 0;
+
+        /* get severities of the whole project */
         for (Class oClass : lClassList) {
             nTmpErrorCount += oClass.getErrorCount();
             nTmpWarningCount += oClass.getWarningCount();
