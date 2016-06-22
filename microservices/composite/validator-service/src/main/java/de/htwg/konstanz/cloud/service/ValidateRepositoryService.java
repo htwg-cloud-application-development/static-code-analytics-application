@@ -3,7 +3,6 @@ package de.htwg.konstanz.cloud.service;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.cloud.client.ServiceInstance;
 import org.springframework.cloud.client.loadbalancer.LoadBalancerClient;
 import org.springframework.http.HttpEntity;
 import org.springframework.http.HttpHeaders;
@@ -35,16 +34,6 @@ public class ValidateRepositoryService {
     }
 
     @Async
-    public Future<String> validateRepository(String repositoryUrlJsonObj) throws InstantiationException {
-        String validateRoute = "/validate";
-        LOG.info("Validate " + repositoryUrlJsonObj);
-
-        // get checkstyle service instance
-        ServiceInstance instance = loadBalancer.choose("checkstyle");
-        return postForValidation(repositoryUrlJsonObj, instance, validateRoute);
-    }
-
-    @Async
     public Future<String> validateCodeDublication(String repositoryUrlJsonObj, URI requestUri) {
         String validateRoute = "/validate/copypaste";
         LOG.info("Validate dublication for " + repositoryUrlJsonObj);
@@ -56,19 +45,6 @@ public class ValidateRepositoryService {
         String validateRoute = "/validate";
         LOG.info("Validate " + repositoryUrlJsonObj);
         return executePostRequest(repositoryUrlJsonObj, requestUri + validateRoute);
-    }
-
-
-    private Future<String> postForValidation(String repositoryUrlJsonObj, ServiceInstance instance, String validateRoute)
-            throws InstantiationException {
-        if (null != instance) {
-            // build request url
-            String requestUrl = instance.getUri() + validateRoute;
-            // POST to request url and get String (JSON)
-            LOG.debug("repository: " + repositoryUrlJsonObj);
-            return executePostRequest(repositoryUrlJsonObj, requestUrl);
-        }
-        throw new InstantiationException("service is not available");
     }
 
     private Future<String> executePostRequest(String repositoryUrlJsonObj, String requestUrl) {

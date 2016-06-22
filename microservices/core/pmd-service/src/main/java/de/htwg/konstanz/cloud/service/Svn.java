@@ -35,7 +35,7 @@ class Svn {
         String password = System.getenv("SVN_PASSWORD");
 
         //Check credentials
-        if((name == null) && (password == null)) {
+        if(name == null && password == null) {
             LOG.info("invalid VPN credentials");
         }
         else {

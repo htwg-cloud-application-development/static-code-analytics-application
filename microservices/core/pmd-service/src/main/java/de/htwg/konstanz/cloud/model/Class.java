@@ -4,13 +4,13 @@ import java.util.ArrayList;
 import java.util.List;
 
 public class Class {
-    private String sClassName;
+    private final String sClassName;
 
-    private String sFullPath;
+    private final String sFullPath;
 
-    private List<Error> lError = new ArrayList<>();
+    private final List<Error> lError = new ArrayList<>();
 
-    private String sExerciseName;
+    private final String sExerciseName;
 
     private int nErrorCount;
 

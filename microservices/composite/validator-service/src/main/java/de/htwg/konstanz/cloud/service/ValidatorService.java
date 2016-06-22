@@ -27,8 +27,11 @@ import java.util.concurrent.Future;
 public class ValidatorService {
 
     private static final Logger LOG = LoggerFactory.getLogger(ValidatorService.class);
+
     private static final String APPLICATION_JSON = "application/json";
+
     private static final String CHECKSTYLE = "checkstyle";
+
     private static final String PMD = "pmd";
 
     @Autowired
@@ -123,13 +126,15 @@ public class ValidatorService {
             ServiceInstance pmdInstance = loadBalancer.choose(PMD);
 
             // start time measurement
-            long startTime = System.currentTimeMillis();
+            final long startTime = System.currentTimeMillis();
             ValidationData repositoryData = new ValidationData();
             repositoryData.setRepository(jsonObject.getString("repository"));
 
             // execute checkstyle and pmd validation and save future
-            Future<String> checkstyleRepo = validateRepositoryService.validateRepository(repositoryData.toString(), checkstyleInstance.getUri());
-            Future<String> pmdRepo = validateRepositoryService.validateRepository(repositoryData.toString(), pmdInstance.getUri());
+            Future<String> checkstyleRepo =
+                    validateRepositoryService.validateRepository(repositoryData.toString(), checkstyleInstance.getUri());
+            Future<String> pmdRepo =
+                    validateRepositoryService.validateRepository(repositoryData.toString(), pmdInstance.getUri());
 
             // check if services available
             if (checkstyleRepo == null || pmdRepo == null) {
@@ -184,7 +189,8 @@ public class ValidatorService {
             JSONObject repositories = new JSONObject().put("repositories", util.getRepositoriesFromJsonObject(course));
 
             // Call validation asynchronous
-            Future<String> pmdRepo = validateRepositoryService.validateCodeDublication(repositories.toString(), pmdInstance.getUri());
+            Future<String> pmdRepo =
+                    validateRepositoryService.validateCodeDublication(repositories.toString(), pmdInstance.getUri());
 
             // Wait until they are done
             while (!pmdRepo.isDone()) {
@@ -192,11 +198,12 @@ public class ValidatorService {
                 Thread.sleep(500);
             }
 
-            // build result
-            JSONObject jsonObject = new JSONObject();
-            jsonObject.putOpt("duplication", pmdRepo.get());
+            // build result json
+            JSONObject result = new JSONObject();
+            JSONObject duplication = new JSONObject(pmdRepo.get());
+            result.putOpt("duplication", duplication);
 
-            return util.createResponse(jsonObject.toString(), HttpStatus.OK);
+            return util.createResponse(result.toString(), HttpStatus.OK);
         } catch (Exception e) {
             LOG.error(e.getMessage());
             return util.createErrorResponse(e.getMessage(), HttpStatus.INTERNAL_SERVER_ERROR);
@@ -212,8 +219,10 @@ public class ValidatorService {
             ServiceInstance pmdInstance = loadBalancer.choose(PMD);
 
             // Call validation asynchronous
-            Future<String> checkstyleRepo = validateRepositoryService.validateRepository(data.toString(), checkstyleInstance.getUri());
-            Future<String> pmdRepo = validateRepositoryService.validateRepository(data.toString(), pmdInstance.getUri());
+            Future<String> checkstyleRepo =
+                    validateRepositoryService.validateRepository(data.toString(), checkstyleInstance.getUri());
+            Future<String> pmdRepo =
+                    validateRepositoryService.validateRepository(data.toString(), pmdInstance.getUri());
 
             boolean run = true;
             // Wait until they are done

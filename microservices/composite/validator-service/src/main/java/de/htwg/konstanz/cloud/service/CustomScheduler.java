@@ -25,6 +25,7 @@ import java.util.concurrent.Future;
 public class CustomScheduler {//NOPMD
 
     private static final Logger LOG = LoggerFactory.getLogger(CustomScheduler.class); //NOPMD
+
     private static final String REPOSITORY = "repository"; //NOPMD
 
     @Autowired
@@ -78,9 +79,9 @@ public class CustomScheduler {//NOPMD
         return startScheduling(groups, fullExecutionTime, pipeline, repoUserInformationMap);
     }
 
-    private ArrayList<JSONObject> startScheduling(JSONArray groups, int fullExecutionTime, Map<Integer,
+    private ArrayList<JSONObject> startScheduling(JSONArray groups, int fullExecutionTime, Map<Integer,//NOPMD
             List<JSONObject>> pipeline, Map<String, String> repoUserInformationMap) throws NoSuchFieldException,
-            JSONException, InterruptedException, ExecutionException, InstantiationException {//NOPMD
+            JSONException, InterruptedException, ExecutionException, InstantiationException {
 
         AmazonEC2 ec2 = new AmazonEC2Client(new EnvironmentVariableCredentialsProvider());
         ec2.setRegion(com.amazonaws.regions.Region.getRegion(Regions.EU_CENTRAL_1));

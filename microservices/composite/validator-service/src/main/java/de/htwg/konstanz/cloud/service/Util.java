@@ -72,14 +72,15 @@ class Util {
         if (null == securityGroup && null == checkstyleImageId
                 && null == checkstyleInstanceType && null == checkstyleKeyName) {
 
-            throw new NoSuchFieldException("Missing Config Parameter for one of following parameter:\n " +
-                    "[securityGroup=" + securityGroup +
-                    "|checkstyleImageId=" + checkstyleImageId +
-                    "|checkstyleInstanceType=" + checkstyleInstanceType +
-                    "|checkstyleKeyName=" + checkstyleKeyName + "]");
+            throw new NoSuchFieldException("Missing Config Parameter for one of following parameter:\n "
+                    + "[securityGroup=" + securityGroup
+                    + "|checkstyleImageId=" + checkstyleImageId
+                    + "|checkstyleInstanceType=" + checkstyleInstanceType
+                    + "|checkstyleKeyName=" + checkstyleKeyName + "]");
 
         } else {
-            return runInstance(ec2, minCount, maxCount, checkstyleImageId, checkstyleKeyName, checkstyleInstanceType, securityGroup);
+            return runInstance(ec2, minCount, maxCount, checkstyleImageId,
+                    checkstyleKeyName, checkstyleInstanceType, securityGroup);
         }
     }
 
@@ -87,18 +88,19 @@ class Util {
         if (null == securityGroup && null == pmdImageId
                 && null == pmdKeyName && null == pmdInstanceType) {
 
-            throw new NoSuchFieldException("Missing Config Parameter for one of following parameter:\n " +
-                    "[securityGroup=" + securityGroup +
-                    "|pmdImageId=" + pmdImageId +
-                    "|pmdInstanceType=" + pmdImageId +
-                    "|pmdKeyName=" + pmdImageId + "]");
+            throw new NoSuchFieldException("Missing Config Parameter for one of following parameter:\n "
+                    + "[securityGroup=" + securityGroup
+                    + "|pmdImageId=" + pmdImageId
+                    + "|pmdInstanceType=" + pmdImageId
+                    + "|pmdKeyName=" + pmdImageId + "]");
 
         } else {
             return runInstance(ec2, minCount, maxCount, pmdImageId, pmdKeyName, pmdInstanceType, securityGroup);
         }
     }
 
-    private RunInstancesResult runInstance(AmazonEC2 ec2, int minCountParam, int maxCountParam, String imageId, String keyName, String instanceType, String securityGroup) {
+    private RunInstancesResult runInstance(AmazonEC2 ec2, int minCountParam, int maxCountParam, String imageId,
+                                           String keyName, String instanceType, String securityGroup) {
         int maxCount;
         int minCount;
         if (minCountParam < 1) {
@@ -206,7 +208,7 @@ class Util {
      *
      * @param course JSON object of courses as String
      * @return Arrays with all repositories. For each repository an object with repository.
-     * @throws JSONException
+     * @throws JSONException If string to json failed
      */
     public JSONArray getRepositoriesFromJsonObject(String course) throws JSONException {
         // Convert to json
