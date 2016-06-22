@@ -51,11 +51,8 @@ public class MongoService {
 
         } else {
             checkstyleRepo.save(checkstyleResults);
-
+            //set pmd in gorup
             mongo.updateFirst(Query.query(Criteria.where("userId").is(userId)), Update.update("checkstyle", checkstyleResults), Group.class);
-            //group.setCheckstyle(checkstyleResults);
-            //groupRepo.save(group);
-
             responseEntity = new ResponseEntity(HttpStatus.OK);
         }
         return responseEntity;
@@ -96,11 +93,8 @@ public class MongoService {
             responseEntity = new ResponseEntity(HttpStatus.NO_CONTENT);
         } else {
             pmdRepo.save(pmdResults);
-
+            //set pmd in gorup
             mongo.updateFirst(Query.query(Criteria.where("userId").is(userId)), Update.update("pmd", pmdResults), Group.class);
-            //group.setPmd(pmdResults);
-            //groupRepo.save(group);
-
             responseEntity = new ResponseEntity(HttpStatus.OK);
         }
         return responseEntity;
