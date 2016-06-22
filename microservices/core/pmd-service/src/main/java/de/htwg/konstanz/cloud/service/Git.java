@@ -93,80 +93,88 @@ class Git {
         boolean result;
         /*  Check Repository URI */
         if (repoUri.getScheme().toLowerCase().startsWith("http") ) {
-            String path = repoUri.getPath();
-            URIish checkUri = repoUri.setPath(path);
-
-            InputStream ins = null;
-            try {
-                /* Check Connection */
-                URLConnection conn = new URL(checkUri.toString()).openConnection();
-                conn.setReadTimeout(1000);
-                ins = conn.getInputStream();
-                result = true;
-            } catch (FileNotFoundException e) {
-                /* URI NOT FOUND */
-                LOG.info("URI not found: " + checkUri.toString());
-                result=false;
-            } catch (IOException e) {
-                /* IO ERROR */
-                LOG.info("IO Error: " + checkUri.toString());
-                result = false;
-            } finally {
-                /* Close InputStream  */
-                try {
-                    if (null!=ins) {
-                        ins.close();
-                    }
-                }
-                catch (Exception e) {
-                    /* ignore */
-                }
-            }
+            result = Penis(repoUri);
         } else if (repoUri.getScheme().toLowerCase().startsWith("ssh") ) {
-            /* SSH-Validation */
-            RemoteSession ssh = null;
-            Process exec = null;
+            result = Muschi(repoUri);
 
-            try {
-                /* Check SSH-Connection */
-                ssh = SshSessionFactory.getInstance().getSession(repoUri, null, FS.detect(), 1000);
-                exec = ssh.exec("cd " + repoUri.getPath() + "; git rev-parse --git-dir", 1000);
-
-                Integer exitValue;
-                do {
-                    exitValue = exec.exitValue();
-                }
-                while (false);
-
-                result = exitValue == 0;
-
-            } catch (Exception e) {
-                result = false;
-
-            } finally {
-                /* Close Process */
-                if (exec!=null) {
-                    try {
-                        exec.destroy();
-                    } catch (Exception e) {
-                        /* ignore */
-                    }
-                }
-                /* Disconnect SSH */
-                if (ssh!=null) {
-                    try {
-                        ssh.disconnect();
-                    } catch (Exception e) {
-                        /* ignore */
-                    }
-                }
-            }
         } else {
             // TODO need to implement tests for other schemas
             /* Not necessary at the Moment */
             result = true;
         }
 
+        return result;
+    }
+
+    private boolean Muschi(URIish repoUri) {
+        boolean result;/* SSH-Validation */
+        RemoteSession ssh = null;
+        Process exec = null;
+
+        try {
+            /* Check SSH-Connection */
+            ssh = SshSessionFactory.getInstance().getSession(repoUri, null, FS.detect(), 1000);
+            exec = ssh.exec("cd " + repoUri.getPath() + "; git rev-parse --git-dir", 1000);
+
+            Integer exitValue;
+            do {
+                exitValue = exec.exitValue();
+            }
+            while (false);
+
+            result = exitValue == 0;
+
+        } catch (Exception e) {
+            result = false;
+
+        } finally {
+            /* Close Process */
+            if (exec!=null) {
+                try {
+                    exec.destroy();
+                } catch (Exception e) {
+                    /* ignore */
+                }
+            }
+            /* Disconnect SSH */
+            if (ssh!=null) {
+                try {
+                    ssh.disconnect();
+                } catch (Exception e) {
+                    /* ignore */
+                }
+            }
+        }
+        return result;
+    }
+
+    private boolean Penis(URIish repoUri) {
+        boolean result;
+        String path = repoUri.getPath();
+        URIish checkUri = repoUri.setPath(path);
+
+        InputStream ins = null;
+        try {
+            /* Check Connection */
+            URLConnection conn = new URL(checkUri.toString()).openConnection();
+            conn.setReadTimeout(1000);
+            ins = conn.getInputStream();
+            result = true;
+        } catch (Exception e) {
+            /* URI NOT FOUND */
+            LOG.info("Error: " + checkUri.toString());
+            result=false;
+        } finally {
+            /* Close InputStream  */
+            try {
+                if (null!=ins) {
+                    ins.close();
+                }
+            }
+            catch (Exception e) {
+                /* ignore */
+            }
+        }
         return result;
     }
 }

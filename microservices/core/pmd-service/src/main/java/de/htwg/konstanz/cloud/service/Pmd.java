@@ -147,6 +147,12 @@ public class Pmd {
             }
         }
 
+        checkUnregularRepository(sLocalDirectory, list);
+
+        return list;
+    }
+
+    private void checkUnregularRepository(String sLocalDirectory, List<List<String>> list) throws FileNotFoundException {
         /* Other Structure Workaround */
         if (list.isEmpty()) {
             //Unregular Repo
@@ -154,8 +160,6 @@ public class Pmd {
             List<String> javaFiles = new ArrayList<>();
             list.add(util.getAllJavaFiles(sLocalDirectory, javaFiles));
         }
-
-        return list;
     }
 
     private JSONObject runPmd(List<List<String>> lRepoList, String gitRepository, long lStartTime, String sLastUpdateTime)

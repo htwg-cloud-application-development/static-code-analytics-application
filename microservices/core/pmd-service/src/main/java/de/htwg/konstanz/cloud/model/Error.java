@@ -11,15 +11,15 @@ public class Error {
 
     private final int nPriority;
 
-    private String sRule = "";
+    private final String sRule;
 
-    private String sClassName = "";
+    private final String sClassName;
 
-    private String sPackage = "";
+    private String sPackage;
 
-    private String sRuleset = "";
+    private final String sRuleset;
 
-    private String sMessage = "";
+    private final String sMessage;
 
     public Error(int nLineBegin, int nLineEnd, int nColumnBegin, int nColumnEnd, int nPriority, String sRule,
                                         String sClassName, String sPackage, String sRuleset, String sMessage) {
