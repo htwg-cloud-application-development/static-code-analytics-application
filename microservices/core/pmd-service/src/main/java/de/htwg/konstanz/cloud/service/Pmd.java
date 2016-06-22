@@ -55,7 +55,7 @@ public class Pmd {
         JSONObject oJsonResult;
         String sResult;
 
-        oJsonResult = determination(gitRepository, lStartTime);
+        oJsonResult = determineVersionControlSystem(gitRepository, lStartTime);
 
         if (oRepoDir == null) {
             LOG.info("Error: Local Directory is null!");
@@ -68,7 +68,7 @@ public class Pmd {
         return sResult;
     }
 
-    private JSONObject determination(String sRepoUrl, long lStartTime)
+    private JSONObject determineVersionControlSystem(String sRepoUrl, long lStartTime)
             throws IOException, BadLocationException, GitAPIException, ParserConfigurationException, SAXException {
         JSONObject oJson = null;
         String sLocalDir;
@@ -94,14 +94,14 @@ public class Pmd {
 
             LOG.info("Svn");
             sLocalDir = oSvn.downloadSvnRepo(oStringBuilder.toString());
-            oJson = runPmd(generatePmdServiceData(sLocalDir), sRepoUrl, lStartTime, "");
+            oJson = runPmd(generatePmdData(sLocalDir), sRepoUrl, lStartTime, "");
             oRepoDir = new File(sLocalDir);
         }
         /* Git Checkout */
         else if (sRepoUrl.contains("github.com")) {
             LOG.info("Git");
             sLocalDirArray = oGit.downloadGitRepo(sRepoUrl);
-            oJson = runPmd(generatePmdServiceData(sLocalDirArray[0]), sRepoUrl, lStartTime, sLocalDirArray[1]);
+            oJson = runPmd(generatePmdData(sLocalDirArray[0]), sRepoUrl, lStartTime, sLocalDirArray[1]);
             oRepoDir = new File(sLocalDirArray[0]);
         } else {
             LOG.info("Repository URL has no valid Svn/Git attributes. (" + sRepoUrl + ")");
@@ -110,7 +110,7 @@ public class Pmd {
         return oJson;
     }
 
-    private List<List<String>> generatePmdServiceData(String sLocalDirectory) throws FileNotFoundException {
+    private List<List<String>> generatePmdData(String sLocalDirectory) throws FileNotFoundException {
         /* Generate Data for CheckstyleService */
         List<List<String>> list = new ArrayList<>();
         File mainDir;
@@ -119,33 +119,32 @@ public class Pmd {
         mainDir = util.checkLocalSrcDir(sLocalDirectory);
 
         /* List all files for CheckstyleService */
+        if (mainDir.exists()) {
+            File[] files = mainDir.listFiles();
 
-            if (mainDir.exists()) {
-                File[] files = mainDir.listFiles();
+            if (files != null) {
 
-                if (files != null) {
+                for (File file : mainDir.listFiles()) {
+                    if (file != null) {
+                        //Head-Dirs
+                        File[] filesSub = new File(file.getPath()).listFiles();
+                        List<String> pathsSub = new ArrayList<>();
 
-                    for (File file : mainDir.listFiles()) {
-                        if (file != null) {
-                            //Head-Dirs
-                            File[] filesSub = new File(file.getPath()).listFiles();
-                            List<String> pathsSub = new ArrayList<>();
-
-                            if (filesSub != null) {
-                                for (File aFilesSub : filesSub) {
-                                    //Java-Files
-                                    if (aFilesSub.getPath().endsWith(".java")) {
-                                        pathsSub.add(aFilesSub.getPath());
-                                    }
+                        if (filesSub != null) {
+                            for (File aFilesSub : filesSub) {
+                                //Java-Files
+                                if (aFilesSub.getPath().endsWith(".java")) {
+                                    pathsSub.add(aFilesSub.getPath());
                                 }
                             }
+                        }
 
-                            if (!pathsSub.isEmpty()) {
-                                list.add(pathsSub);
-                            }
+                        if (!pathsSub.isEmpty()) {
+                            list.add(pathsSub);
                         }
                     }
                 }
+            }
         }
 
         /* Other Structure Workaround */
