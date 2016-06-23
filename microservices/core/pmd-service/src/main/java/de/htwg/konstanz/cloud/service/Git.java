@@ -11,7 +11,6 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import java.io.File;
-import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.io.InputStream;
 import java.net.URL;
@@ -91,12 +90,11 @@ class Git {
 
     private boolean isValidRemoteRepository(URIish repoUri) {
         boolean result;
-        /*  Check Repository URI */
+        /*  Check Repository URI with different schemes. more schems can be added in future */
         if (repoUri.getScheme().toLowerCase().startsWith("http") ) {
-            result = Penis(repoUri);
+            result = httpValidation(repoUri);
         } else if (repoUri.getScheme().toLowerCase().startsWith("ssh") ) {
-            result = Muschi(repoUri);
-
+            result = sshValidation(repoUri);
         } else {
             // TODO need to implement tests for other schemas
             /* Not necessary at the Moment */
@@ -106,7 +104,7 @@ class Git {
         return result;
     }
 
-    private boolean Muschi(URIish repoUri) {
+    private boolean sshValidation(URIish repoUri) {
         boolean result;/* SSH-Validation */
         RemoteSession ssh = null;
         Process exec = null;
@@ -148,7 +146,7 @@ class Git {
         return result;
     }
 
-    private boolean Penis(URIish repoUri) {
+    private boolean httpValidation(URIish repoUri) {
         boolean result;
         String path = repoUri.getPath();
         URIish checkUri = repoUri.setPath(path);
