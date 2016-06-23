@@ -4,8 +4,6 @@ import java.util.ArrayList;
 import java.util.List;
 
 public class Class {
-    private final String sClassName;
-
     private final String sFullPath;
 
     private final List<Error> lError = new ArrayList<>();
@@ -18,10 +16,9 @@ public class Class {
 
     private int nIgnoreCount;
 
-    public Class(String sClassName, String sFullPath, String sExcerciseName) {
-        this.sClassName = sClassName;
+    public Class(String sFullPath, String sExerciseName) {
         this.sFullPath = sFullPath;
-        this.sExerciseName = sExcerciseName;
+        this.sExerciseName = sExerciseName;
         this.nErrorCount = 0;
         this.nWarningCount = 0;
         this.nIgnoreCount = 0;
@@ -46,7 +43,7 @@ public class Class {
         return lError;
     }
 
-    public String getsExcerciseName() {
+    public String getExerciseName() {
         return sExerciseName;
     }
 

@@ -1,13 +1,9 @@
 package de.htwg.konstanz.cloud.model;
 
 public class Error {
-    private final int nLineBegin;
+    private final Line oLine;
 
-    private final int nLineEnd;
-
-    private final int nColumnBegin;
-
-    private final int nColumnEnd;
+    private final Column oColumn;
 
     private final int nPriority;
 
@@ -21,12 +17,10 @@ public class Error {
 
     private final String sMessage;
 
-    public Error(int nLineBegin, int nLineEnd, int nColumnBegin, int nColumnEnd, int nPriority, String sRule,
-                                        String sClassName, String sPackage, String sRuleset, String sMessage) {
-        this.nLineBegin = nLineBegin;
-        this.nLineEnd = nLineEnd;
-        this.nColumnBegin = nColumnBegin;
-        this.nColumnEnd = nColumnEnd;
+    public Error(Line oLine, Column oColumn, int nPriority, String sRule, String sClassName,
+                                            String sPackage, String sRuleset, String sMessage) {
+        this.oLine = oLine;
+        this.oColumn = oColumn;
         this.nPriority = nPriority;
         this.sRule = sRule;
         this.sClassName = sClassName;
@@ -36,19 +30,19 @@ public class Error {
     }
 
     public int getLineBegin() {
-        return nLineBegin;
+        return this.oLine.getLineBegin();
     }
 
     public int getLineEnd() {
-        return nLineEnd;
+        return this.oLine.getLineEnd();
     }
 
     public int getColumnBegin() {
-        return nColumnBegin;
+        return this.oColumn.getColumnBegin();
     }
 
     public int getColumnEnd() {
-        return nColumnEnd;
+        return this.oColumn.getColumnEnd();
     }
 
     public int getPriority() {

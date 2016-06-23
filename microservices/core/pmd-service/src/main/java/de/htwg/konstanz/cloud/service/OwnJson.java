@@ -1,7 +1,9 @@
 package de.htwg.konstanz.cloud.service;
 
 import de.htwg.konstanz.cloud.model.Class;
+import de.htwg.konstanz.cloud.model.Column;
 import de.htwg.konstanz.cloud.model.Error;
+import de.htwg.konstanz.cloud.model.Line;
 import org.json.JSONArray;
 import org.json.JSONObject;
 import org.slf4j.Logger;
@@ -25,10 +27,10 @@ class OwnJson {
 
             String sMessage = eElement.getFirstChild().getTextContent();
 
-            int nLineBegin = util.getParsableElement(eElement, "beginline");
-            int nLineEnd = util.getParsableElement(eElement, "endline");
-            int nColumnBegin = util.getParsableElement(eElement, "begincolumn");
-            int nColumnEnd = util.getParsableElement(eElement, "endcolumn");
+            Line oLine = new Line(util.getParsableElement(eElement, "beginline"),
+                                        util.getParsableElement(eElement, "endline"));
+            Column oColumn = new Column(util.getParsableElement(eElement, "begincolumn"),
+                                            util.getParsableElement(eElement, "endcolumn"));
             int nPriority = util.getParsableElement(eElement, "priority");
 
             lClassList.get(nClassPos).incErrorType(nPriority);
@@ -38,8 +40,7 @@ class OwnJson {
             String sRuleset = util.getNonEmptyElement(eElement, "ruleset");
             String sPackage = util.getNonEmptyElement(eElement, "package");
 
-            Error oError = new Error(nLineBegin, nLineEnd, nColumnBegin, nColumnEnd, nPriority,
-                    sRule, sClassName, sPackage, sRuleset, sMessage);
+            Error oError = new Error(oLine, oColumn, nPriority, sRule, sClassName, sPackage, sRuleset, sMessage);
 
             lClassList.get(nClassPos).getErrorList().add(oError);
         }
@@ -66,7 +67,7 @@ class OwnJson {
                 bExerciseChange = false;
             }
 
-            String sExcerciseName = lClassList.get(nClassPos).getsExcerciseName();
+            String sExcerciseName = lClassList.get(nClassPos).getExerciseName();
 
 			/* first run the TmpName is empty */
             if (sExcerciseName.equals(oOwnJsonProperties.getSTmpExerciseName())
@@ -83,7 +84,7 @@ class OwnJson {
                     oOwnJsonProperties.getLJsonExercises().put(oOwnJsonProperties.getOJsonExercise());
                     oOwnJsonProperties.setOJsonExercise(new JSONObject());
                     oOwnJsonProperties.setLJsonClasses(new JSONArray());
-                    oOwnJsonProperties.setSTmpExerciseName(lClassList.get(nClassPos).getsExcerciseName());
+                    oOwnJsonProperties.setSTmpExerciseName(lClassList.get(nClassPos).getExerciseName());
                     bExerciseChange = true;
                     bExerciseNeverChanged = false;
 

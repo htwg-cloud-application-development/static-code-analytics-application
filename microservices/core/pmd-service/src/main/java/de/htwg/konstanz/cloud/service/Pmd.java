@@ -206,10 +206,8 @@ public class Pmd {
             for (String sRepo : lRepoListInList) {
                 String[] sFullPathSplitArray = sRepo.split(oOperatingSystemCheck.getOperatingSystemSeparator());
 
-                String sTmpClassName = sFullPathSplitArray[sFullPathSplitArray.length - 1];
                 String sTmpExerciseName = sFullPathSplitArray[2];
-
-                oClass = new Class(sTmpClassName, sRepo, sTmpExerciseName);
+                oClass = new Class(sRepo, sTmpExerciseName);
 
                 lFormattedClassList.add(oClass);
             }
