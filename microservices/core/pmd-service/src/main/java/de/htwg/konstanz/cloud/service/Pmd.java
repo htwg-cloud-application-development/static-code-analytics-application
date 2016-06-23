@@ -6,9 +6,6 @@ import org.eclipse.jgit.api.errors.GitAPIException;
 import org.json.JSONObject;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.beans.factory.annotation.Value;
-import org.springframework.stereotype.Component;
 import org.w3c.dom.Document;
 import org.w3c.dom.NodeList;
 import org.xml.sax.InputSource;
@@ -22,11 +19,9 @@ import java.io.*;
 import java.util.ArrayList;
 import java.util.List;
 
-@Component
 public class Pmd {
 
-    @Autowired
-    Util util;
+    Util util = new Util();
 
     private static final Logger LOG = LoggerFactory.getLogger(Pmd.class);
 
@@ -42,11 +37,14 @@ public class Pmd {
 
     private final OwnJson oOwnJson = new OwnJson();
 
-    @Value("${app.config.svn.ip}")
-    private String svnServerIp;
+    private final String svnServerIp;
+    private final String ruleSetPath;
 
-    @Value("${app.config.pmd.ruleset}")
-    private String ruleSetPath;
+    public Pmd(String svnServerIp, String ruleSetPath) {
+        this.svnServerIp = svnServerIp;
+        this.ruleSetPath = ruleSetPath;
+    }
+
 
     String startIt(String gitRepository) throws IOException, ParserConfigurationException, SAXException,
             BadLocationException, GitAPIException, NullPointerException {

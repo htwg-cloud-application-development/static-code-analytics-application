@@ -8,8 +8,6 @@ import org.json.JSONArray;
 import org.json.JSONObject;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import org.springframework.beans.factory.annotation.Value;
-import org.springframework.stereotype.Component;
 import org.w3c.dom.Document;
 import org.w3c.dom.Element;
 import org.w3c.dom.Node;
@@ -28,7 +26,6 @@ import java.nio.channels.ReadableByteChannel;
 import java.util.ArrayList;
 import java.util.List;
 
-@Component
 class Checkstyle {
     private static final Logger LOG = LoggerFactory.getLogger(Checkstyle.class);
 
@@ -44,11 +41,16 @@ class Checkstyle {
 
     private final Svn oSvn = new Svn();
 
-    @Value("${app.config.svn.ip}")
-    private String SVN_IP_C;
+    private final String svn_ip_c;
 
-    @Value("${app.config.checkstyle.rulepath}")
-    private String sRuleSetPath;
+    private final String sRuleSetPath;
+
+
+    public Checkstyle(String svn_ip_c, String sRuleSetPath) {
+        this.svn_ip_c = svn_ip_c;
+        this.sRuleSetPath = sRuleSetPath;
+    }
+
 
     String startIt(String gitRepository) throws IOException, ParserConfigurationException,
                                                 SAXException, GitAPIException, BadLocationException {
@@ -80,7 +82,7 @@ class Checkstyle {
         checkLocalCheckstyle();
 
         /* Svn Checkout */
-        if (sRepoUrl.contains(SVN_IP_C)) {
+        if (sRepoUrl.contains(this.svn_ip_c)) {
             /* URL needs to start with HTTP:// */
             if (!sRepoUrl.startsWith("http://")) {
                 oStringBuilder.append("http://");

@@ -4,7 +4,6 @@ import de.htwg.konstanz.cloud.model.ValidationData;
 import org.eclipse.jgit.api.errors.GitAPIException;
 import org.eclipse.jgit.api.errors.InvalidRemoteException;
 import org.eclipse.jgit.api.errors.TransportException;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -24,8 +23,11 @@ import java.net.MalformedURLException;
 @RestController
 public class CheckstyleService {
 
-    @Autowired
-    Checkstyle checkstyle;
+    @Value("${app.config.svn.ip}")
+    private String SVN_IP_C;
+
+    @Value("${app.config.checkstyle.rulepath}")
+    private String sRuleSetPath;
 
     @Value("${spring.application.name}")
     private String serviceName;
@@ -33,7 +35,7 @@ public class CheckstyleService {
     @RequestMapping(value = "/validate", method = RequestMethod.POST, produces = "application/json", consumes = "application/json")
     public ResponseEntity validate(@RequestBody ValidationData data) {
         try {
-            return ResponseEntity.ok(checkstyle.startIt(data.getRepository()));
+            return ResponseEntity.ok(new Checkstyle(SVN_IP_C, sRuleSetPath).startIt(data.getRepository()));
         } catch (ParserConfigurationException e) {
             return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(e.getMessage());
         } catch (MalformedURLException e) {

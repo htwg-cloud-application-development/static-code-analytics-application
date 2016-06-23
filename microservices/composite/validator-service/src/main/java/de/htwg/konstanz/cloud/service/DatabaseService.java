@@ -52,12 +52,12 @@ public class DatabaseService {
 
     }
 
-    private Future<String> addResultToDatabase(String result, String SAVE_ROUTE) throws InstantiationException {
+    private Future<String> addResultToDatabase(String result, String saveRoute) throws InstantiationException {
         // get database service instance
         ServiceInstance instance = loadBalancer.choose("mongo");
         if (null != instance) {
             // build request url
-            String requestUrl = instance.getUri() + SAVE_ROUTE;
+            String requestUrl = instance.getUri() + saveRoute;
             // POST to request url and get String (JSON)
             HttpHeaders headers = new HttpHeaders();
             headers.setContentType(MediaType.APPLICATION_JSON);
