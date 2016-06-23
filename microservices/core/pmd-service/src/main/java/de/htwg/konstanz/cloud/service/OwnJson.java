@@ -146,6 +146,7 @@ class OwnJson {
 
     private String analyzeErrors(List<Class> lClassList, List<Error> lTmpErrorList,
                                  JSONArray lJsonClasses, String sTmpExerciseName, int nClassPos, String sExerciseName) {
+        String sLocalExerciseName = sTmpExerciseName;
 
         if (!lTmpErrorList.isEmpty()) {
             JSONArray lJsonErrors = new JSONArray();
@@ -170,7 +171,7 @@ class OwnJson {
             }
 
             if (lJsonErrors.length() > 0) {
-                sTmpExerciseName = sExerciseName;
+                sLocalExerciseName = sExerciseName;
 
                 String sFilePath = util.removeUnnecessaryPathParts(lClassList.get(nClassPos).getFullPath());
                 oJsonClass.put("filepath", sFilePath);
@@ -181,7 +182,7 @@ class OwnJson {
             }
         }
 
-        return sTmpExerciseName;
+        return sLocalExerciseName;
     }
 
     private void setPriorityCounters(JSONObject oJsonClass, int nClassPos, List<Class> lClassList) {
