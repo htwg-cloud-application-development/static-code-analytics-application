@@ -50,10 +50,15 @@ class Svn {
             String[] parts = svnLink.split("/");
 
             local = local + parts[parts.length - 1];
-            local = "repositories" + sFileSeparator + local + "_" + System.currentTimeMillis() + sFileSeparator;
-            //Create Repo-Directory
-            if(!new File(local).mkdir()) LOG.info("Error by making Directory");
-            //Start Checkout Logic
+            if(sPcdString == null){
+                local = "repositories" + sFileSeparator + local + "_" + System.currentTimeMillis() + sFileSeparator;
+            }
+            else {
+                local = sPcdString + sFileSeparator + local + "_" + System.currentTimeMillis() + sFileSeparator;
+            }
+            File dir1 = new File(local);
+            dir1.mkdir();
+
             svnCheckout(svnLink, genAuthString(name, password), local);
         }
 
