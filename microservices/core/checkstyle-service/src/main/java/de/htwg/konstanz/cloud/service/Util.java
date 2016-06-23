@@ -41,19 +41,23 @@ class Util {
         return sShortenPath;
     }
 
-    void execCommand(String sPmdCommand) {
+    int execCommand(String sPmdCommand) {
+        int nReturnCode = 0;
+
         try {
             Runtime runtime = Runtime.getRuntime();
             Process proc = runtime.exec(sPmdCommand);
 
             try {
-                proc.waitFor();
+                nReturnCode = proc.waitFor();
             } catch (InterruptedException e) {
                 //TODO
             }
         } catch (IOException ex) {
             //TODO
         }
+
+        return nReturnCode;
     }
 
     File checkLocalSrcDir(String sLocalDirectory) {

@@ -218,10 +218,13 @@ class Checkstyle {
                                             + ".java -f xml -o " + sFullPath + ".xml";
             LOG.info("Checkstyle execution path: " + sCheckStyleCommand);
 
-            oUtil.execCommand(sCheckStyleCommand);
+            int nReturnCode = oUtil.execCommand(sCheckStyleCommand);
+            System.out.println("Prozess Return Code: " + nReturnCode);
 
-			/* store Checkstyle Informationen in the global List */
-            storeCheckstyleInformation(sFullPath + ".xml", nClassPos);
+            if(nReturnCode == 0) {
+			    /* store Checkstyle Informationen in the global List */
+                storeCheckstyleInformation(sFullPath + ".xml", nClassPos);
+            }
         }
 
         /* generate JSON File */
