@@ -33,9 +33,24 @@ class Svn {
         //Systemvariables
         String name = System.getenv("SVN_USER");
         String password = System.getenv("SVN_PASSWORD");
+        File dir = new File("repositories");
+        //Check if MainDirectory exists
+        if(dir.exists()) {
+            LOG.info("Main Directory " + dir.toString() + " already exists");
+        }
+        //if not create Dir
+        else {
+            boolean bSuccess = dir.mkdir();
 
-        //Check credentials
-        if(name == null && password == null) {
+            if(bSuccess) {
+                LOG.info("creating " + dir.toString() + " directory");
+            }
+            else {
+                LOG.info("Error while creating directory: " + dir.toString());
+            }
+        }
+        //Check VPN Credentials
+        if((name == null) && (password == null)) {
             LOG.info("invalid VPN credentials");
         }
         else {
@@ -43,18 +58,20 @@ class Svn {
             String[] parts = svnLink.split("/");
 
             local = local + parts[parts.length - 1];
-            if(sPcdString == null){
-                local = "repositories" + sFileSeparator + local + "_" + System.currentTimeMillis() + sFileSeparator;
+            local = "repositories" + sFileSeparator + local + "_" + System.currentTimeMillis() + sFileSeparator;
+            //Create Repo-Directory
+            File dir1 = new File(local);
+            boolean bSuccess = dir1.mkdir();
+
+            if(bSuccess) {
+                LOG.info("creating '" + dir.toString() + "' directory");
             }
             else {
-                local = sPcdString + sFileSeparator + local + "_" + System.currentTimeMillis() + sFileSeparator;
+                LOG.info("Error while creating directory: " + dir.toString());
             }
-            //Create Local Directory-Path
-            File dir1 = new File(local);
-            if(dir1.mkdir()) {
-                svnCheckout(svnLink, genAuthString(name, password), local);
-            }
-            }
+            //Start Checkout Logic
+            svnCheckout(svnLink, genAuthString(name, password), local);
+        }
 
         return local;
     }
@@ -72,7 +89,7 @@ class Svn {
         // Generate and open the URL Connection
         URL url = new URL(mainUrl);
         URLConnection urlConnection = url.openConnection();
-        //Authorization
+        //Authenticate
         urlConnection.setRequestProperty("Authorization", "Basic "
                 + authStringEnc);
         // read HTML File
@@ -91,18 +108,27 @@ class Svn {
             if (URLDecoder.decode(aListValue, "UTF-8").endsWith("/")) {
                 // String Magic
                 String[] parts = URLDecoder.decode(aListValue, "UTF-8").split("/");
-                String localPathn = localPath + sFileSeparator + parts[parts.length - 1];
+                String localPathn = (localPath + sFileSeparator + parts[parts.length - 1]).replaceAll(" ","");
                 // Create new Dir
-                if(new File(localPathn).mkdir()) {
-                    // start new logic for the located dir
+                //--> Exception Handling --> Checkstyle dont work with Spaces in the path
+                boolean bSuccess = new File(localPathn.replaceAll(" ","")).mkdir();
 
-                    svnCheckout(mainUrl + sFileSeparator + URLDecoder.decode(aListValue, "UTF-8"), authStringEnc,
-                            localPathn);
+                if(bSuccess) {
+                    LOG.info("created directory");
                 }
+                else {
+                    LOG.info("eror while creating directory");
+                }
+
+                // start new logic for the located dir
+                //--> Exception Handling --> Checkstyle dont work with Spaces in the path
+                svnCheckout(mainUrl + sFileSeparator + aListValue, authStringEnc,
+                        localPathn.replaceAll(" ",""));
             } else {
                 // download file
-                downloadFile(mainUrl + sFileSeparator + URLDecoder.decode(aListValue, "UTF-8"), localPath
-                        + sFileSeparator + URLDecoder.decode(aListValue, "UTF-8"), authStringEnc);
+                //--> Exception Handling --> Checkstyle dont work with Spaces in the path
+                downloadFile(mainUrl + sFileSeparator + aListValue, (localPath
+                        + sFileSeparator + URLDecoder.decode(aListValue, "UTF-8")).replaceAll(" ",""), authStringEnc);
             }
         }
     }

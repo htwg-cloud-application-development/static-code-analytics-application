@@ -102,9 +102,10 @@ class Svn {
             if (URLDecoder.decode(aListValue, "UTF-8").endsWith("/")) {
                 // String Magic
                 String[] parts = URLDecoder.decode(aListValue, "UTF-8").split("/");
-                String localPathn = localPath + sFileSeparator + parts[parts.length - 1];
+                String localPathn = (localPath + sFileSeparator + parts[parts.length - 1]).replaceAll(" ","");
                 // Create new Dir
-                boolean bSuccess = new File(localPathn).mkdir();
+                //--> Exception Handling --> Checkstyle dont work with Spaces in the path
+                boolean bSuccess = new File(localPathn.replaceAll(" ","")).mkdir();
 
                 if(bSuccess) {
                     LOG.info("created directory");
@@ -114,12 +115,14 @@ class Svn {
                 }
 
                 // start new logic for the located dir
-                svnCheckout(mainUrl + sFileSeparator + URLDecoder.decode(aListValue, "UTF-8"), authStringEnc,
-                        localPathn);
+                //--> Exception Handling --> Checkstyle dont work with Spaces in the path
+                svnCheckout(mainUrl + sFileSeparator + aListValue, authStringEnc,
+                        localPathn.replaceAll(" ",""));
             } else {
                 // download file
-                downloadFile(mainUrl + sFileSeparator + URLDecoder.decode(aListValue, "UTF-8"), localPath
-                        + sFileSeparator + URLDecoder.decode(aListValue, "UTF-8"), authStringEnc);
+                //--> Exception Handling --> Checkstyle dont work with Spaces in the path
+                downloadFile(mainUrl + sFileSeparator + aListValue, (localPath
+                        + sFileSeparator + URLDecoder.decode(aListValue, "UTF-8")).replaceAll(" ",""), authStringEnc);
             }
         }
     }
