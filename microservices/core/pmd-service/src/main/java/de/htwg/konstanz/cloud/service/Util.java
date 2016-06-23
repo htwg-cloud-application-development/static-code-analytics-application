@@ -10,6 +10,7 @@ import org.springframework.web.bind.annotation.RequestBody;
 import org.w3c.dom.Element;
 
 import java.io.File;
+import java.io.FileNotFoundException;
 import java.io.FileOutputStream;
 import java.io.IOException;
 import java.net.URL;
@@ -24,7 +25,7 @@ public class Util {
 
     private final OperatingSystemCheck oOperatingSystemCheck = new OperatingSystemCheck();
 
-    private String sFileSeparator = oOperatingSystemCheck.getOperatingSystemSeparator();
+    private final String sFileSeparator = oOperatingSystemCheck.getOperatingSystemSeparator();
 
     File checkLocalSrcDir(String sLocalDirectory) {
         File mainDir;/* Check if local /src-dir exists */
@@ -38,6 +39,31 @@ public class Util {
         }
 
         return mainDir;
+    }
+
+    List<String> getAllJavaFiles(String path, List<String> javaFiles) throws FileNotFoundException {
+        //Crawler
+        File root = new File(path);
+        File[] list = root.listFiles();
+
+        if (list != null) {
+            for (File tmpFile : list) {
+                if (tmpFile.isDirectory()) {
+                    //Ignore Git-Dir
+                    if (!tmpFile.getPath().contains(".git")) {
+                        //rekursiv crawle
+                        getAllJavaFiles(tmpFile.getPath(), javaFiles);
+                    }
+                } else {
+                    //add Class-Files
+                    if (tmpFile.getPath().endsWith(".java")) {
+                        javaFiles.add(tmpFile.getPath());
+                    }
+                }
+            }
+        }
+
+        return javaFiles;
     }
 
     void execCommand(String sPmdCommand) {
@@ -67,16 +93,16 @@ public class Util {
         return sResult;
     }
 
-    boolean isParsable(String input) {
-        boolean bParsable = true;
+    private int isParsable(String input) {
+        int nValue;
 
         try {
-            Integer.parseInt(input);
+            nValue = Integer.parseInt(input);
         } catch (NumberFormatException e) {
-            bParsable = false;
+            nValue = 0;
         }
 
-        return bParsable;
+        return nValue;
     }
 
     String getNonEmptyElement(Element eElement, String sAttributeName) {
@@ -87,10 +113,7 @@ public class Util {
     }
 
     int getParsableElement(Element eElement, String sAttribute) {
-        if (isParsable(eElement.getAttribute(sAttribute))) {
-            return Integer.parseInt(eElement.getAttribute(sAttribute));
-        }
-        return 0;
+        return isParsable(eElement.getAttribute(sAttribute));
     }
 
     String removeUnnecessaryPathParts(String sFilePath) {
@@ -110,9 +133,11 @@ public class Util {
 
     File createDirectory(String sDirectoy) {
         File dir = new File(sDirectoy);
+
         if (!dir.exists()) {
             dir.mkdir();
         }
+
         return dir;
     }
 
@@ -142,7 +167,7 @@ public class Util {
     ArrayList<String> getRepositoriesFromRequestBody(@RequestBody String data) throws JSONException {
         JSONObject object = new JSONObject(data);
         JSONArray array = object.getJSONArray("repositories");
-        ArrayList<String> repositories = new ArrayList();
+        ArrayList<String> repositories = new ArrayList<>();
         int len = array.length();
         for (int i = 0; i < len; i++) {
             repositories.add(array.getJSONObject(i).getString("repository"));

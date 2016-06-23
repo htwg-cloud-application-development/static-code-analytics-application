@@ -1,31 +1,26 @@
 package de.htwg.konstanz.cloud.model;
 
 public class Error {
-    private int nLineBegin;
+    private final Line oLine;
 
-    private int nLineEnd;
+    private final Column oColumn;
 
-    private int nColumnBegin;
+    private final int nPriority;
 
-    private int nColumnEnd;
+    private final String sRule;
 
-    private int nPriority;
+    private final String sClassName;
 
-    private String sRule = "";
+    private String sPackage;
 
-    private String sClassName = "";
+    private final String sRuleset;
 
-    private String sPackage = "";
+    private final String sMessage;
 
-    private String sRuleset = "";
-
-    private String sMessage = "";
-
-    public Error(int nLineBegin, int nLineEnd, int nColumnBegin, int nColumnEnd, int nPriority, String sRule, String sClassName, String sPackage, String sRuleset, String sMessage) {
-        this.nLineBegin = nLineBegin;
-        this.nLineEnd = nLineEnd;
-        this.nColumnBegin = nColumnBegin;
-        this.nColumnEnd = nColumnEnd;
+    public Error(Line oLine, Column oColumn, int nPriority, String sRule, String sClassName,
+                                            String sPackage, String sRuleset, String sMessage) {
+        this.oLine = oLine;
+        this.oColumn = oColumn;
         this.nPriority = nPriority;
         this.sRule = sRule;
         this.sClassName = sClassName;
@@ -35,19 +30,19 @@ public class Error {
     }
 
     public int getLineBegin() {
-        return nLineBegin;
+        return this.oLine.getLineBegin();
     }
 
     public int getLineEnd() {
-        return nLineEnd;
+        return this.oLine.getLineEnd();
     }
 
     public int getColumnBegin() {
-        return nColumnBegin;
+        return this.oColumn.getColumnBegin();
     }
 
     public int getColumnEnd() {
-        return nColumnEnd;
+        return this.oColumn.getColumnEnd();
     }
 
     public int getPriority() {
@@ -74,43 +69,7 @@ public class Error {
         return sMessage;
     }
 
-    public void setLineBegin(int nLineBegin) {
-        this.nLineBegin = nLineBegin;
-    }
-
-    public void setLineEnd(int nLineEnd) {
-        this.nLineEnd = nLineEnd;
-    }
-
-    public void setColumnBegin(int nColumnBegin) {
-        this.nColumnBegin = nColumnBegin;
-    }
-
-    public void setColumnEnd(int nColumnEnd) {
-        this.nColumnEnd = nColumnEnd;
-    }
-
-    public void setPriority(int nPriority) {
-        this.nPriority = nPriority;
-    }
-
-    public void setRule(String sRule) {
-        this.sRule = sRule;
-    }
-
-    public void setClassName(String sClassName) {
-        this.sClassName = sClassName;
-    }
-
     public void setPackage(String sPackage) {
         this.sPackage = sPackage;
-    }
-
-    public void setRuleset(String sRuleset) {
-        this.sRuleset = sRuleset;
-    }
-
-    public void setMessage(String sMessage) {
-        this.sMessage = sMessage;
     }
 }

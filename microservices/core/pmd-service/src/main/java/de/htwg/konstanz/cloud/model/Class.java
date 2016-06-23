@@ -4,13 +4,13 @@ import java.util.ArrayList;
 import java.util.List;
 
 public class Class {
-    private String sClassName;
+    private final String sFullPath;
 
-    private String sFullPath;
+    private final List<Error> lError = new ArrayList<>();
 
-    private List<Error> lError = new ArrayList<>();
+    private final String sExerciseName;
 
-    private String sExerciseName;
+    private int nCriticalCount;
 
     private int nErrorCount;
 
@@ -18,10 +18,10 @@ public class Class {
 
     private int nIgnoreCount;
 
-    public Class(String sClassName, String sFullPath, String sExcerciseName) {
-        this.sClassName = sClassName;
+    public Class(String sFullPath, String sExerciseName) {
         this.sFullPath = sFullPath;
-        this.sExerciseName = sExcerciseName;
+        this.sExerciseName = sExerciseName;
+        this.nCriticalCount = 0;
         this.nErrorCount = 0;
         this.nWarningCount = 0;
         this.nIgnoreCount = 0;
@@ -29,11 +29,13 @@ public class Class {
 
     public void incErrorType(int nPriority) {
         /* Count every Error Type we have found in the XML */
-        if (nPriority == 3) {
+        if (nPriority == 4) {
+            incCriticalCount();
+        } else if (nPriority == 3) {
             incErrorCount();
         } else if (nPriority == 2) {
             incWarningCount();
-        } else if (nPriority == 1) {
+        } else if(nPriority == 1) {
             incIgnoreCount();
         }
     }
@@ -46,7 +48,7 @@ public class Class {
         return lError;
     }
 
-    public String getsExcerciseName() {
+    public String getExerciseName() {
         return sExerciseName;
     }
 
@@ -62,6 +64,10 @@ public class Class {
         this.nIgnoreCount++;
     }
 
+    private void incCriticalCount() {
+        this.nCriticalCount++;
+    }
+
     public int getErrorCount() {
         return this.nErrorCount;
     }
@@ -72,5 +78,9 @@ public class Class {
 
     public int getIgnoreCount() {
         return this.nIgnoreCount;
+    }
+
+    public int getCriticalCount() {
+        return this.nCriticalCount;
     }
 }

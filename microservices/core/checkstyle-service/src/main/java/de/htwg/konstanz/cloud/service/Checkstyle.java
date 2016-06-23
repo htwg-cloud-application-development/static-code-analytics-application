@@ -158,14 +158,14 @@ class Checkstyle {
 
     private List<String> walk(String path, List<String> javaFiles) {
         //crawl Method to detect .java Files
-        File root = new File(path);
+        File root = new File(path+"\\");
         File[] list = root.listFiles();
-
         if (list != null) {
+
             for (File f : list) {
                 if (f.isDirectory()) {
                     //ignore git folder (Speedreasons)
-                    if (!f.getPath().contains(".git")) {
+                    if (!f.getPath().contains(".git")|| !f.getPath().contains(".svn")) {
                             //Crawling
                             walk(f.getPath(),javaFiles);
                     }
@@ -218,10 +218,13 @@ class Checkstyle {
                                             + ".java -f xml -o " + sFullPath + ".xml";
             LOG.info("Checkstyle execution path: " + sCheckStyleCommand);
 
-            oUtil.execCommand(sCheckStyleCommand);
+            int nReturnCode = oUtil.execCommand(sCheckStyleCommand);
+            System.out.println("Prozess Return Code: " + nReturnCode);
 
-			/* store Checkstyle Informationen in the global List */
-            storeCheckstyleInformation(sFullPath + ".xml", nClassPos);
+            if(nReturnCode == 0) {
+			    /* store Checkstyle Informationen in the global List */
+                storeCheckstyleInformation(sFullPath + ".xml", nClassPos);
+            }
         }
 
         /* generate JSON File */
