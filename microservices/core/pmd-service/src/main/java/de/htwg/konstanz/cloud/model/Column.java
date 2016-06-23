@@ -10,11 +10,11 @@ public class Column {
         this.nColumnEnd = nColumnEnd;
     }
 
-    public int getColumnBegin() {
+    int getColumnBegin() {
         return nColumnBegin;
     }
 
-    public int getColumnEnd() {
+    int getColumnEnd() {
         return nColumnEnd;
     }
 }

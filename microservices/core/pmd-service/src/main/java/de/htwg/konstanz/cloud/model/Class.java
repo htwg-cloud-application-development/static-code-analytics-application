@@ -10,6 +10,8 @@ public class Class {
 
     private final String sExerciseName;
 
+    private int nCriticalCount;
+
     private int nErrorCount;
 
     private int nWarningCount;
@@ -19,6 +21,7 @@ public class Class {
     public Class(String sFullPath, String sExerciseName) {
         this.sFullPath = sFullPath;
         this.sExerciseName = sExerciseName;
+        this.nCriticalCount = 0;
         this.nErrorCount = 0;
         this.nWarningCount = 0;
         this.nIgnoreCount = 0;
@@ -26,11 +29,13 @@ public class Class {
 
     public void incErrorType(int nPriority) {
         /* Count every Error Type we have found in the XML */
-        if (nPriority == 3) {
+        if (nPriority == 4) {
+            incCriticalCount();
+        } else if (nPriority == 3) {
             incErrorCount();
         } else if (nPriority == 2) {
             incWarningCount();
-        } else if (nPriority == 1) {
+        } else if(nPriority == 1) {
             incIgnoreCount();
         }
     }
@@ -59,6 +64,10 @@ public class Class {
         this.nIgnoreCount++;
     }
 
+    private void incCriticalCount() {
+        this.nCriticalCount++;
+    }
+
     public int getErrorCount() {
         return this.nErrorCount;
     }
@@ -69,5 +78,9 @@ public class Class {
 
     public int getIgnoreCount() {
         return this.nIgnoreCount;
+    }
+
+    public int getCriticalCount() {
+        return this.nCriticalCount;
     }
 }

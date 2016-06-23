@@ -136,7 +136,7 @@ class OwnJson {
 
         /* get severities of the whole project */
         for (Class oClass : lClassList) {
-            nTmpErrorCount += oClass.getErrorCount();
+            nTmpErrorCount += oClass.getErrorCount() + oClass.getCriticalCount();
             nTmpWarningCount += oClass.getWarningCount();
             nTmpIgnoreCounter += oClass.getIgnoreCount();
         }
@@ -187,7 +187,8 @@ class OwnJson {
     }
 
     private void setPriorityCounters(JSONObject oJsonClass, int nClassPos, List<Class> lClassList) {
-        oJsonClass.put("numberOfErros", lClassList.get(nClassPos).getErrorCount());
+        oJsonClass.put("numberOfErros", lClassList.get(nClassPos).getCriticalCount()
+                                        + lClassList.get(nClassPos).getErrorCount());
         oJsonClass.put("numberOfWarnings", lClassList.get(nClassPos).getWarningCount());
         oJsonClass.put("numberOfIgnores", lClassList.get(nClassPos).getIgnoreCount());
     }
