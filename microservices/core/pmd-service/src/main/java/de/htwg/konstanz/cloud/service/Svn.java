@@ -28,9 +28,8 @@ class Svn {
     String downloadSvnRepo(String svnLink, String sPcdString) throws IOException, BadLocationException {
         OperatingSystemCheck oOperatingSystemCheck = new OperatingSystemCheck();
         sFileSeparator = oOperatingSystemCheck.getOperatingSystemSeparator();
-        //Parameters to access SVN
+        //Parameters to access svn
         String local = "";
-        //Systemvariables
         String name = System.getenv("SVN_USER");
         String password = System.getenv("SVN_PASSWORD");
         File dir = new File("repositories");
@@ -40,14 +39,7 @@ class Svn {
         }
         //if not create Dir
         else {
-            boolean bSuccess = dir.mkdir();
-
-            if(bSuccess) {
-                LOG.info("creating " + dir.toString() + " directory");
-            }
-            else {
-                LOG.info("Error while creating directory: " + dir.toString());
-            }
+            if(!dir.mkdir()) LOG.info("Error by making Directory");
         }
         //Check VPN Credentials
         if((name == null) && (password == null)) {
@@ -60,15 +52,7 @@ class Svn {
             local = local + parts[parts.length - 1];
             local = "repositories" + sFileSeparator + local + "_" + System.currentTimeMillis() + sFileSeparator;
             //Create Repo-Directory
-            File dir1 = new File(local);
-            boolean bSuccess = dir1.mkdir();
-
-            if(bSuccess) {
-                LOG.info("creating '" + dir.toString() + "' directory");
-            }
-            else {
-                LOG.info("Error while creating directory: " + dir.toString());
-            }
+            if(!new File(local).mkdir()) LOG.info("Error by making Directory");
             //Start Checkout Logic
             svnCheckout(svnLink, genAuthString(name, password), local);
         }
@@ -84,8 +68,7 @@ class Svn {
         return new String(authEncBytes);
     }
 
-    private void svnCheckout(String mainUrl, String authStringEnc, String localPath) throws
-            IOException, BadLocationException {
+    private void svnCheckout(String mainUrl, String authStringEnc, String localPath) throws            IOException, BadLocationException {
         // Generate and open the URL Connection
         URL url = new URL(mainUrl);
         URLConnection urlConnection = url.openConnection();
@@ -105,28 +88,26 @@ class Svn {
         List<String> listValue = iterToList(iter);
         //Start Crawling
         for (String aListValue : listValue) {
+            //Directory
             if (URLDecoder.decode(aListValue, "UTF-8").endsWith("/")) {
-                // String Magic
+                /*  String Magic
+                    CMD-Command for Checkstyle Validation can't handle Blanks in the Source-Paths
+                     --> Class-Files should contain no blank anyway, so they are Replaced by ""
+                */
                 String[] parts = URLDecoder.decode(aListValue, "UTF-8").split("/");
-                String localPathn = (localPath + sFileSeparator + parts[parts.length - 1]).replaceAll(" ","");
+                String localPathN = (localPath + sFileSeparator + parts[parts.length - 1]).replaceAll(" ","");
+
                 // Create new Dir
-                //--> Exception Handling --> Checkstyle dont work with Spaces in the path
-                boolean bSuccess = new File(localPathn.replaceAll(" ","")).mkdir();
+                if(!new File(localPathN).mkdir()) LOG.info("Error by making Directory");
 
-                if(bSuccess) {
-                    LOG.info("created directory");
-                }
-                else {
-                    LOG.info("eror while creating directory");
-                }
-
-                // start new logic for the located dir
-                //--> Exception Handling --> Checkstyle dont work with Spaces in the path
+                // Start recursiv Call for the located dir
                 svnCheckout(mainUrl + sFileSeparator + aListValue, authStringEnc,
-                        localPathn.replaceAll(" ",""));
+                        localPathN);
             } else {
-                // download file
-                //--> Exception Handling --> Checkstyle dont work with Spaces in the path
+                /*  Download File
+                    CMD-Command for Checkstyle Validation can't handle Blanks in the Source-Paths
+                     --> Class-Files should contain no blank anyway, so they are Replaced by ""
+                */
                 downloadFile(mainUrl + sFileSeparator + aListValue, (localPath
                         + sFileSeparator + URLDecoder.decode(aListValue, "UTF-8")).replaceAll(" ",""), authStringEnc);
             }
@@ -141,7 +122,9 @@ class Svn {
                     .toString());
             iter.next();
         } while (iter.isValid());
-        // Remove first and last Object because they contain no relevant data
+        /*  Remove first and last Object because they contain no relevant data
+            --> .. & SVN-Information
+        */
         list.remove(0);
         list.remove(list.size() - 1);
         return list;
@@ -158,7 +141,7 @@ class Svn {
         InputStream is = urlConnection.getInputStream();
 
         FileOutputStream outputStream = null;
-        // Start to Download the File and save it locally
+        // Start to Download the File and save it Locally
         try {
             File fi = new File(dest);
             outputStream = new FileOutputStream(fi);
@@ -171,13 +154,15 @@ class Svn {
         } catch (IOException e) {
             /* ignore */
         } finally {
+            //Close InputStream
             if (is != null) {
                 try {
                     is.close();
                 } catch (IOException e) {
-                    /* ignore */
+                /* ignore */
                 }
             }
+            //close Outputstream
             if (outputStream != null) {
                 try {
                     outputStream.close();
@@ -186,6 +171,5 @@ class Svn {
                 }
             }
         }
-
     }
 }
