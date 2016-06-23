@@ -69,7 +69,7 @@ public class Cpd {
         String sLocalDir;
         String[] sLocalDirArray;
         List<String> lRepoDirs = new ArrayList<>();
-        StringBuilder oStringBuilder = new StringBuilder();
+        StringBuilder oStringBuilder = null;
 
         LOG.info("Repository URL: " + sRepoUrl);
         oUtil.checkLocalPmd();
@@ -77,6 +77,9 @@ public class Cpd {
 
         /* Download SVN or Git Repos */
         for(String sRepo : sRepoUrl) {
+
+
+oStringBuilder = new StringBuilder();
             /* Svn Checkout */
             if (sRepo.contains(SVN_IP_C)) {
                 /* URL needs to start with HTTP:// */
