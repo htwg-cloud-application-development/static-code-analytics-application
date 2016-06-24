@@ -4,6 +4,7 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Locale;
 
+//represents an analyzed java file
 public class Class {
 	private final String sFullPath;
 

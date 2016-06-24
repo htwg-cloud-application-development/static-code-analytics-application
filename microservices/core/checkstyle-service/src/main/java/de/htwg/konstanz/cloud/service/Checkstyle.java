@@ -49,6 +49,7 @@ class Checkstyle {
         this.sRuleSetPath = sRuleSetPath;
     }
 
+    //entry point for an incoming post request
     String startIt(String gitRepository) throws IOException, ParserConfigurationException,
             SAXException, GitAPIException, BadLocationException {
         lFormattedClassList = new ArrayList<>();
@@ -56,6 +57,7 @@ class Checkstyle {
         JSONObject oJsonResult;
         String sResult;
 
+        //checks if the post contains a repository of git or svn
         oJsonResult = determineVersionControlSystem(gitRepository, lStartTime);
         if (oRepoDir == null) {
             LOG.info("Error: Local Directory is null!");
@@ -63,6 +65,7 @@ class Checkstyle {
             FileUtils.deleteDirectory(oRepoDir);
         }
 
+        //tests the result to avoid a nullpointer exception
         sResult = oUtil.checkJsonResult(oJsonResult);
 
         return sResult;
@@ -76,6 +79,7 @@ class Checkstyle {
         StringBuilder oStringBuilder = new StringBuilder();
 
         LOG.info("Repository URL: " + sRepoUrl);
+        //to run checkstyle, a .jar file is needed. If its not present locally, this method will download it automatically
         checkLocalCheckstyle();
 
         /* Svn Checkout */
@@ -92,15 +96,22 @@ class Checkstyle {
             }
 
             LOG.info("Svn");
+            //download the given svn repository and returns the locally path of it
             sLocalDir = oSvn.downloadSvnRepo(oStringBuilder.toString());
-            /* Last Update Time SVN empty */
+            /* Last Update Time (last parameter) of SVN is empty because it does not provide this information */
+            // generate some parsable checkstyle data and run checkstyle for the locally stored svn repository
             oJson = checkStyle(generateCheckStyleData(sLocalDir), sRepoUrl, lStartTime, "");
             oRepoDir = new File(sLocalDir);
         }
         /* Git Checkout */
         else if (sRepoUrl.contains("github.com")) {
             LOG.info("Git");
+            //download the given git repository and returns the locally path of it and the last updated time
+            // [0] --> locally Path
+            // [1] --> Last Update Time
             sLocalDirArray = oGit.downloadGitRepo(sRepoUrl);
+            /* Last Update Time (last parameter) of the git repositry */
+            // generate some parsable checkstyle data and run checkstyle for the locally stored git repository
             oJson = checkStyle(generateCheckStyleData(sLocalDirArray[0]), sRepoUrl, lStartTime, sLocalDirArray[1]);
             oRepoDir = new File(sLocalDirArray[0]);
         } else {
@@ -155,6 +166,7 @@ class Checkstyle {
     }
 
     private void checkLocalCheckstyle() throws IOException {
+        //it is important to use the xx-all version of checkstyle! It contains additional libraries for a better usability
         final String sCheckstyleJar = "checkstyle-6.17-all.jar";
         final String sDownloadCheckStyleJar = "http://downloads.sourceforge.net/project/checkstyle/checkstyle/6.17/checkstyle-6.17-all.jar?r=https%3A%2F%2Fsourceforge.net%2Fp%2Fcheckstyle%2Factivity%2F%3Fpage%3D0%26limit%3D100&ts=1463416596&use_mirror=vorboss";
         File oFile = new File(sCheckstyleJar);
@@ -178,7 +190,7 @@ class Checkstyle {
         final String sCheckStylePath = "checkstyle-6.17-all.jar";
         JSONObject oJson;
 
-		/* Listeninhalt kuerzen, um JSON vorbereiten */
+		/* reduce the content of the repository list for the json creation */
         formatList(lRepoList);
 
         for (int nClassPos = 0; nClassPos < lFormattedClassList.size(); nClassPos++) {
@@ -188,17 +200,21 @@ class Checkstyle {
                 sFullPath = sFullPath.substring(0, sFullPath.length() - 5);
             }
 
+            //builds the execution command of checkstyle for the command line interace
             String sCheckStyleCommand = "java -jar " + sCheckStylePath + " -c " + sRuleSetPath + " " + sFullPath
                     + ".java -f xml -o " + sFullPath + ".xml";
             LOG.info("Checkstyle execution path: " + sCheckStyleCommand);
 
+            //execute it and validate the return code to get files which were not parsable by checkstyle
             int nReturnCode = oUtil.execCommand(sCheckStyleCommand);
             LOG.info("Process Return Code: " + nReturnCode);
 
+            //valid file
             if(nReturnCode == 0) {
                 /* store Checkstyle Informationen in the global List */
                 storeCheckstyleInformation(sFullPath + ".xml", nClassPos);
             }
+            //non valid file
             else if(nReturnCode == -2){
                 //TODO: Fehler case
             }
@@ -210,6 +226,7 @@ class Checkstyle {
         return oJson;
     }
 
+    //removes unnecessary information
     private void formatList(List<List<String>> lRepoList) {
         for (List<String> sRepoListInList : lRepoList) {
             Class oClass;
@@ -224,8 +241,10 @@ class Checkstyle {
         }
     }
 
+    //opens the stored xml file of checkstyle and iterates through all errors to read the attributes-value pairs
     private void storeCheckstyleInformation(String sXmlPath, int nClassPos)
             throws ParserConfigurationException, SAXException, IOException {
+        //it is important to define the coding of the xml file --> UTF-8
         InputStream inputStream = new FileInputStream(sXmlPath);
         Reader reader = new InputStreamReader(inputStream, "UTF-8");
         InputSource is = new InputSource(reader);
@@ -235,6 +254,7 @@ class Checkstyle {
         DocumentBuilder dBuilder = dbFactory.newDocumentBuilder();
         Document doc = dBuilder.parse(is);
 
+        //get a list of all xml nodes which were tagged by error to get addional information --> e.g. line number, column, ...
         NodeList nList = doc.getElementsByTagName("error");
 
         for (int nNodePos = 0; nNodePos < nList.getLength(); nNodePos++) {
