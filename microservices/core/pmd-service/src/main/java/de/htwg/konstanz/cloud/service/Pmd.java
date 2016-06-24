@@ -120,7 +120,7 @@ public class Pmd {
         if (mainDir.exists()) {
             File[] files = mainDir.listFiles();
 
-            if (files != null && files.length<20) {
+            if (files != null) {
 
                 for (File file : mainDir.listFiles()) {
                     if (file != null) {
