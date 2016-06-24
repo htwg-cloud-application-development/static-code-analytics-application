@@ -49,7 +49,8 @@ class Git {
                     + System.currentTimeMillis() + sFileSeparator;
         } else {
             //Build Local Target-Path
-            localDirectory = "repositories" + sFileSeparator + sPcdString + sFileSeparator + directoryName + sFileSeparator;
+            localDirectory = sPcdString + sFileSeparator + directoryName + "_"
+                    + System.currentTimeMillis() + sFileSeparator;
         }
         LOG.info(localDirectory);
         // Clone Command with jGIT

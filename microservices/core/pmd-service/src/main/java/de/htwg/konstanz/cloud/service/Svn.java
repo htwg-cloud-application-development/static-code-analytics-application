@@ -56,10 +56,11 @@ class Svn {
             String[] parts = svnLink.split("/");
 
             local = local + parts[parts.length - 1];
-            if (sPcdString == null) {
+            if(sPcdString == null){
                 local = "repositories" + sFileSeparator + local + "_" + System.currentTimeMillis() + sFileSeparator;
-            } else {
-                local = "repositories" + sFileSeparator + sPcdString + sFileSeparator + local + sFileSeparator;
+            }
+            else {
+                local = sPcdString + sFileSeparator + local + "_" + System.currentTimeMillis() + sFileSeparator;
             }
             File dir1 = new File(local);
             dir1.mkdir();
