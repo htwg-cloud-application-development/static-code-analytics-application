@@ -52,7 +52,8 @@ public class MongoService {
         } else {
             checkstyleRepo.save(checkstyleResults);
             //set pmd in gorup
-            mongo.updateFirst(Query.query(Criteria.where("userId").is(userId)), Update.update("checkstyle", checkstyleResults), Group.class);
+            mongo.updateFirst(Query.query(Criteria.where("userId").is(userId)),
+                    Update.update("checkstyle", checkstyleResults), Group.class);
             responseEntity = new ResponseEntity(HttpStatus.OK);
         }
         return responseEntity;
