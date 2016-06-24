@@ -22,7 +22,7 @@ public class GovernanceServiceApplication {
 
     /**
      * Main method for starting microservice
-     * @param args
+     * @param args for configuration
      */
     public static void main(String... args) {
         SpringApplication.run(GovernanceServiceApplication.class, args);
@@ -30,7 +30,7 @@ public class GovernanceServiceApplication {
 
     /**
      * Method for returning swagger ui
-     * @return
+     * @return swagger ui
      */
     @Bean
     public Docket newsApi() {
