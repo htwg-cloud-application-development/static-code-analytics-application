@@ -22,7 +22,7 @@ import java.util.List;
 
 public class Pmd {
 
-    private Util util = new Util();
+    private final Util util = new Util();
 
     private static final Logger LOG = LoggerFactory.getLogger(Pmd.class);
 

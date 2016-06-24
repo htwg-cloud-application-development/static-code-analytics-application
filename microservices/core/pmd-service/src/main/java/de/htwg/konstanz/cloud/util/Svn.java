@@ -63,9 +63,10 @@ public class Svn {
                 local = sPcdString + sFileSeparator + local + "_" + System.currentTimeMillis() + sFileSeparator;
             }
             File dir1 = new File(local);
-            dir1.mkdir();
 
-            svnCheckout(svnLink, genAuthString(name, password), local);
+            if (dir1.mkdir()) {
+                svnCheckout(svnLink, genAuthString(name, password), local);
+            }
         }
 
         return local;

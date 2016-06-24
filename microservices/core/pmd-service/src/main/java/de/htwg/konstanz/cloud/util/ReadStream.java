@@ -1,21 +1,26 @@
 package de.htwg.konstanz.cloud.util;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
 import java.io.BufferedReader;
 import java.io.InputStream;
 import java.io.InputStreamReader;
 
-public class ReadStream implements Runnable {
-    String name;
-    InputStream is;
-    Thread thread;
+class ReadStream implements Runnable {
+    private static final Logger LOG = LoggerFactory.getLogger(ReadStream.class);
 
-    public ReadStream(String name, InputStream is) {
+    private final String name;
+
+    private final InputStream is;
+
+    ReadStream(String name, InputStream is) {
         this.name = name;
         this.is = is;
     }
 
-    public void start() {
-        thread = new Thread(this);
+    void start() {
+        Thread thread = new Thread(this);
         thread.start();
     }
 
@@ -25,12 +30,14 @@ public class ReadStream implements Runnable {
             BufferedReader br = new BufferedReader(isr);
             while (true) {
                 String s = br.readLine();
-                if (s == null) break;
-                System.out.println("[" + name + "] " + s);
+                if (s == null) {
+                    break;
+                }
+                LOG.info("[" + name + "] " + s);
             }
             is.close();
         } catch (Exception ex) {
-            System.out.println("Problem reading stream " + name + "... :" + ex);
+            LOG.info("Problem reading stream " + name + "... :" + ex);
             ex.printStackTrace();
         }
     }
