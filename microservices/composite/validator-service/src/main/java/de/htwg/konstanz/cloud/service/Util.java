@@ -184,7 +184,7 @@ class Util {
                 .withAlarmName(instanceId)
                 .withStatistic(Statistic.Average)
                 .withThreshold(40.00)
-                .withPeriod(300)
+                .withPeriod(600)
                 .withMetricName("CPUUtilization")
                 .withNamespace("AWS/EC2")
                 .withComparisonOperator(ComparisonOperator.LessThanOrEqualToThreshold)
