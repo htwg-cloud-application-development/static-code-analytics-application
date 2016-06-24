@@ -1,6 +1,7 @@
 package de.htwg.konstanz.cloud.service;
 
 import com.amazonaws.util.json.JSONException;
+import de.htwg.konstanz.cloud.model.ReadStream;
 import org.json.JSONArray;
 import org.json.JSONObject;
 import org.slf4j.Logger;
@@ -67,17 +68,25 @@ public class Util {
     }
 
     void execCommand(String sPmdCommand) {
+        Process proc = null;
         try {
             Runtime runtime = Runtime.getRuntime();
-            Process proc = runtime.exec(sPmdCommand);
+            System.out.println("Runtime! exec:" + sPmdCommand);
+            proc = runtime.exec(sPmdCommand);
 
-            try {
-                proc.waitFor();
-            } catch (InterruptedException e) {
-                //TODO
+            ReadStream s1 = new ReadStream("stdin", proc.getInputStream());
+            ReadStream s2 = new ReadStream("stderr", proc.getErrorStream());
+
+            s1.start();
+            s2.start();
+
+            proc.waitFor();
+        } catch (IOException | InterruptedException ex) {
+            ex.printStackTrace();
+        } finally {
+            if (proc != null) {
+                proc.destroy();
             }
-        } catch (IOException ex) {
-            //TODO
         }
     }
 
@@ -175,10 +184,10 @@ public class Util {
         return repositories;
     }
 
-    boolean checkIfDifferentReops(List<String> lFileList, String sCheckRepo){
+    boolean checkIfDifferentReops(List<String> lFileList, String sCheckRepo) {
         String[] sSplitCheck = sCheckRepo.split(sFileSeparator);
-        for(String sFileRepo : lFileList){
-            if(sFileRepo.contains(sSplitCheck[0])) {
+        for (String sFileRepo : lFileList) {
+            if (sFileRepo.contains(sSplitCheck[0])) {
                 return false;
             }
         }
