@@ -27,7 +27,7 @@ class Svn {
 
     String downloadSvnRepo(String svnLink) throws IOException, BadLocationException {
         //Default TargetPath
-        return downloadSvnRepo(svnLink,null);
+        return downloadSvnRepo(svnLink, null);
     }
 
     String downloadSvnRepo(String svnLink, String sPcdString) throws IOException, BadLocationException {
@@ -39,29 +39,27 @@ class Svn {
         String password = System.getenv("SVN_PASSWORD");
         File dir = new File("repositories");
         //Check if MainDirectory exists
-        if(dir.exists()) {
+        if (dir.exists()) {
             LOG.info("Main Directory " + dir.toString() + " already exists");
         }
         //if not create Dir
         else {
-            if(!dir.mkdir()) {
+            if (!dir.mkdir()) {
                 LOG.info("Error by making Directory");
             }
         }
         //Check VPN Credentials
-        if(name == null && password == null) {
+        if (name == null && password == null) {
             LOG.info("invalid VPN credentials");
-        }
-        else {
+        } else {
             /* Split URL at every Slash */
             String[] parts = svnLink.split("/");
 
             local = local + parts[parts.length - 1];
-            if(sPcdString == null){
+            if (sPcdString == null) {
                 local = "repositories" + sFileSeparator + local + "_" + System.currentTimeMillis() + sFileSeparator;
-            }
-            else {
-                local = sPcdString + sFileSeparator + local + "_" + System.currentTimeMillis() + sFileSeparator;
+            } else {
+                local = "repositories" + sFileSeparator + sPcdString + sFileSeparator + local + sFileSeparator;
             }
             File dir1 = new File(local);
             dir1.mkdir();
@@ -81,7 +79,7 @@ class Svn {
     }
 
     private void svnCheckout(String mainUrl, String authStringEnc, String localPath)
-                                                throws IOException, BadLocationException {
+            throws IOException, BadLocationException {
         // Generate and open the URL Connection
         URL url = new URL(mainUrl);
         URLConnection urlConnection = url.openConnection();
@@ -108,10 +106,10 @@ class Svn {
                      --> Class-Files should contain no blank anyway, so they are Replaced by ""
                 */
                 String[] parts = URLDecoder.decode(aListValue, "UTF-8").split("/");
-                String localPathN = (localPath + sFileSeparator + parts[parts.length - 1]).replaceAll(" ","");
+                String localPathN = (localPath + sFileSeparator + parts[parts.length - 1]).replaceAll(" ", "");
 
                 // Create new Dir
-                if(!new File(localPathN).mkdir()) {
+                if (!new File(localPathN).mkdir()) {
                     LOG.info("Error by making Directory");
                 }
 
@@ -124,7 +122,7 @@ class Svn {
                      --> Class-Files should contain no blank anyway, so they are Replaced by ""
                 */
                 downloadFile(mainUrl + sFileSeparator + aListValue, (localPath
-                        + sFileSeparator + URLDecoder.decode(aListValue, "UTF-8")).replaceAll(" ",""), authStringEnc);
+                        + sFileSeparator + URLDecoder.decode(aListValue, "UTF-8")).replaceAll(" ", ""), authStringEnc);
             }
         }
     }
