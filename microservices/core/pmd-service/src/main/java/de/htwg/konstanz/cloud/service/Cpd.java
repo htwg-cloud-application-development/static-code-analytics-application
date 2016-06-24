@@ -55,7 +55,7 @@ public class Cpd {
         OperatingSystemCheck oOperatingSystemCheck = new OperatingSystemCheck();
         sFileSeparator = oOperatingSystemCheck.getOperatingSystemSeparator();
 
-        oJsonResult = determination(gitRepository, lStartTime);
+        oJsonResult = determineVersionControlSystem(gitRepository, lStartTime);
         if (oRepoDir == null) {
             LOG.info("Error: Local Directory is null!");
         } else {
@@ -67,8 +67,9 @@ public class Cpd {
         return sResult;
     }
 
-    private JSONObject determination(List<String> sRepoUrl, long lStartTime) throws IOException, BadLocationException,
-            GitAPIException, ParserConfigurationException, SAXException, InterruptedException {
+    private JSONObject determineVersionControlSystem(List<String> sRepoUrl, long lStartTime)
+            throws IOException, BadLocationException, GitAPIException, ParserConfigurationException,
+                                                                    SAXException, InterruptedException {
         JSONObject oJson = null;
         String sLocalDir;
         String[] sLocalDirArray;
@@ -138,7 +139,7 @@ public class Cpd {
             oUtil.execCommand(sCpdCommand);
         } else if (oOperatingSystemCheck.isLinux()) {
             ArrayList<String> sProcessBuilder = new ArrayList<>();
-            
+
             sStartScript = "pmd-bin-5.4.2/bin/run.sh";
             sProcessBuilder.add(sStartScript);
             sProcessBuilder.add("cpd");
@@ -203,9 +204,9 @@ public class Cpd {
                 for (int nNodeFilePos = 0; nNodeFilePos < nNodeFiles.getLength(); nNodeFilePos++) {
                     Node nNodeFile = nNodeFiles.item(nNodeFilePos);
                     Element eNodeFileElement = (Element) nNodeFile;
-                    String sRepoString = String.valueOf(eNodeFileElement.getAttribute("path")).
-                            substring(String.valueOf(eNodeFileElement.getAttribute("path")).
-                                    indexOf(sMainPath) + (sMainPath).length() + 1);
+                    String sRepoString = String.valueOf(eNodeFileElement.getAttribute("path"))
+                            .substring(String.valueOf(eNodeFileElement.getAttribute("path"))
+                                    .indexOf(sMainPath) + (sMainPath).length() + 1);
                     if (oUtil.checkIfDifferentReops(lInvolvedData, sRepoString)) {
                         lInvolvedData.add(sRepoString);
                     }
