@@ -13,7 +13,7 @@ public class MoodleServiceApplication { //NOPMD
 
     /**
      * Main method for starting the moodle microservice
-     * @param args
+     * @param args for loading configuration
      */
     public static void main(String... args) {
         // start the microservice

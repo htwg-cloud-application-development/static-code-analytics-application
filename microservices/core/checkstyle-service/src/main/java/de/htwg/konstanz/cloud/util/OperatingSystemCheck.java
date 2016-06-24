@@ -1,26 +1,25 @@
-package de.htwg.konstanz.cloud.service;
+package de.htwg.konstanz.cloud.util;
 
 import java.io.File;
 
-class OperatingSystemCheck {
+public class OperatingSystemCheck {
 
     private String getOsName() {
         String sOperatingSystem = "";
 
-        if("".equals(sOperatingSystem)) {
+        if ("".equals(sOperatingSystem)) {
             sOperatingSystem = System.getProperty("os.name");
         }
 
         return sOperatingSystem;
     }
 
-    String getOperatingSystemSeparator() {
+    public String getOperatingSystemSeparator() {
         String sOperatingSystemSeparator = "";
 
-        if(isWindows()) {
-            sOperatingSystemSeparator  = File.separatorChar + "" + File.separatorChar;
-        }
-        else if(isLinux()) {
+        if (isWindows()) {
+            sOperatingSystemSeparator = File.separatorChar + "" + File.separatorChar;
+        } else if (isLinux()) {
             sOperatingSystemSeparator = File.separatorChar + "";
         }
 

@@ -4,7 +4,7 @@ import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import lombok.Data;
 
 /**
- * Created by steffen on 27/05/16.
+ * Java Bean of a course from moodle
  */
 @Data
 @JsonIgnoreProperties(ignoreUnknown = true)

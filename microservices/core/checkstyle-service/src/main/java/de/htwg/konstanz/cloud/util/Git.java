@@ -1,4 +1,4 @@
-package de.htwg.konstanz.cloud.service;
+package de.htwg.konstanz.cloud.util;
 
 import org.eclipse.jgit.api.errors.GitAPIException;
 import org.eclipse.jgit.internal.storage.file.FileRepository;
@@ -11,65 +11,53 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import java.io.File;
+import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.io.InputStream;
 import java.net.URL;
 import java.net.URLConnection;
 
-class Git {
+public class Git {
     private static final Logger LOG = LoggerFactory.getLogger(Git.class);
+
+    private final OperatingSystemCheck oOperatingSystemCheck = new OperatingSystemCheck();
 
     private String getLastCommit(org.eclipse.jgit.api.Git git) throws IOException, GitAPIException {
         //Get Last Commit of Git Repo
-        Iterable<RevCommit> revCommits =git.log().call();
+        Iterable<RevCommit> revCommits = git.log().call();
         return String.valueOf(revCommits.iterator().next().getCommitTime());
     }
 
-    String [] downloadGitRepo(String gitRepo) throws IOException, GitAPIException{
-        //Second Parameter changes the local Target-Path
-        return downloadGitRepo(gitRepo,null);
-    }
+    public String[] downloadGitRepo(String gitRepo) throws GitAPIException, IOException {
+        /* Checkout Git-Repo */
+        org.eclipse.jgit.api.Git git = null;
 
-    String [] downloadGitRepo(String gitRepo, String sPcdString) throws GitAPIException, IOException {
-        // Checkout Git-Repo
-        OperatingSystemCheck oOperatingSystemCheck = new OperatingSystemCheck();
-        String sFileSeparator = oOperatingSystemCheck.getOperatingSystemSeparator();
-
-        // Return Array
+        /* return Array */
         String[] returnValue = null;
 
-        // String Magic
+        /* String Magic */
         String directoryName = gitRepo.substring(gitRepo.lastIndexOf("/"),
                 gitRepo.length()).replace(".", "_");
-        directoryName = directoryName.substring(1);
-        String localDirectory;
-        if(sPcdString == null) {
-            //Build Local Target-Path
-            localDirectory = "repositories" + sFileSeparator + directoryName + "_"
-                    + System.currentTimeMillis() + sFileSeparator;
-        }
-        else{
-            //Build Local Target-Path
-            localDirectory = sPcdString + sFileSeparator + directoryName + "_"
-                    + System.currentTimeMillis() + sFileSeparator;
-        }
-        LOG.info(localDirectory);
-        // Clone Command with jGIT
+        String localDirectory = "repositories" + oOperatingSystemCheck.getOperatingSystemSeparator() + directoryName + "_"
+                + System.currentTimeMillis() + oOperatingSystemCheck.getOperatingSystemSeparator();
+
+        /* Clone Command with jGIT */
         URL f = new URL(gitRepo);
         if (isValidRepository(new URIish(f))) {
-            org.eclipse.jgit.api.Git git = org.eclipse.jgit.api.Git.cloneRepository().setURI(gitRepo)
+            git = org.eclipse.jgit.api.Git.cloneRepository().setURI(gitRepo)
                     .setDirectory(new File(localDirectory)).call();
-            returnValue= new String[]{localDirectory, getLastCommit(git)};
+            returnValue = new String[]{localDirectory, getLastCommit(git)};
+        }
 
-            // Closing Object that we can delete the whole directory later
+        /* Closing Object that we can delete the whole directory later */
+        if (null != git) {
             git.getRepository().close();
         }
-        // Local Targetpath and Last Commit
+        /* Local Targetpath and Last Commit*/
         return returnValue;
     }
 
     private boolean isValidRepository(URIish repoUri) {
-        //Logic to Validate the Repository-URI
         if (repoUri.isRemote()) {
             return isValidRemoteRepository(repoUri);
         } else {
@@ -78,23 +66,25 @@ class Git {
     }
 
     private boolean isValidLocalRepository(URIish repoUri) {
-        //Check Repository-URI
         boolean result;
+
         try {
             result = new FileRepository(repoUri.getPath()).getObjectDatabase().exists();
         } catch (IOException e) {
             result = false;
         }
+
         return result;
     }
 
     private boolean isValidRemoteRepository(URIish repoUri) {
         boolean result;
-        /*  Check Repository URI with different schemes. more schems can be added in future */
-        if (repoUri.getScheme().toLowerCase().startsWith("http") ) {
+        /*  Check Repository URI */
+        if (repoUri.getScheme().toLowerCase().startsWith("http")) {
             result = httpValidation(repoUri);
-        } else if (repoUri.getScheme().toLowerCase().startsWith("ssh") ) {
+        } else if (repoUri.getScheme().toLowerCase().startsWith("ssh")) {
             result = sshValidation(repoUri);
+
         } else {
             // TODO need to implement tests for other schemas
             /* Not necessary at the Moment */
@@ -127,20 +117,20 @@ class Git {
 
         } finally {
             /* Close Process */
-            if (exec!=null) {
-                try {
+            try {
+                if (exec != null) {
                     exec.destroy();
-                } catch (Exception e) {
-                    /* ignore */
                 }
+            } catch (Exception e) {
+                /* ignore */
             }
             /* Disconnect SSH */
-            if (ssh!=null) {
-                try {
+            try {
+                if (ssh != null) {
                     ssh.disconnect();
-                } catch (Exception e) {
-                    /* ignore */
                 }
+            } catch (Exception e) {
+                /* ignore */
             }
         }
         return result;
@@ -158,18 +148,21 @@ class Git {
             conn.setReadTimeout(1000);
             ins = conn.getInputStream();
             result = true;
-        } catch (Exception e) {
+        } catch (FileNotFoundException e) {
             /* URI NOT FOUND */
-            LOG.info("Error: " + checkUri.toString());
-            result=false;
+            LOG.info("URI not found: " + checkUri.toString());
+            result = false;
+        } catch (IOException e) {
+            /* IO ERROR */
+            LOG.info("IO Error: " + checkUri.toString());
+            result = false;
         } finally {
             /* Close InputStream  */
             try {
-                if (null!=ins) {
+                if (null != ins) {
                     ins.close();
                 }
-            }
-            catch (Exception e) {
+            } catch (Exception e) {
                 /* ignore */
             }
         }

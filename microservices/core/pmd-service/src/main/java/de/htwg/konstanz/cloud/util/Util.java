@@ -1,4 +1,4 @@
-package de.htwg.konstanz.cloud.service;
+package de.htwg.konstanz.cloud.util;
 
 import com.amazonaws.util.json.JSONException;
 import org.json.JSONArray;
@@ -27,7 +27,7 @@ public class Util {
 
     private final String sFileSeparator = oOperatingSystemCheck.getOperatingSystemSeparator();
 
-    File checkLocalSrcDir(String sLocalDirectory) {
+    public File checkLocalSrcDir(String sLocalDirectory) {
         File mainDir;/* Check if local /src-dir exists */
 
         if (new File(sLocalDirectory + sFileSeparator + "src").exists()) {
@@ -41,7 +41,7 @@ public class Util {
         return mainDir;
     }
 
-    List<String> getAllJavaFiles(String path, List<String> javaFiles) throws FileNotFoundException {
+    public List<String> getAllJavaFiles(String path, List<String> javaFiles) throws FileNotFoundException {
         //Crawler
         File root = new File(path);
         File[] list = root.listFiles();
@@ -66,22 +66,29 @@ public class Util {
         return javaFiles;
     }
 
-    void execCommand(String sPmdCommand) {
+    public void execCommand(String sPmdCommand) {
+        Process proc = null;
         try {
             Runtime runtime = Runtime.getRuntime();
-            Process proc = runtime.exec(sPmdCommand);
+            proc = runtime.exec(sPmdCommand);
 
-            try {
-                proc.waitFor();
-            } catch (InterruptedException e) {
-                //TODO
+            ReadStream s1 = new ReadStream("stdin", proc.getInputStream());
+            ReadStream s2 = new ReadStream("stderr", proc.getErrorStream());
+
+            s1.start();
+            s2.start();
+
+            proc.waitFor();
+        } catch (IOException | InterruptedException ex) {
+            ex.printStackTrace();
+        } finally {
+            if (proc != null) {
+                proc.destroy();
             }
-        } catch (IOException ex) {
-            //TODO
         }
     }
 
-    String checkJsonResult(JSONObject oJsonResult) {
+    public String checkJsonResult(JSONObject oJsonResult) {
         String sResult;
         if (null == oJsonResult) {
             sResult = "Invalid Repository";
@@ -112,7 +119,7 @@ public class Util {
         return "";
     }
 
-    int getParsableElement(Element eElement, String sAttribute) {
+    public int getParsableElement(Element eElement, String sAttribute) {
         return isParsable(eElement.getAttribute(sAttribute));
     }
 
@@ -131,7 +138,7 @@ public class Util {
         return sShortenPath;
     }
 
-    File createDirectory(String sDirectoy) {
+    public File createDirectory(String sDirectoy) {
         File dir = new File(sDirectoy);
 
         if (!dir.exists()) {
@@ -141,7 +148,7 @@ public class Util {
         return dir;
     }
 
-    void checkLocalPmd() throws IOException {
+    public void checkLocalPmd() throws IOException {
         Zip oZip = new Zip();
         final String sPmdDir = "pmd-bin-5.4.2.zip";
         final String sDownloadPmd = "https://github.com/pmd/pmd/releases/download/pmd_releases%2F5.4.2/pmd-bin-5.4.2.zip";
@@ -164,7 +171,7 @@ public class Util {
         }
     }
 
-    ArrayList<String> getRepositoriesFromRequestBody(@RequestBody String data) throws JSONException {
+    public ArrayList<String> getRepositoriesFromRequestBody(@RequestBody String data) throws JSONException {
         JSONObject object = new JSONObject(data);
         JSONArray array = object.getJSONArray("repositories");
         ArrayList<String> repositories = new ArrayList<>();
@@ -175,10 +182,10 @@ public class Util {
         return repositories;
     }
 
-    boolean checkIfDifferentReops(List<String> lFileList, String sCheckRepo){
+    public boolean checkIfDifferentReops(List<String> lFileList, String sCheckRepo) {
         String[] sSplitCheck = sCheckRepo.split(sFileSeparator);
-        for(String sFileRepo : lFileList){
-            if(sFileRepo.contains(sSplitCheck[0])) {
+        for (String sFileRepo : lFileList) {
+            if (sFileRepo.contains(sSplitCheck[0])) {
                 return false;
             }
         }

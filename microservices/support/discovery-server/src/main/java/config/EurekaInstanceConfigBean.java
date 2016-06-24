@@ -142,7 +142,9 @@ public class EurekaInstanceConfigBean implements CloudEurekaInstanceConfig {//NO
      * is specifically used in an AWS environment to automatically put an instance out of
      * service after the instance is launched and it has been disabled for traffic..
      */
+    //CHECKSTYLE:OFF
     private String aSGName;
+    //CHECKSTYLE:ON
 
     /**
      * Gets the metadata name/value pairs associated with this instance. This information

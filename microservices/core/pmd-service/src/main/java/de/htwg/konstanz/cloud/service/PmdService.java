@@ -1,6 +1,7 @@
 package de.htwg.konstanz.cloud.service;
 
 import de.htwg.konstanz.cloud.model.ValidationData;
+import de.htwg.konstanz.cloud.util.Util;
 import lombok.Data;
 import org.eclipse.jgit.api.errors.InvalidRemoteException;
 import org.slf4j.Logger;

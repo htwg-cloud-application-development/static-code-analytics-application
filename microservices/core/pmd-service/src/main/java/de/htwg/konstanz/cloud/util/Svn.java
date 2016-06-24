@@ -1,4 +1,4 @@
-package de.htwg.konstanz.cloud.service;
+package de.htwg.konstanz.cloud.util;
 
 import org.apache.commons.codec.binary.Base64;
 import org.slf4j.Logger;
@@ -15,17 +15,22 @@ import java.net.URLDecoder;
 import java.util.ArrayList;
 import java.util.List;
 
-class Svn {
+public class Svn {
+    /*
+    Actually the Checkout from Subversion should be realized with the LIB svnkit but these Lib wasn't able to connect to the Server because of Deprecated Methods.
+    --> The other possibility was to perform an CMD-Command and checkout the Repository. That solution wont work anyway because the Command dont determine because of Java
+    For this Reason the following Workaround is developed:
+     */
     private static final Logger LOG = LoggerFactory.getLogger(Svn.class);
 
     private String sFileSeparator = "";
 
-    String downloadSvnRepo(String svnLink) throws IOException, BadLocationException {
+    public String downloadSvnRepo(String svnLink) throws IOException, BadLocationException {
         //Default TargetPath
-        return downloadSvnRepo(svnLink,null);
+        return downloadSvnRepo(svnLink, null);
     }
 
-    String downloadSvnRepo(String svnLink, String sPcdString) throws IOException, BadLocationException {
+    public String downloadSvnRepo(String svnLink, String sPcdString) throws IOException, BadLocationException {
         OperatingSystemCheck oOperatingSystemCheck = new OperatingSystemCheck();
         sFileSeparator = oOperatingSystemCheck.getOperatingSystemSeparator();
         //Parameters to access svn
@@ -34,20 +39,19 @@ class Svn {
         String password = System.getenv("SVN_PASSWORD");
         File dir = new File("repositories");
         //Check if MainDirectory exists
-        if(dir.exists()) {
+        if (dir.exists()) {
             LOG.info("Main Directory " + dir.toString() + " already exists");
         }
         //if not create Dir
         else {
-            if(!dir.mkdir()) {
+            if (!dir.mkdir()) {
                 LOG.info("Error by making Directory");
             }
         }
         //Check VPN Credentials
-        if(name == null && password == null) {
+        if (name == null && password == null) {
             LOG.info("invalid VPN credentials");
-        }
-        else {
+        } else {
             /* Split URL at every Slash */
             String[] parts = svnLink.split("/");
 
@@ -75,7 +79,8 @@ class Svn {
         return new String(authEncBytes);
     }
 
-    private void svnCheckout(String mainUrl, String authStringEnc, String localPath) throws            IOException, BadLocationException {
+    private void svnCheckout(String mainUrl, String authStringEnc, String localPath)
+            throws IOException, BadLocationException {
         // Generate and open the URL Connection
         URL url = new URL(mainUrl);
         URLConnection urlConnection = url.openConnection();
@@ -102,10 +107,10 @@ class Svn {
                      --> Class-Files should contain no blank anyway, so they are Replaced by ""
                 */
                 String[] parts = URLDecoder.decode(aListValue, "UTF-8").split("/");
-                String localPathN = (localPath + sFileSeparator + parts[parts.length - 1]).replaceAll(" ","");
+                String localPathN = (localPath + sFileSeparator + parts[parts.length - 1]).replaceAll(" ", "");
 
                 // Create new Dir
-                if(!new File(localPathN).mkdir()) {
+                if (!new File(localPathN).mkdir()) {
                     LOG.info("Error by making Directory");
                 }
 
@@ -118,7 +123,7 @@ class Svn {
                      --> Class-Files should contain no blank anyway, so they are Replaced by ""
                 */
                 downloadFile(mainUrl + sFileSeparator + aListValue, (localPath
-                        + sFileSeparator + URLDecoder.decode(aListValue, "UTF-8")).replaceAll(" ",""), authStringEnc);
+                        + sFileSeparator + URLDecoder.decode(aListValue, "UTF-8")).replaceAll(" ", ""), authStringEnc);
             }
         }
     }

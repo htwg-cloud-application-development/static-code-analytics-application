@@ -1,13 +1,16 @@
 package de.htwg.konstanz.cloud.service;
 
 import de.htwg.konstanz.cloud.model.Duplication;
+import de.htwg.konstanz.cloud.util.Git;
+import de.htwg.konstanz.cloud.util.OperatingSystemCheck;
+import de.htwg.konstanz.cloud.util.Svn;
+import de.htwg.konstanz.cloud.util.Util;
 import org.apache.commons.io.FileUtils;
 import org.eclipse.jgit.api.errors.GitAPIException;
 import org.json.JSONArray;
 import org.json.JSONObject;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import org.springframework.stereotype.Component;
 import org.w3c.dom.Document;
 import org.w3c.dom.Element;
 import org.w3c.dom.Node;
@@ -77,10 +80,10 @@ public class Cpd {
         oRepoDir = oUtil.createDirectory("repositories_" + System.currentTimeMillis());
 
         /* Download SVN or Git Repos */
-        for(String sRepo : sRepoUrl) {
+        for (String sRepo : sRepoUrl) {
 
 
-oStringBuilder = new StringBuilder();
+            oStringBuilder = new StringBuilder();
             /* Svn Checkout */
             if (sRepo.contains(svnServerIp)) {
                 /* URL needs to start with HTTP:// */
@@ -94,13 +97,13 @@ oStringBuilder = new StringBuilder();
                     oStringBuilder.append(sRepo);
                 }
                 LOG.info("SVN " + oStringBuilder.toString());
-                sLocalDir = oSvn.downloadSvnRepo(oStringBuilder.toString(),oRepoDir.getAbsolutePath());
+                sLocalDir = oSvn.downloadSvnRepo(oStringBuilder.toString(), oRepoDir.getAbsolutePath());
                 lRepoDirs.add(sLocalDir);
             }
             /* Git */
             else if (sRepo.contains("github.com")) {
                 LOG.info("Git " + sRepo);
-                sLocalDirArray = oGit.downloadGitRepo(sRepo,oRepoDir.getPath().toString());
+                sLocalDirArray = oGit.downloadGitRepo(sRepo, oRepoDir.getPath().toString());
                 lRepoDirs.add(sLocalDirArray[0]);
             } else {
                 LOG.info("Repository URL has no valid Svn/Git attributes. (" + sRepoUrl + ")");
@@ -109,14 +112,14 @@ oStringBuilder = new StringBuilder();
         }
 
         /* Run CPD */
-        if(!lRepoDirs.isEmpty()) {
+        if (!lRepoDirs.isEmpty()) {
             oJson = runCpd(oRepoDir.getAbsolutePath(), lStartTime);
         }
 
         return oJson;
     }
 
-    private JSONObject runCpd(String sRepoString,long lStartTime) throws ParserConfigurationException,
+    private JSONObject runCpd(String sRepoString, long lStartTime) throws ParserConfigurationException,
             SAXException, IOException, InterruptedException {
         OperatingSystemCheck oOperatingSystemCheck = new OperatingSystemCheck();
         final String sOutputFileName = "Duplications.xml";
@@ -129,7 +132,8 @@ oStringBuilder = new StringBuilder();
 
         if (oOperatingSystemCheck.isWindows()) {
             sStartScript = "pmd-bin-5.4.2\\bin\\cpd.bat";
-            String sCpdCommand = sStartScript + " --minimum-tokens 75 --files " + oRepoDir.getAbsolutePath() + " --skip-lexical-errors --format xml > " + sMainPath + sFileSeparator +"CpdCheck_" + sOutputFileName;
+            String sCpdCommand = sStartScript + " --minimum-tokens 75 --files " + oRepoDir.getAbsolutePath() + " --skip-lexical-errors --format xml > " + sMainPath + sFileSeparator + "CpdCheck_" + sOutputFileName;
+            LOG.info("Command: " + sCpdCommand);
             oUtil.execCommand(sCpdCommand);
         } else if (oOperatingSystemCheck.isLinux()) {
             ArrayList<String> sProcessBuilder = new ArrayList<>();
@@ -146,7 +150,7 @@ oStringBuilder = new StringBuilder();
             sProcessBuilder.add("xml");
 
             oCommandExecure = new ProcessBuilder(sProcessBuilder);
-            oCommandExecure.redirectOutput(new File(sMainPath + sFileSeparator +"CpdCheck_" + sOutputFileName));
+            oCommandExecure.redirectOutput(new File(sMainPath + sFileSeparator + "CpdCheck_" + sOutputFileName));
             Process p = oCommandExecure.start();
             p.waitFor();
         }
@@ -198,7 +202,7 @@ oStringBuilder = new StringBuilder();
                     Node nNodeFile = nNodeFiles.item(nNodeFilePos);
                     Element eNodeFileElement = (Element) nNodeFile;
                     String sRepoString = String.valueOf(eNodeFileElement.getAttribute("path")).substring(String.valueOf(eNodeFileElement.getAttribute("path")).indexOf(sMainPath) + (sMainPath).length() + 1);
-                    if(oUtil.checkIfDifferentReops(lInvolvedData, sRepoString)){
+                    if (oUtil.checkIfDifferentReops(lInvolvedData, sRepoString)) {
                         lInvolvedData.add(sRepoString);
                     }
                 }
@@ -210,7 +214,7 @@ oStringBuilder = new StringBuilder();
                 }
 
                 //Create Duplication
-                if(lInvolvedData.size() > 1) {
+                if (lInvolvedData.size() > 1) {
                     lDuplications.add(Duplication.getDupliactionInstance(nLinesCount, nTokens, lInvolvedData, sCodeFragment));
                 }
             }
@@ -240,7 +244,7 @@ oStringBuilder = new StringBuilder();
             }
             oJsonDuplication.put("filePaths", lJsonFilePaths);
             oJsonDuplication.put("codefragment", oDuplaction.getDuplicatedCode());
-            lJsonDuplicatiions.put(new  JSONObject().put("duplication", oJsonDuplication));
+            lJsonDuplicatiions.put(new JSONObject().put("duplication", oJsonDuplication));
             nDuplicationCounter++;
         }
         oJsonRoot.put("duplications", lJsonDuplicatiions);

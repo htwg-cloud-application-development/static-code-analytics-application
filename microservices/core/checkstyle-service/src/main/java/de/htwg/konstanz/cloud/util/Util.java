@@ -1,4 +1,4 @@
-package de.htwg.konstanz.cloud.service;
+package de.htwg.konstanz.cloud.util;
 
 import org.json.JSONObject;
 import org.slf4j.Logger;
@@ -7,33 +7,33 @@ import org.w3c.dom.Element;
 
 import java.io.File;
 import java.io.IOException;
+import java.util.List;
 
-class Util {
+public class Util {
     private static final Logger LOG = LoggerFactory.getLogger(Util.class);
 
     private final OperatingSystemCheck oOperatingSystemCheck = new OperatingSystemCheck();
 
-    private boolean isParsable(String input) {
-        boolean bParsable = true;
+    private int isParsable(String input) {
+        int nValue;
 
         try {
-            Integer.parseInt(input);
+            nValue = Integer.parseInt(input);
         } catch (NumberFormatException e) {
-            bParsable = false;
+            nValue = 0;
         }
 
-        return bParsable;
+        return nValue;
     }
 
     String removeUnnecessaryPathParts(String sFilePath) {
         String[] sFilePathSplitArray = sFilePath.split(oOperatingSystemCheck.getOperatingSystemSeparator());
         String sShortenPath = "";
-        for(int nPathPos = 2; nPathPos < sFilePathSplitArray.length; nPathPos++) {
-            if(nPathPos+1 == sFilePathSplitArray.length) {
+        for (int nPathPos = 2; nPathPos < sFilePathSplitArray.length; nPathPos++) {
+            if (nPathPos + 1 == sFilePathSplitArray.length) {
                         /* last Part of the Path */
                 sShortenPath += sFilePathSplitArray[nPathPos];
-            }
-            else {
+            } else {
                 sShortenPath += sFilePathSplitArray[nPathPos] + "\\";
             }
         }
@@ -41,7 +41,7 @@ class Util {
         return sShortenPath;
     }
 
-    int execCommand(String sPmdCommand) {
+    public int execCommand(String sPmdCommand) {
         int nReturnCode = 0;
 
         try {
@@ -60,7 +60,30 @@ class Util {
         return nReturnCode;
     }
 
-    File checkLocalSrcDir(String sLocalDirectory) {
+    public List<String> getAllJavaFiles(String path, List<String> javaFiles) {
+        //crawl Method to detect .java Files
+        File root = new File(path);
+        File[] list = root.listFiles();
+        if (list != null) {
+            for (File f : list) {
+                if (f.isDirectory()) {
+                    //ignore git folder (Speedreasons)
+                    if (!f.getPath().contains(".git")) {
+                        //Crawling
+                        getAllJavaFiles(f.getPath(),javaFiles);
+                    }
+                } else {
+                    //Add .java Files to List
+                    if (f.getPath().endsWith(".java")) {
+                        javaFiles.add(f.getPath());
+                    }
+                }
+            }
+        }
+        return javaFiles;
+    }
+
+    public File checkLocalSrcDir(String sLocalDirectory) {
         File mainDir;/* Check if local /src-dir exists */
 
         if (new File(sLocalDirectory + oOperatingSystemCheck.getOperatingSystemSeparator() + "src").exists()) {
@@ -74,7 +97,7 @@ class Util {
         return mainDir;
     }
 
-    String checkJsonResult(JSONObject oJsonResult) {
+    public String checkJsonResult(JSONObject oJsonResult) {
         String sResult;
         if (null == oJsonResult) {
             sResult = "Invalid Repository";
@@ -86,11 +109,9 @@ class Util {
         return sResult;
     }
 
+
     int getParsableElement(Element eElement, String sAttribute) {
-        if (isParsable(eElement.getAttribute(sAttribute))) {
-            return Integer.parseInt(eElement.getAttribute(sAttribute));
-        }
-        return 0;
+        return isParsable(eElement.getAttribute(sAttribute));
     }
 
     String getNonEmptyElement(Element eElement, String sAttributeName) {

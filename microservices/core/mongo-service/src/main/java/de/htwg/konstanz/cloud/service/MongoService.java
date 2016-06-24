@@ -46,13 +46,14 @@ public class MongoService {
         final String userId = checkstyleResults.getUserId();
         final Group group = mongo.findOne(Query.query(Criteria.where("userId").is(userId)), Group.class);
 
-        if (null == group){
+        if (null == group) {
             responseEntity = new ResponseEntity(HttpStatus.NO_CONTENT);
 
         } else {
             checkstyleRepo.save(checkstyleResults);
             //set pmd in gorup
-            mongo.updateFirst(Query.query(Criteria.where("userId").is(userId)), Update.update("checkstyle", checkstyleResults), Group.class);
+            mongo.updateFirst(Query.query(Criteria.where("userId").is(userId)),
+                    Update.update("checkstyle", checkstyleResults), Group.class);
             responseEntity = new ResponseEntity(HttpStatus.OK);
         }
         return responseEntity;
@@ -69,12 +70,12 @@ public class MongoService {
                         .with(new Sort(Sort.Direction.DESC, "timestamp"))
                         .limit(1), CheckstyleResults.class);
 
-        if (checkstyleResults.isEmpty()){
-            responseEntity =  new ResponseEntity<>(HttpStatus.NO_CONTENT);
+        if (checkstyleResults.isEmpty()) {
+            responseEntity = new ResponseEntity<>(HttpStatus.NO_CONTENT);
         } else {
             responseEntity = new ResponseEntity<>(checkstyleResults.get(0), HttpStatus.OK);
         }
-        return  responseEntity;
+        return responseEntity;
     }
 
     //Add PmdEntry to DB
@@ -89,7 +90,7 @@ public class MongoService {
         final String userId = pmdResults.getUserId();
         final Group group = mongo.findOne(Query.query(Criteria.where("userId").is(userId)), Group.class);
 
-        if (null == group){
+        if (null == group) {
             responseEntity = new ResponseEntity(HttpStatus.NO_CONTENT);
         } else {
             pmdRepo.save(pmdResults);
@@ -102,8 +103,7 @@ public class MongoService {
 
     // Finds the last added PmdResult for specific userId
     @RequestMapping(value = "/courses/{userId}/findLastPmdResult", method = RequestMethod.GET)
-    public
-    ResponseEntity<PmdResults> getLastPmdGroupResult(@PathVariable("userId") final String userId) {
+    public ResponseEntity<PmdResults> getLastPmdGroupResult(@PathVariable("userId") final String userId) {
 
         ResponseEntity<PmdResults> responseEntity;
         final List<PmdResults> pmdResults = mongo
@@ -112,7 +112,7 @@ public class MongoService {
                         .with(new Sort(Sort.Direction.DESC, "timestamp"))
                         .limit(1), PmdResults.class);
 
-        if (pmdResults.isEmpty()){
+        if (pmdResults.isEmpty()) {
             responseEntity = new ResponseEntity<>(HttpStatus.NO_CONTENT);
         } else {
             responseEntity = new ResponseEntity<>(pmdResults.get(0), HttpStatus.OK);

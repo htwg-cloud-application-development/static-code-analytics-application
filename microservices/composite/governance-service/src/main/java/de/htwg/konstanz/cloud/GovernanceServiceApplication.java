@@ -12,16 +12,26 @@ import springfox.documentation.swagger2.annotations.EnableSwagger2;
 
 import static springfox.documentation.builders.PathSelectors.regex;
 
+/**
+ * Governance microservice used for providing access from frontend
+ */
 @SpringBootApplication
 @EnableDiscoveryClient
 @EnableSwagger2
 public class GovernanceServiceApplication {
 
+    /**
+     * Main method for starting microservice
+     * @param args for configuration
+     */
     public static void main(String... args) {
         SpringApplication.run(GovernanceServiceApplication.class, args);
     }
 
-    // swagger dashboard "/swagger-ui.html"
+    /**
+     * Method for returning swagger ui
+     * @return swagger ui
+     */
     @Bean
     public Docket newsApi() {
         return new Docket(DocumentationType.SWAGGER_2)

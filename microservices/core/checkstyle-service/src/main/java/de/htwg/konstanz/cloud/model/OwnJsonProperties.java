@@ -1,11 +1,11 @@
-package de.htwg.konstanz.cloud.service;
+package de.htwg.konstanz.cloud.model;
 
 import lombok.Data;
 import org.json.JSONArray;
 import org.json.JSONObject;
 
 @Data
-class OwnJsonProperties {
+public class OwnJsonProperties {
     JSONObject oJsonRoot = new JSONObject();
 
     JSONObject oJsonExercise = new JSONObject();
@@ -14,5 +14,5 @@ class OwnJsonProperties {
 
     JSONArray lJsonExercises = new JSONArray();
 
-    String sTmpExerciseName = "";
+    String sTmpExcerciseName = "";
 }

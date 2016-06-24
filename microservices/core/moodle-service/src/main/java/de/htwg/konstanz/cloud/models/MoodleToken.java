@@ -1,12 +1,12 @@
 package de.htwg.konstanz.cloud.models;
 
 import lombok.Data;
+
 import javax.validation.constraints.NotNull;
 
 /**
- * Created by steffen on 27/05/16.
+ * Java Bean of a moodle Token
  */
-
 @Data
 public class MoodleToken {
 
