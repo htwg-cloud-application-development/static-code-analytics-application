@@ -1,4 +1,4 @@
-package de.htwg.konstanz.cloud.service;
+package de.htwg.konstanz.cloud.util;
 
 import org.eclipse.jgit.api.errors.GitAPIException;
 import org.eclipse.jgit.internal.storage.file.FileRepository;
@@ -16,7 +16,7 @@ import java.io.InputStream;
 import java.net.URL;
 import java.net.URLConnection;
 
-class Git {
+public class Git {
     private static final Logger LOG = LoggerFactory.getLogger(Git.class);
 
     private String getLastCommit(org.eclipse.jgit.api.Git git) throws IOException, GitAPIException {
@@ -25,12 +25,12 @@ class Git {
         return String.valueOf(revCommits.iterator().next().getCommitTime());
     }
 
-    String[] downloadGitRepo(String gitRepo) throws IOException, GitAPIException {
+    public String[] downloadGitRepo(String gitRepo) throws IOException, GitAPIException {
         //Second Parameter changes the local Target-Path
         return downloadGitRepo(gitRepo, null);
     }
 
-    String[] downloadGitRepo(String gitRepo, String sPcdString) throws GitAPIException, IOException {
+    public String[] downloadGitRepo(String gitRepo, String sPcdString) throws GitAPIException, IOException {
         // Checkout Git-Repo
         OperatingSystemCheck oOperatingSystemCheck = new OperatingSystemCheck();
         String sFileSeparator = oOperatingSystemCheck.getOperatingSystemSeparator();

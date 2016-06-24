@@ -1,4 +1,4 @@
-package de.htwg.konstanz.cloud.model;
+package de.htwg.konstanz.cloud.util;
 
 import java.io.BufferedReader;
 import java.io.InputStream;

@@ -1,4 +1,4 @@
-package de.htwg.konstanz.cloud.service;
+package de.htwg.konstanz.cloud.util;
 
 import org.apache.commons.codec.binary.Base64;
 import org.slf4j.Logger;
@@ -15,7 +15,7 @@ import java.net.URLDecoder;
 import java.util.ArrayList;
 import java.util.List;
 
-class Svn {
+public class Svn {
     /*
     Actually the Checkout from Subversion should be realized with the LIB svnkit but these Lib wasn't able to connect to the Server because of Deprecated Methods.
     --> The other possibility was to perform an CMD-Command and checkout the Repository. That solution wont work anyway because the Command dont determine because of Java
@@ -25,12 +25,12 @@ class Svn {
 
     private String sFileSeparator = "";
 
-    String downloadSvnRepo(String svnLink) throws IOException, BadLocationException {
+    public String downloadSvnRepo(String svnLink) throws IOException, BadLocationException {
         //Default TargetPath
         return downloadSvnRepo(svnLink, null);
     }
 
-    String downloadSvnRepo(String svnLink, String sPcdString) throws IOException, BadLocationException {
+    public String downloadSvnRepo(String svnLink, String sPcdString) throws IOException, BadLocationException {
         OperatingSystemCheck oOperatingSystemCheck = new OperatingSystemCheck();
         sFileSeparator = oOperatingSystemCheck.getOperatingSystemSeparator();
         //Parameters to access svn
