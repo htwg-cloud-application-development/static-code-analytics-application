@@ -1,6 +1,10 @@
 package de.htwg.konstanz.cloud.service;
 
 import de.htwg.konstanz.cloud.model.Duplication;
+import de.htwg.konstanz.cloud.util.Git;
+import de.htwg.konstanz.cloud.util.OperatingSystemCheck;
+import de.htwg.konstanz.cloud.util.Svn;
+import de.htwg.konstanz.cloud.util.Util;
 import org.apache.commons.io.FileUtils;
 import org.eclipse.jgit.api.errors.GitAPIException;
 import org.json.JSONArray;
