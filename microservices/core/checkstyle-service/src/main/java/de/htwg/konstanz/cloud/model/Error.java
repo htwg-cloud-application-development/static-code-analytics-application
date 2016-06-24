@@ -1,6 +1,8 @@
 package de.htwg.konstanz.cloud.model;
 
-//represents an error of an analyzed java file
+/**
+ * represents an error of an analyzed java file
+ */
 public class Error {
     private final String sSeverity;
 

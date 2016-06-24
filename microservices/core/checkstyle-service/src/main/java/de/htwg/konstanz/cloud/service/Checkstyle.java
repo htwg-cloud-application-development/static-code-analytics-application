@@ -49,7 +49,9 @@ class Checkstyle {
         this.sRuleSetPath = sRuleSetPath;
     }
 
-    //entry point for an incoming post request
+    /**
+     * entry point for an incoming post request
+     */
     String startIt(String gitRepository) throws IOException, ParserConfigurationException,
             SAXException, GitAPIException, BadLocationException {
         lFormattedClassList = new ArrayList<>();
@@ -71,6 +73,17 @@ class Checkstyle {
         return sResult;
     }
 
+    /**
+     *
+     * @param sRepoUrl - within POST request given repository url
+     * @param lStartTime - start time of the service execution
+     * @return - The generated JSON file
+     * @throws IOException - throws for the handling in CheckstyleService
+     * @throws BadLocationException - throws for the handling in CheckstyleService
+     * @throws GitAPIException - throws for the handling in CheckstyleService
+     * @throws ParserConfigurationException - throws for the handling in CheckstyleService
+     * @throws SAXException - throws for the handling in CheckstyleService
+     */
     private JSONObject determineVersionControlSystem(String sRepoUrl, long lStartTime) throws
             IOException, BadLocationException, GitAPIException, ParserConfigurationException, SAXException {
         JSONObject oJson = null;
@@ -121,8 +134,12 @@ class Checkstyle {
         return oJson;
     }
 
+    /**
+     * Generate Data for CheckstyleService
+     * @param localDirectory - Locale directory of the outchecked SVN or GIT repository
+     * @return - A list with all directories and files
+     */
     private List<List<String>> generateCheckStyleData(String localDirectory) {
-        /* Generate Data for CheckstyleService */
         ArrayList<List<String>> list = new ArrayList<>();
         File mainDir;
         LOG.info("Local Directory: " + localDirectory);
@@ -165,6 +182,10 @@ class Checkstyle {
         return list;
     }
 
+    /**
+     * checks if the .jar of checkstyle exists. If not the method will download it
+     * @throws IOException - Error during download process of checkstyle.jar
+     */
     private void checkLocalCheckstyle() throws IOException {
         //it is important to use the xx-all version of checkstyle! It contains additional libraries for a better usability
         final String sCheckstyleJar = "checkstyle-6.17-all.jar";
@@ -185,8 +206,19 @@ class Checkstyle {
         }
     }
 
-    private JSONObject checkStyle(List<List<String>> lRepoList, String gitRepository, long lStartTime, String sLastUpdateTime)
-            throws ParserConfigurationException, SAXException, IOException {
+    /**
+     * execute checkstyle within the command line interface
+     * @param lRepoList - List of all repositories that were stored locally
+     * @param versionControlRepository - String that represents the analyzed repository (SVN or GIT)
+     * @param lStartTime - Start time of the execution
+     * @param sLastUpdateTime - Last update of the repository
+     * @return - returns a JSON Object with all provided information of checkstyle
+     * @throws ParserConfigurationException - Error while parsing xml document
+     * @throws SAXException - Error within SAX XML Parser
+     * @throws IOException - general io exception
+     */
+    private JSONObject checkStyle(List<List<String>> lRepoList, String versionControlRepository, long lStartTime,
+                                  String sLastUpdateTime) throws ParserConfigurationException, SAXException, IOException {
         final String sCheckStylePath = "checkstyle-6.17-all.jar";
         JSONObject oJson;
 
@@ -221,12 +253,14 @@ class Checkstyle {
         }
 
         /* generate JSON File */
-        oJson = oOwnJson.buildJson(gitRepository, lStartTime, sLastUpdateTime, lFormattedClassList);
+        oJson = oOwnJson.buildJson(versionControlRepository, lStartTime, sLastUpdateTime, lFormattedClassList);
 
         return oJson;
     }
 
-    //removes unnecessary information
+    /**
+     *  removes unnecessary information
+     */
     private void formatList(List<List<String>> lRepoList) {
         for (List<String> sRepoListInList : lRepoList) {
             Class oClass;
@@ -241,7 +275,9 @@ class Checkstyle {
         }
     }
 
-    //opens the stored xml file of checkstyle and iterates through all errors to read the attributes-value pairs
+    /**
+     *  opens the stored xml file of checkstyle and iterates through all errors to read the attributes-value pairs
+     */
     private void storeCheckstyleInformation(String sXmlPath, int nClassPos)
             throws ParserConfigurationException, SAXException, IOException {
         //it is important to define the coding of the xml file --> UTF-8

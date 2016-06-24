@@ -22,7 +22,13 @@ public class OwnJson {
 
     private final Util oUtil = new Util();
 
-    // This method parses all founded xml attributes and stores them into a list
+    /**
+     * parses all founded xml attributes and stores them into a list
+     * @param nClassPos - actual class position of a list with all classes
+     * @param nList - list of all xml nodes
+     * @param nNodePos - actual Node position of the xml document
+     * @param lClassList - list with all evaluated java classes
+     */
     public void readAndSaveAttributes(int nClassPos, NodeList nList, int nNodePos, List<Class> lClassList) {
         //gets the actual position of the Node List
         Node nNode = nList.item(nNodePos);
@@ -51,7 +57,11 @@ public class OwnJson {
         }
     }
 
-    //methods which counts all founded severities
+    /**
+     * counts all founded severities
+     * @param lClassList- list with all evaluated java classes
+     * @param oJsonRoot - main node of the json file
+     */
     private void getClassSeverities(List<Class> lClassList, JSONObject oJsonRoot) {
         int nTmpErrorCount = 0;
         int nTmpWarningCount = 0;
@@ -74,33 +84,41 @@ public class OwnJson {
     }
 
 
-    //buildJson provides  the main functionality to generate a customized JSON File.
-    //following the structure of our JSON is shown:
-    //
-    //   "numberOfIgnores": 0,                              <-- some general json information
-    //   "totalExpendedTime": 75730,
-    //   "assignments": [                                   <-- Array for all exercises
-    //   {
-    //   "Aufgabe10": [                                     <-- Example of an Exercise
-    //    {
-    //        "numberOfIgnores": 0,                         <-- some general exercise information
-    //        "filepath": "Aufgabe10\\Aufgabe10.java",
-    //        "numberOfErros": 0,
-    //        "numberOfWarnings": 9,
-    //        "errors": [                                   <-- Array of all related Errors
-    //        {
-    //            "severity": "warning",                    <-- some general error information
-    //                "line": "4",
-    //                "column": "9",
-    //                "source": "com.puppycrawl.tools.checkstyle.checks.naming.PackageNameCheck",
-    //                "message": "Package name 'Aufgabe10' must match pattern '^[a-z]+(\\.[a-z][a-z0-9]*)*$'."
-    //        ...
-    //   "Aufgabe11": [
-    //        ...
-    //   "numberOfWarnings": 412,                               <-- more general json information
-    //   "lastRepoUpdateTime": "1466081768",
-    //   "repository": "https://github.com/MaxMustermann/MusterAufgabe/",
-    //   "numberOfErrors": 0
+    /**
+     *  buildJson provides  the main functionality to generate a customized JSON File.
+     *    following the structure of our JSON is shown:
+     *
+     *     "numberOfIgnores": 0,                              <-- some general json information
+     *    "totalExpendedTime": 75730,
+     *    "assignments": [                                   <-- Array for all exercises
+     *       {
+     *       "Aufgabe10": [                                     <-- Example of an Exercise
+     *           {
+     *            "numberOfIgnores": 0,                         <-- some general exercise information
+     *            "filepath": "Aufgabe10\\Aufgabe10.java",
+     *            "numberOfErros": 0,
+     *            "numberOfWarnings": 9,
+     *            "errors": [                                   <-- Array of all related Errors
+     *               {
+     *                "severity": "warning",                    <-- some general error information
+     *                "line": "4",
+     *                "column": "9",
+     *                "source": "com.puppycrawl.tools.checkstyle.checks.naming.PackageNameCheck",
+     *                "message": "Package name 'Aufgabe10' must match pattern '^[a-z]+(\\.[a-z][a-z0-9]*)*$'."
+     *        ...
+     *       "Aufgabe11": [
+     *      ...
+     *    "numberOfWarnings": 412,                               <-- more general json information
+     *   "lastRepoUpdateTime": "1466081768",
+     *   "repository": "https://github.com/MaxMustermann/MusterAufgabe/",
+     *  "numberOfErrors": 0
+     *
+     * @param sRepo - svn/git repository path
+     * @param lStartTime - start time of the execution
+     * @param sLastRepoUpdateTime - last time the svn/git repository was updated
+     * @param lClassList - list with all evaluated java classes
+     * @return - a json object consisting of all analyzed checkstyle problems
+     */
     public JSONObject buildJson(String sRepo, long lStartTime, String sLastRepoUpdateTime, List<Class> lClassList) {
         //this object contains different attributes for which were needed for the functionality
         OwnJsonProperties oOwnJsonProperties = new OwnJsonProperties();
@@ -171,7 +189,15 @@ public class OwnJson {
         return oOwnJsonProperties.getOJsonRoot();
     }
 
-    //this method adds information of the checkstyle validation to the json file.
+    /**
+     * this method adds information of the checkstyle validation to the json file.
+     * @param lClassList -list with all evaluated java classes
+     * @param oOwnJsonProperties - object with important json attributes
+     * @param bLastRun - is the actual iterations the last one?
+     * @param bExcerciseNeverChanged - Flag which indicates, if there was only one exercise
+     * @param nClassPos - actual position in the class list
+     * @param sExcerciseName - name of the actual considered class object
+     */
     private void storeJsonInformation(List<Class> lClassList, OwnJsonProperties oOwnJsonProperties, boolean bLastRun,
                                       boolean bExcerciseNeverChanged, int nClassPos, String sExcerciseName) {
         /* if errors where founded, a new exercise name is returned by analyeErrors */
@@ -195,8 +221,17 @@ public class OwnJson {
         }
     }
 
-    //all founded errors of a java file where analyzed be this method. It adds all attribute-value pairs to an
-    //json object (constitutes an error) which will be added to an array of Json Objects which represents a java class.
+    /**
+     * all founded errors of a java file where analyzed be this method. It adds all attribute-value pairs to an
+     * json object (constitutes an error) which will be added to an array of Json Objects which represents a java class.
+     * @param lClassList - list with all evaluated java classes
+     * @param lTmpErrorList - a list which contains errors of a class object
+     * @param lJsonClasses - json object array which stores all class objects that were evaluated and contains errors
+     * @param sTmpExerciseName - name of the class object before
+     * @param nClassPos - actual position in the class list
+     * @param sExerciseName - name of the actual considered class object
+     * @return -
+     */
     private String analyzeErrors(List<Class> lClassList, List<Error> lTmpErrorList,
                                  JSONArray lJsonClasses, String sTmpExerciseName, int nClassPos, String sExerciseName) {
         String sLocalExerciseName = sTmpExerciseName;
@@ -232,7 +267,12 @@ public class OwnJson {
         return sLocalExerciseName;
     }
 
-    //method to add all errors to a Java Class file, so that each file shows up different error counters
+    /**
+     * add all errors to a Java Class file, so that each file shows up different error counters
+     * @param oJsonClass - json object which represents a java class
+     * @param nClassPos -  actual pos of the class
+     * @param lClassList - list with all evaluated java classes
+     */
     private void setSeverityCounters(JSONObject oJsonClass, int nClassPos, List<Class> lClassList) {
         oJsonClass.put("numberOfErros", lClassList.get(nClassPos).getErrorCount());
         oJsonClass.put("numberOfWarnings", lClassList.get(nClassPos).getWarningCount());

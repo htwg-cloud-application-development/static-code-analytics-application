@@ -14,7 +14,10 @@ public class Util {
 
     private final OperatingSystemCheck oOperatingSystemCheck = new OperatingSystemCheck();
 
-    //trys to parse a String into an int. if its no possible the function returns an default value of zero
+    /** trys to parse a String into an int
+     * @param input - String that should be checked
+     * @return - if its no possible the function returns an default value of zero
+     */
     private int isParsable(String input) {
         int nValue;
 
@@ -27,7 +30,11 @@ public class Util {
         return nValue;
     }
 
-    //this method removes some unnecesarry parts of the filepath
+    /**
+     * this method removes some unnecessary parts of the filepath
+     * @param sFilePath - FilePath that should be minimized
+     * @return - fixed FilePath
+     */
     String removeUnnecessaryPathParts(String sFilePath) {
         String[] sFilePathSplitArray = sFilePath.split(oOperatingSystemCheck.getOperatingSystemSeparator());
         String sShortenPath = "";
@@ -43,7 +50,11 @@ public class Util {
         return sShortenPath;
     }
 
-    //execution of commands within the command line interface, java provides an own runtime for it
+    /**
+     * execution of commands within the command line interface, java provides an own runtime for it
+     * @param sPmdCommand
+     * @return
+     */
     public int execCommand(String sPmdCommand) {
         //the return code of the process mades if possible to check if the execution was successful or not
         int nReturnCode = 0;
@@ -64,6 +75,12 @@ public class Util {
         return nReturnCode;
     }
 
+    /**
+     * find all java files in the local directory and put them into a big list
+     * @param path - local directory were the method shall crawl for java files
+     * @param javaFiles -
+     * @return - String list of all java files that were founded
+     */
     public List<String> getAllJavaFiles(String path, List<String> javaFiles) {
         //crawl Method to detect all .java Files in a local path
         File root = new File(path);
@@ -87,6 +104,11 @@ public class Util {
         return javaFiles;
     }
 
+    /**
+     * checks if there is a local src directory
+     * @param sLocalDirectory - local src directory that should be checked by the method
+     * @return - the local directory as a File object
+     */
     public File checkLocalSrcDir(String sLocalDirectory) {
         File mainDir;/* Check if local /src-dir exists */
 
@@ -101,7 +123,11 @@ public class Util {
         return mainDir;
     }
 
-    //to catch nullpointer this method checks the json result
+    /**
+     * checks the json result to avoide null pointer exceptions
+     * @param oJsonResult - generated json result
+     * @return - valid or invalid string
+     */
     public String checkJsonResult(JSONObject oJsonResult) {
         String sResult;
         if (null == oJsonResult) {
@@ -114,12 +140,22 @@ public class Util {
         return sResult;
     }
 
-    //try to parse a string into an int
+    /**
+     * parse a string into an int
+     * @param eElement - xml element that will be checked
+     * @param sAttribute - Attribute of the xml element the function wants to evaluate
+     * @return - returns 0 (empty) or the attribute
+     */
     int getParsableElement(Element eElement, String sAttribute) {
         return isParsable(eElement.getAttribute(sAttribute));
     }
 
-    //check if the string parameter is empty (returns 0) or not (returns the attribute)
+    /**
+     * checks if the string parameter is empty
+     * @param eElement - xml element that will be checked
+     * @param sAttributeName - Attribute of the xml element the function wants to evaluate
+     * @return - returns an empty string or the attribute
+     */
     String getNonEmptyElement(Element eElement, String sAttributeName) {
         if (!eElement.getAttribute(sAttributeName).isEmpty()) {
             return eElement.getAttribute(sAttributeName);

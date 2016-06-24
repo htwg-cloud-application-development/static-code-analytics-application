@@ -7,7 +7,10 @@ import java.io.File;
  */
 public class OperatingSystemCheck {
 
-    // return the operating system name with the help of the System.getProperty("os.name")
+    /**
+     * returns the operating system name with the help of the System.getProperty("os.name")
+     * @return - Operating System Name
+     */
     private String getOsName() {
         String sOperatingSystem = "";
 
@@ -18,7 +21,10 @@ public class OperatingSystemCheck {
         return sOperatingSystem;
     }
 
-    // build the actually needed file separator for windows or linux system
+    /**
+     * build the actually needed file separator for windows or linux system
+     * @return - Operating System File Separator
+     */
     public String getOperatingSystemSeparator() {
         String sOperatingSystemSeparator = "";
 
@@ -33,10 +39,18 @@ public class OperatingSystemCheck {
         return sOperatingSystemSeparator;
     }
 
+    /**
+     * checks if the operating system is windows
+     * @return - Flag which indicates yes/no
+     */
     private boolean isWindows() {
         return getOsName().startsWith("Windows");
     }
 
+    /**
+     * checks if the operating system is linux
+     * @return - Flag which indicates yes/no
+     */
     private boolean isLinux() {
         return getOsName().startsWith("Linux");
     }
