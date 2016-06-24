@@ -2,6 +2,7 @@ package de.htwg.konstanz.cloud.model;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Locale;
 
 public class Class {
 	private final String sFullPath;
@@ -26,11 +27,11 @@ public class Class {
 
     public void incErrorType(String sSeverity) {
         /* Count every Error Type we have found in the XML */
-        if (sSeverity.toLowerCase().equals("error")) {
+        if (sSeverity.toLowerCase(Locale.getDefault()).equals("error")) {
             incErrorCount();
-        } else if (sSeverity.toLowerCase().equals("warning")) {
+        } else if (sSeverity.toLowerCase(Locale.getDefault()).equals("warning")) {
             incWarningCount();
-        } else if (sSeverity.toLowerCase().equals("ignore")) {
+        } else if (sSeverity.toLowerCase(Locale.getDefault()).equals("ignore")) {
             incIgnoreCount();
         }
     }

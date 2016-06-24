@@ -194,14 +194,12 @@ class Checkstyle {
             int nReturnCode = oUtil.execCommand(sCheckStyleCommand);
             LOG.info("Process Return Code: " + nReturnCode);
 
-            switch(nReturnCode) {
-                case 0: {
-                    /* store Checkstyle Informationen in the global List */
-                    storeCheckstyleInformation(sFullPath + ".xml", nClassPos);
-                }
-                case -2: {
-                    //TODO: Fehler case
-                }
+            if(nReturnCode == 0) {
+                /* store Checkstyle Informationen in the global List */
+                storeCheckstyleInformation(sFullPath + ".xml", nClassPos);
+            }
+            if(nReturnCode == -2){
+                //TODO: Fehler case
             }
         }
 
