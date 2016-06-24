@@ -1,7 +1,8 @@
-package de.htwg.konstanz.cloud.service;
+package de.htwg.konstanz.cloud.util;
 
 import de.htwg.konstanz.cloud.model.Class;
 import de.htwg.konstanz.cloud.model.Error;
+import de.htwg.konstanz.cloud.model.OwnJsonProperties;
 import org.json.JSONArray;
 import org.json.JSONObject;
 import org.slf4j.Logger;
@@ -12,12 +13,12 @@ import org.w3c.dom.NodeList;
 
 import java.util.List;
 
-class OwnJson {
+public class OwnJson {
     private static final Logger LOG = LoggerFactory.getLogger(OwnJson.class);
 
     private final Util oUtil = new Util();
 
-    void readAndSaveAttributes(int nClassPos, NodeList nList, int nNodePos, List<Class> lClassList) {
+    public void readAndSaveAttributes(int nClassPos, NodeList nList, int nNodePos, List<Class> lClassList) {
         Node nNode = nList.item(nNodePos);
 
         if (nNode.getNodeType() == Node.ELEMENT_NODE) {
@@ -60,7 +61,7 @@ class OwnJson {
     }
 
 
-    JSONObject buildJson(String sRepo, long lStartTime, String sLastRepoUpdateTime, List<Class> lClassList) {
+    public JSONObject buildJson(String sRepo, long lStartTime, String sLastRepoUpdateTime, List<Class> lClassList) {
         OwnJsonProperties oOwnJsonProperties = new OwnJsonProperties();
         boolean bExerciseChange = false;
         boolean bLastRun = false;

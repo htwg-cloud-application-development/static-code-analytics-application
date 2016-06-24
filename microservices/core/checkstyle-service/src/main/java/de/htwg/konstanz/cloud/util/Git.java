@@ -1,4 +1,4 @@
-package de.htwg.konstanz.cloud.service;
+package de.htwg.konstanz.cloud.util;
 
 import org.eclipse.jgit.api.errors.GitAPIException;
 import org.eclipse.jgit.internal.storage.file.FileRepository;
@@ -17,7 +17,7 @@ import java.io.InputStream;
 import java.net.URL;
 import java.net.URLConnection;
 
-class Git {
+public class Git {
     private static final Logger LOG = LoggerFactory.getLogger(Git.class);
 
     private final OperatingSystemCheck oOperatingSystemCheck = new OperatingSystemCheck();
@@ -28,7 +28,7 @@ class Git {
         return String.valueOf(revCommits.iterator().next().getCommitTime());
     }
 
-    String[] downloadGitRepo(String gitRepo) throws GitAPIException, IOException {
+    public String[] downloadGitRepo(String gitRepo) throws GitAPIException, IOException {
         /* Checkout Git-Repo */
         org.eclipse.jgit.api.Git git = null;
 

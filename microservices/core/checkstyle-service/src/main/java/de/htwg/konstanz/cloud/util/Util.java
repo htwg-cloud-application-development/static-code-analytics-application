@@ -1,4 +1,4 @@
-package de.htwg.konstanz.cloud.service;
+package de.htwg.konstanz.cloud.util;
 
 import org.json.JSONObject;
 import org.slf4j.Logger;
@@ -9,7 +9,7 @@ import java.io.File;
 import java.io.IOException;
 import java.util.List;
 
-class Util {
+public class Util {
     private static final Logger LOG = LoggerFactory.getLogger(Util.class);
 
     private final OperatingSystemCheck oOperatingSystemCheck = new OperatingSystemCheck();
@@ -41,7 +41,7 @@ class Util {
         return sShortenPath;
     }
 
-    int execCommand(String sPmdCommand) {
+    public int execCommand(String sPmdCommand) {
         int nReturnCode = 0;
 
         try {
@@ -60,7 +60,7 @@ class Util {
         return nReturnCode;
     }
 
-    List<String> getAllJavaFiles(String path, List<String> javaFiles) {
+    public List<String> getAllJavaFiles(String path, List<String> javaFiles) {
         //crawl Method to detect .java Files
         File root = new File(path);
         File[] list = root.listFiles();
@@ -83,7 +83,7 @@ class Util {
         return javaFiles;
     }
 
-    File checkLocalSrcDir(String sLocalDirectory) {
+    public File checkLocalSrcDir(String sLocalDirectory) {
         File mainDir;/* Check if local /src-dir exists */
 
         if (new File(sLocalDirectory + oOperatingSystemCheck.getOperatingSystemSeparator() + "src").exists()) {
@@ -97,7 +97,7 @@ class Util {
         return mainDir;
     }
 
-    String checkJsonResult(JSONObject oJsonResult) {
+    public String checkJsonResult(JSONObject oJsonResult) {
         String sResult;
         if (null == oJsonResult) {
             sResult = "Invalid Repository";
