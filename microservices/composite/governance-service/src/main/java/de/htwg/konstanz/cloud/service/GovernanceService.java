@@ -30,17 +30,27 @@ public class GovernanceService {
     MoodleService moodleService;
 
 
+    /**
+     * Basic route for getting the name of this service
+     * @return name of microservice
+     */
     @RequestMapping(value = "/info", method = RequestMethod.GET)
     public String info() {
         return "governance";
     }
 
-    
+
+    /**
+     * Route for getting all courses
+     * @return all courses
+     */
     @RequestMapping(value = "/courses", method = RequestMethod.GET, produces = "application/json")
     public ResponseEntity<String> getCouses() {
         try {
+            // call database wrapper
             return createResponse(databaseService.getAllCourses(), HttpStatus.OK);
         } catch (InstantiationException e) {
+            // catch error and respond with error
             return createErrorResponse(e.getMessage(), HttpStatus.SERVICE_UNAVAILABLE);
         }
     }
@@ -51,6 +61,7 @@ public class GovernanceService {
             // TODO alle Gruppen (Nur mit Zusammenfassung)
             return createResponse(databaseService.getAllGroups(), HttpStatus.OK);
         } catch (InstantiationException e) {
+            // catch error and respond with error
             return createErrorResponse(e.getMessage(), HttpStatus.SERVICE_UNAVAILABLE);
         }
     }
@@ -62,6 +73,7 @@ public class GovernanceService {
             // TODO mit letztem Ergebnis, wenn vorhanden
             return createResponse(databaseService.getGroupWithId(groupId), HttpStatus.OK);
         } catch (InstantiationException e) {
+            // catch error and respond with error
             return createErrorResponse(e.getMessage(), HttpStatus.SERVICE_UNAVAILABLE);
         }
     }
@@ -71,6 +83,7 @@ public class GovernanceService {
         try {
             return createResponse(databaseService.getCourseWithId(courseId), HttpStatus.OK);
         } catch (InstantiationException e) {
+            // catch error and respond with error
             return createErrorResponse(e.getMessage(), HttpStatus.SERVICE_UNAVAILABLE);
         }
     }
@@ -81,6 +94,7 @@ public class GovernanceService {
         try {
             return createResponse(moodleService.getToken(credentials), HttpStatus.OK);
         } catch (InstantiationException e) {
+            // catch error and respond with error
             return createErrorResponse(e.getMessage(), HttpStatus.SERVICE_UNAVAILABLE);
         }
     }
@@ -94,6 +108,7 @@ public class GovernanceService {
 
             return createResponse(courses, HttpStatus.OK);
         } catch (InstantiationException e) {
+            // catch error and respond with error
             return createErrorResponse(e.getMessage(), HttpStatus.SERVICE_UNAVAILABLE);
         }
     }
@@ -147,8 +162,10 @@ public class GovernanceService {
             return createResponse(response.toString(), HttpStatus.OK);
 
         } catch (InstantiationException e) {
+            // catch error and respond with error
             return createErrorResponse(e.getMessage(), HttpStatus.SERVICE_UNAVAILABLE);
         } catch (JSONException e) {
+            // catch error and respond with error
             return createErrorResponse(e.getMessage(), HttpStatus.SERVICE_UNAVAILABLE);
         }
     }
@@ -163,10 +180,23 @@ public class GovernanceService {
     }
 
 
+    /**
+     * Helper method for creating a HTTP response
+     * @param body the payload
+     * @param httpStatus the http status
+     * @param <T> type of the response entity
+     * @return the response entitity
+     */
     <T> ResponseEntity<T> createResponse(T body, HttpStatus httpStatus) {
         return new ResponseEntity<>(body, httpStatus);
     }
 
+    /**
+     * Helper method for creating a HTTP error response
+     * @param errorMessage the error message
+     * @param status the error status
+     * @return the response entity
+     */
     ResponseEntity<String> createErrorResponse(String errorMessage, HttpStatus status) {
         HashMap<String, String> errorResponse = new HashMap<>();
         errorResponse.put("error", errorMessage);
