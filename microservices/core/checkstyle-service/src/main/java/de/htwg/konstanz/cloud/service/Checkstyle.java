@@ -39,12 +39,12 @@ class Checkstyle {
 
     private final Svn oSvn = new Svn();
 
-    private final String svn_ip_c;
+    private final String sSvnServerIp;
 
     private final String sRuleSetPath;
 
-    public Checkstyle(String svn_ip_c, String sRuleSetPath) {
-        this.svn_ip_c = svn_ip_c;
+    public Checkstyle(String sSvnServerIp, String sRuleSetPath) {
+        this.sSvnServerIp = sSvnServerIp;
         this.sRuleSetPath = sRuleSetPath;
     }
 
@@ -78,7 +78,7 @@ class Checkstyle {
         checkLocalCheckstyle();
 
         /* Svn Checkout */
-        if (sRepoUrl.contains(this.svn_ip_c)) {
+        if (sRepoUrl.contains(this.sSvnServerIp)) {
             /* URL needs to start with HTTP:// */
             if (!sRepoUrl.startsWith("http://")) {
                 oStringBuilder.append("http://");
@@ -198,7 +198,7 @@ class Checkstyle {
                 /* store Checkstyle Informationen in the global List */
                 storeCheckstyleInformation(sFullPath + ".xml", nClassPos);
             }
-            if(nReturnCode == -2){
+            else if(nReturnCode == -2){
                 //TODO: Fehler case
             }
         }

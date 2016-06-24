@@ -91,7 +91,8 @@ class OwnJson {
 			/* swap for a different exercise */
             else {
                 if (lClassList.get(nClassPos).getErrorList().size() > 0) {
-                    oOwnJsonProperties.getOJsonExercise().put(oOwnJsonProperties.getSTmpExcerciseName(), oOwnJsonProperties.getLJsonClasses());
+                    oOwnJsonProperties.getOJsonExercise().put(oOwnJsonProperties.getSTmpExcerciseName(),
+                                                                    oOwnJsonProperties.getLJsonClasses());
                     oOwnJsonProperties.getLJsonExercises().put(oOwnJsonProperties.getOJsonExercise());
                     oOwnJsonProperties.setOJsonExercise(new JSONObject());
                     oOwnJsonProperties.setLJsonClasses(new JSONArray());
@@ -129,14 +130,16 @@ class OwnJson {
 
         /* last run if different exercises were found */
         if (bLastRun) {
-            oOwnJsonProperties.getOJsonExercise().put(oOwnJsonProperties.getSTmpExcerciseName(), oOwnJsonProperties.getLJsonClasses());
+            oOwnJsonProperties.getOJsonExercise().put(oOwnJsonProperties.getSTmpExcerciseName(),
+                                                            oOwnJsonProperties.getLJsonClasses());
 
             oOwnJsonProperties.getLJsonExercises().put(oOwnJsonProperties.getOJsonExercise());
         }
 
 				/* last run if there was just one exercise */
         if ((nClassPos + 1) == lClassList.size() && bExcerciseNeverChanged) {
-            oOwnJsonProperties.getOJsonExercise().put(oOwnJsonProperties.getSTmpExcerciseName(), oOwnJsonProperties.getLJsonClasses());
+            oOwnJsonProperties.getOJsonExercise().put(oOwnJsonProperties.getSTmpExcerciseName(),
+                                                            oOwnJsonProperties.getLJsonClasses());
             oOwnJsonProperties.getLJsonExercises().put(oOwnJsonProperties.getOJsonExercise());
         }
     }

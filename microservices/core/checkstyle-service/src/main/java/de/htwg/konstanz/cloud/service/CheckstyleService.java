@@ -18,7 +18,7 @@ public class CheckstyleService {
     private static final Logger LOG = LoggerFactory.getLogger(CheckstyleService.class);
 
     @Value("${app.config.svn.ip}")
-    private String SVN_IP_C;
+    private String sSvnServerIp;
 
     @Value("${app.config.checkstyle.rulepath}")
     private String sRuleSetPath;
@@ -30,7 +30,7 @@ public class CheckstyleService {
             produces = "application/json", consumes = "application/json")
     public ResponseEntity validate(@RequestBody ValidationData data) {
         try {
-            return ResponseEntity.ok(new Checkstyle(SVN_IP_C, sRuleSetPath).startIt(data.getRepository()));
+            return ResponseEntity.ok(new Checkstyle(sSvnServerIp, sRuleSetPath).startIt(data.getRepository()));
         } catch (InvalidRemoteException e) {
             LOG.error(e.getMessage());
             return ResponseEntity.status(HttpStatus.NOT_ACCEPTABLE).body(e.getMessage());

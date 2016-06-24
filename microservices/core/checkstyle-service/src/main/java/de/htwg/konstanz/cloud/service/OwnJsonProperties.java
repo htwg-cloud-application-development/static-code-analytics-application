@@ -5,7 +5,7 @@ import org.json.JSONArray;
 import org.json.JSONObject;
 
 @Data
-public class OwnJsonProperties {
+class OwnJsonProperties {
     JSONObject oJsonRoot = new JSONObject();
 
     JSONObject oJsonExercise = new JSONObject();
