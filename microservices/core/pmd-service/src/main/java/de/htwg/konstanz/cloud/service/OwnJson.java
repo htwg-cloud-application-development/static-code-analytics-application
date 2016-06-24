@@ -72,7 +72,6 @@ class OwnJson {
 			/* first run the TmpName is empty */
             if (sExcerciseName.equals(oOwnJsonProperties.getSTmpExerciseName())
                     || "".equals(oOwnJsonProperties.getSTmpExerciseName())) {
-
                 storeJsonInformation(lClassList, oOwnJsonProperties, bLastRun, bExerciseNeverChanged,
                                                                             nClassPos, sExcerciseName);
             }
