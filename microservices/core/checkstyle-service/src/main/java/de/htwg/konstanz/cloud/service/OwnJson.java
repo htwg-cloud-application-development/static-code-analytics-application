@@ -38,22 +38,11 @@ class OwnJson {
         }
     }
 
-    JSONObject buildJson(String sRepo, long lStartTime, String sLastRepoUpdateTime, List<Class> lClassList) {
-        List<Error> lTmpErrorList;
-        JSONObject oJsonRoot = new JSONObject();
-        JSONObject oJsonExercise = new JSONObject();
-        JSONArray lJsonClasses = new JSONArray();
-        JSONArray lJsonExercises = new JSONArray();
-        String sTmpExcerciseName = "";
-        boolean bExcerciseChange = false;
-        boolean bLastRun = false;
-        boolean bExcerciseNeverChanged = true;
+
+    private void getClassSeverities(List<Class> lClassList, JSONObject oJsonRoot) {
         int nTmpErrorCount = 0;
         int nTmpWarningCount = 0;
         int nTmpIgnoreCounter = 0;
-
-		/* add general information to the JSON object */
-        oJsonRoot.put("repository", sRepo);
 
         /* get severities of the whole project */
         for (Class oFormattedClassList : lClassList) {
@@ -68,77 +57,52 @@ class OwnJson {
         LOG.info("Number of Warnings: " + nTmpWarningCount);
         oJsonRoot.put("numberOfIgnores", nTmpIgnoreCounter);
         LOG.info("Number of Ignores: " + nTmpIgnoreCounter);
+    }
 
-        oJsonRoot.put("lastRepoUpdateTime", sLastRepoUpdateTime);
+
+    JSONObject buildJson(String sRepo, long lStartTime, String sLastRepoUpdateTime, List<Class> lClassList) {
+        OwnJsonProperties oOwnJsonProperties = new OwnJsonProperties();
+        boolean bExerciseChange = false;
+        boolean bLastRun = false;
+        boolean bExerciseNeverChanged = true;
+
+		/* add general information to the JSON object */
+        oOwnJsonProperties.getOJsonRoot().put("repository", sRepo);
+
+        getClassSeverities(lClassList, oOwnJsonProperties.getOJsonRoot());
+
+        oOwnJsonProperties.getOJsonRoot().put("lastRepoUpdateTime", sLastRepoUpdateTime);
         LOG.info("Last Update Time: " + sLastRepoUpdateTime);
 
 		/* all Classes */
         for (int nClassPos = 0; nClassPos < lClassList.size(); nClassPos++) {
-            if (bExcerciseChange) {
+            if (bExerciseChange) {
                 nClassPos--;
-                bExcerciseChange = false;
+                bExerciseChange = false;
             }
 
             String sExcerciseName = lClassList.get(nClassPos).getsExcerciseName();
 
 			/* first run the TmpName is empty */
-            if (sExcerciseName.equals(sTmpExcerciseName) || sTmpExcerciseName.equals("")) {
-                lTmpErrorList = lClassList.get(nClassPos).getErrorList();
-                JSONArray lJsonErrors = new JSONArray();
-                JSONObject oJsonClass = new JSONObject();
-
-				/* all Errors */
-                for (Error oError : lTmpErrorList) {
-                    JSONObject oJsonError = new JSONObject();
-
-                    oJsonError.put("line", Integer.toString(oError.getErrorAtLine()));
-                    oJsonError.put("column", Integer.toString(oError.getColumn()));
-                    oJsonError.put("severity", oError.getSeverity());
-                    oJsonError.put("message", oError.getMessage());
-                    oJsonError.put("source", oError.getSource());
-
-                    lJsonErrors.put(oJsonError);
-                }
-
-                if (lJsonErrors.length() > 0) {
-                    sTmpExcerciseName = sExcerciseName;
-                    String sFilePath = oUtil.removeUnnecessaryPathParts(lClassList.get(nClassPos).getFullPath());
-
-                    oJsonClass.put("filepath", sFilePath);
-                    oJsonClass.put("errors", lJsonErrors);
-                    setSeverityCounters(oJsonClass, nClassPos, lClassList);
-
-                    lJsonClasses.put(oJsonClass);
-                }
-
-				/* last run if different exercises were found */
-                if (bLastRun) {
-                    oJsonExercise.put(sTmpExcerciseName, lJsonClasses);
-
-                    lJsonExercises.put(oJsonExercise);
-                }
-
-				/* last run if there was just one exercise */
-                if ((nClassPos + 1) == lClassList.size() && bExcerciseNeverChanged) {
-                    oJsonExercise.put(sTmpExcerciseName, lJsonClasses);
-                    lJsonExercises.put(oJsonExercise);
-                }
+            if (sExcerciseName.equals(oOwnJsonProperties.getSTmpExcerciseName())
+                    || oOwnJsonProperties.getSTmpExcerciseName().equals("")) {
+                storeJsonInformation(lClassList, oOwnJsonProperties, bLastRun, bExerciseNeverChanged, nClassPos, sExcerciseName);
             }
 			/* swap for a different exercise */
             else {
                 if (lClassList.get(nClassPos).getErrorList().size() > 0) {
-                    oJsonExercise.put(sTmpExcerciseName, lJsonClasses);
-                    lJsonExercises.put(oJsonExercise);
-                    oJsonExercise = new JSONObject();
-                    lJsonClasses = new JSONArray();
-                    sTmpExcerciseName = lClassList.get(nClassPos).getsExcerciseName();
-                    bExcerciseChange = true;
-                    bExcerciseNeverChanged = false;
+                    oOwnJsonProperties.getOJsonExercise().put(oOwnJsonProperties.getSTmpExcerciseName(), oOwnJsonProperties.getLJsonClasses());
+                    oOwnJsonProperties.getLJsonExercises().put(oOwnJsonProperties.getOJsonExercise());
+                    oOwnJsonProperties.setOJsonExercise(new JSONObject());
+                    oOwnJsonProperties.setLJsonClasses(new JSONArray());
+                    oOwnJsonProperties.setSTmpExcerciseName(lClassList.get(nClassPos).getsExcerciseName());
+                    bExerciseChange = true;
+                    bExerciseNeverChanged = false;
 
 				    /* decrement the position to get the last class from the list */
                     if (nClassPos + 1 == lClassList.size()) {
                         nClassPos--;
-                        bExcerciseChange = false;
+                        bExerciseChange = false;
                         bLastRun = true;
                     }
                 }
@@ -148,11 +112,65 @@ class OwnJson {
         long lEndTime = System.currentTimeMillis();
         long lTotalTime = (lEndTime - lStartTime);
 
-        oJsonRoot.put("totalExpendedTime", lTotalTime);
+        oOwnJsonProperties.getOJsonRoot().put("totalExpendedTime", lTotalTime);
         LOG.info("Total expended time: " + lTotalTime);
-        oJsonRoot.put("assignments", lJsonExercises);
+        oOwnJsonProperties.getOJsonRoot().put("assignments", oOwnJsonProperties.getLJsonExercises());
 
-        return oJsonRoot;
+        return oOwnJsonProperties.getOJsonRoot();
+    }
+
+    private void storeJsonInformation(List<Class> lClassList, OwnJsonProperties oOwnJsonProperties, boolean bLastRun,
+                                      boolean bExcerciseNeverChanged, int nClassPos, String sExcerciseName) {
+        /*  */
+        oOwnJsonProperties.setSTmpExcerciseName(analyzeErrors(lClassList, lClassList.get(nClassPos).getErrorList(),
+                oOwnJsonProperties.getLJsonClasses(), oOwnJsonProperties.getSTmpExcerciseName(),
+                                                                            nClassPos, sExcerciseName));
+
+
+        /* last run if different exercises were found */
+        if (bLastRun) {
+            oOwnJsonProperties.getOJsonExercise().put(oOwnJsonProperties.getSTmpExcerciseName(), oOwnJsonProperties.getLJsonClasses());
+
+            oOwnJsonProperties.getLJsonExercises().put(oOwnJsonProperties.getOJsonExercise());
+        }
+
+				/* last run if there was just one exercise */
+        if ((nClassPos + 1) == lClassList.size() && bExcerciseNeverChanged) {
+            oOwnJsonProperties.getOJsonExercise().put(oOwnJsonProperties.getSTmpExcerciseName(), oOwnJsonProperties.getLJsonClasses());
+            oOwnJsonProperties.getLJsonExercises().put(oOwnJsonProperties.getOJsonExercise());
+        }
+    }
+
+    private String analyzeErrors(List<Class> lClassList, List<Error> lTmpErrorList,
+                                 JSONArray lJsonClasses, String sTmpExerciseName, int nClassPos, String sExerciseName) {
+        String sLocalExerciseName = sTmpExerciseName;
+        JSONArray lJsonErrors = new JSONArray();
+        JSONObject oJsonClass = new JSONObject();
+
+        /* all Errors */
+        for (Error oError : lTmpErrorList) {
+            JSONObject oJsonError = new JSONObject();
+
+            oJsonError.put("line", Integer.toString(oError.getErrorAtLine()));
+            oJsonError.put("column", Integer.toString(oError.getColumn()));
+            oJsonError.put("severity", oError.getSeverity());
+            oJsonError.put("message", oError.getMessage());
+            oJsonError.put("source", oError.getSource());
+
+            lJsonErrors.put(oJsonError);
+        }
+
+        if (lJsonErrors.length() > 0) {
+            sLocalExerciseName = sExerciseName;
+            String sFilePath = oUtil.removeUnnecessaryPathParts(lClassList.get(nClassPos).getFullPath());
+            oJsonClass.put("filepath", sFilePath);
+            oJsonClass.put("errors", lJsonErrors);
+            setSeverityCounters(oJsonClass, nClassPos, lClassList);
+
+            lJsonClasses.put(oJsonClass);
+        }
+
+        return sLocalExerciseName;
     }
 
     private void setSeverityCounters(JSONObject oJsonClass, int nClassPos, List<Class> lClassList) {
