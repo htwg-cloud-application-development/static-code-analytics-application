@@ -21,7 +21,7 @@ import java.util.List;
 
 public class Pmd {
 
-    Util util = new Util();
+    private Util util = new Util();
 
     private static final Logger LOG = LoggerFactory.getLogger(Pmd.class);
 
@@ -38,6 +38,7 @@ public class Pmd {
     private final OwnJson oOwnJson = new OwnJson();
 
     private final String svnServerIp;
+
     private final String ruleSetPath;
 
     public Pmd(String svnServerIp, String ruleSetPath) {
@@ -120,7 +121,7 @@ public class Pmd {
         if (mainDir.exists()) {
             File[] files = mainDir.listFiles();
 
-            if (files != null && files.length<20) {
+            if (files != null) {
 
                 for (File file : mainDir.listFiles()) {
                     if (file != null) {

@@ -44,10 +44,12 @@ class Svn {
         }
         //if not create Dir
         else {
-            if(!dir.mkdir()) LOG.info("Error by making Directory");
+            if(!dir.mkdir()) {
+                LOG.info("Error by making Directory");
+            }
         }
         //Check VPN Credentials
-        if((name == null) && (password == null)) {
+        if(name == null && password == null) {
             LOG.info("invalid VPN credentials");
         }
         else {
@@ -108,7 +110,9 @@ class Svn {
                 String localPathN = (localPath + sFileSeparator + parts[parts.length - 1]).replaceAll(" ","");
 
                 // Create new Dir
-                if(!new File(localPathN).mkdir()) LOG.info("Error by making Directory");
+                if(!new File(localPathN).mkdir()) {
+                    LOG.info("Error by making Directory");
+                }
 
                 // Start recursiv Call for the located dir
                 svnCheckout(mainUrl + sFileSeparator + aListValue, authStringEnc,

@@ -160,16 +160,15 @@ class Checkstyle {
 
     private List<String> walk(String path, List<String> javaFiles) {
         //crawl Method to detect .java Files
-        File root = new File(path + "\\");
+        File root = new File(path);
         File[] list = root.listFiles();
         if (list != null) {
-
             for (File f : list) {
                 if (f.isDirectory()) {
                     //ignore git folder (Speedreasons)
-                    if (!f.getPath().contains(".git") || !f.getPath().contains(".svn")) {
-                        //Crawling
-                        walk(f.getPath(), javaFiles);
+                    if (!f.getPath().contains(".git")) {
+                            //Crawling
+                            walk(f.getPath(),javaFiles);
                     }
                 } else {
                     //Add .java Files to List
@@ -221,11 +220,16 @@ class Checkstyle {
             LOG.info("Checkstyle execution path: " + sCheckStyleCommand);
 
             int nReturnCode = oUtil.execCommand(sCheckStyleCommand);
-            System.out.println("Prozess Return Code: " + nReturnCode);
+            LOG.info("Process Return Code: " + nReturnCode);
 
-            if (nReturnCode == 0) {
-                /* store Checkstyle Informationen in the global List */
-                storeCheckstyleInformation(sFullPath + ".xml", nClassPos);
+            switch(nReturnCode) {
+                case 0: {
+                    /* store Checkstyle Informationen in the global List */
+                    storeCheckstyleInformation(sFullPath + ".xml", nClassPos);
+                }
+                case -2: {
+                    //TODO: Fehler case
+                }
             }
         }
 
@@ -236,7 +240,6 @@ class Checkstyle {
     }
 
     private void formatList(List<List<String>> lRepoList) {
-
         for (List<String> sRepoListInList : lRepoList) {
             Class oClass;
 
