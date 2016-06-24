@@ -15,12 +15,17 @@ import org.springframework.web.bind.annotation.*;
 import java.util.HashMap;
 
 
+/**
+ * Frontend endpoint Service for accessing database and moodle
+ */
 @RestController
 public class GovernanceService {
 
+    // add databse service wrapper
     @Autowired
     DatabaseService databaseService;
 
+    // add moodle service wrapper
     @Autowired
     MoodleService moodleService;
 
