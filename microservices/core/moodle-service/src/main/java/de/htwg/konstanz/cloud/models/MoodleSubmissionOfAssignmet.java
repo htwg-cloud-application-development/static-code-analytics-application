@@ -6,7 +6,7 @@ import lombok.Data;
 import java.util.List;
 
 /**
- * Created by steffen on 02/06/16.
+ * Java bean of a submission in moodle
  */
 @Data
 @JsonIgnoreProperties(ignoreUnknown = true)

@@ -6,7 +6,7 @@ import lombok.Data;
 import java.util.List;
 
 /**
- * Created by steffen on 02/06/16.
+ * Java bean of all needed information of a user in moodle
  */
 @Data
 @JsonIgnoreProperties(ignoreUnknown = true)
