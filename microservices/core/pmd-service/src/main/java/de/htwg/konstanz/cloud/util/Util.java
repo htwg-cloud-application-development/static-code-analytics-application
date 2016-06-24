@@ -66,8 +66,10 @@ public class Util {
         return javaFiles;
     }
 
-    public void execCommand(String sPmdCommand) {
+    public int execCommand(String sPmdCommand) {
+        int nReturnCode = 0;
         Process proc = null;
+
         try {
             Runtime runtime = Runtime.getRuntime();
             proc = runtime.exec(sPmdCommand);
@@ -78,7 +80,7 @@ public class Util {
             s1.start();
             s2.start();
 
-            proc.waitFor();
+            nReturnCode = proc.waitFor();
         } catch (IOException | InterruptedException ex) {
             ex.printStackTrace();
         } finally {
@@ -86,6 +88,8 @@ public class Util {
                 proc.destroy();
             }
         }
+
+        return nReturnCode;
     }
 
     public String checkJsonResult(JSONObject oJsonResult) {

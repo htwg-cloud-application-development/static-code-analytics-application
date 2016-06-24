@@ -51,7 +51,7 @@ public class Cpd {
             SAXException, BadLocationException, GitAPIException, NullPointerException, InterruptedException {
         long lStartTime = System.currentTimeMillis();
         JSONObject oJsonResult;
-        String sResult;
+
         OperatingSystemCheck oOperatingSystemCheck = new OperatingSystemCheck();
         sFileSeparator = oOperatingSystemCheck.getOperatingSystemSeparator();
 
@@ -62,7 +62,7 @@ public class Cpd {
             FileUtils.deleteDirectory(oRepoDir);
         }
 
-        sResult = oUtil.checkJsonResult(oJsonResult);
+        String sResult = oUtil.checkJsonResult(oJsonResult);
 
         return sResult;
     }
@@ -132,12 +132,13 @@ public class Cpd {
 
         if (oOperatingSystemCheck.isWindows()) {
             sStartScript = "pmd-bin-5.4.2\\bin\\cpd.bat";
-            String sCpdCommand = sStartScript + " --minimum-tokens 75 --files " + oRepoDir.getAbsolutePath() + " --skip-lexical-errors --format xml > " + sMainPath + sFileSeparator + "CpdCheck_" + sOutputFileName;
+            String sCpdCommand = sStartScript + " --minimum-tokens 75 --files " + oRepoDir.getAbsolutePath()
+                    + " --skip-lexical-errors --format xml > " + sMainPath + sFileSeparator + "CpdCheck_" + sOutputFileName;
             LOG.info("Command: " + sCpdCommand);
             oUtil.execCommand(sCpdCommand);
         } else if (oOperatingSystemCheck.isLinux()) {
             ArrayList<String> sProcessBuilder = new ArrayList<>();
-            ProcessBuilder oCommandExecure;
+            
             sStartScript = "pmd-bin-5.4.2/bin/run.sh";
             sProcessBuilder.add(sStartScript);
             sProcessBuilder.add("cpd");
@@ -149,7 +150,7 @@ public class Cpd {
             sProcessBuilder.add("--format");
             sProcessBuilder.add("xml");
 
-            oCommandExecure = new ProcessBuilder(sProcessBuilder);
+            ProcessBuilder oCommandExecure = new ProcessBuilder(sProcessBuilder);
             oCommandExecure.redirectOutput(new File(sMainPath + sFileSeparator + "CpdCheck_" + sOutputFileName));
             Process p = oCommandExecure.start();
             p.waitFor();
@@ -167,7 +168,8 @@ public class Cpd {
         return oJson;
     }
 
-    private void storeCpdInformation(String sXmlPath, String sMainPath) throws ParserConfigurationException, SAXException, IOException {
+    private void storeCpdInformation(String sXmlPath, String sMainPath)
+            throws ParserConfigurationException, SAXException, IOException {
         InputStream oInputStream = new FileInputStream(sXmlPath);
         Reader oReader = new InputStreamReader(oInputStream, "UTF-8");
         InputSource oInputSource = new InputSource(oReader);
@@ -201,7 +203,9 @@ public class Cpd {
                 for (int nNodeFilePos = 0; nNodeFilePos < nNodeFiles.getLength(); nNodeFilePos++) {
                     Node nNodeFile = nNodeFiles.item(nNodeFilePos);
                     Element eNodeFileElement = (Element) nNodeFile;
-                    String sRepoString = String.valueOf(eNodeFileElement.getAttribute("path")).substring(String.valueOf(eNodeFileElement.getAttribute("path")).indexOf(sMainPath) + (sMainPath).length() + 1);
+                    String sRepoString = String.valueOf(eNodeFileElement.getAttribute("path")).
+                            substring(String.valueOf(eNodeFileElement.getAttribute("path")).
+                                    indexOf(sMainPath) + (sMainPath).length() + 1);
                     if (oUtil.checkIfDifferentReops(lInvolvedData, sRepoString)) {
                         lInvolvedData.add(sRepoString);
                     }
