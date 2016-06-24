@@ -76,7 +76,7 @@ public class Cpd {
 
         LOG.info("Repository URL: " + sRepoUrl);
         oUtil.checkLocalPmd();
-        oRepoDir = oUtil.createDirectory("repositories_" + System.currentTimeMillis());
+        oRepoDir = oUtil.createDirectory("repositories" + sFileSeparator + "cpd-repositories");
 
         /* Download SVN or Git Repos */
         for (String sRepo : sRepoUrl) {
@@ -134,7 +134,8 @@ public class Cpd {
             String sCpdCommand = sStartScript + " --minimum-tokens 75 --files " + oRepoDir.getAbsolutePath()
                     + " --skip-lexical-errors --format xml > " + sMainPath + sFileSeparator + "CpdCheck_" + sOutputFileName;
             LOG.info("Command: " + sCpdCommand);
-            oUtil.execCommand(sCpdCommand);
+            int nReturnCode = oUtil.execCommand(sCpdCommand);
+            LOG.info("Process Return Code: " + nReturnCode);
         } else if (oOperatingSystemCheck.isLinux()) {
             ArrayList<String> sProcessBuilder = new ArrayList<>();
 
@@ -152,7 +153,8 @@ public class Cpd {
             ProcessBuilder oCommandExecure = new ProcessBuilder(sProcessBuilder);
             oCommandExecure.redirectOutput(new File(sMainPath + sFileSeparator + "CpdCheck_" + sOutputFileName));
             Process p = oCommandExecure.start();
-            p.waitFor();
+            int nReturnCode = p.waitFor();
+            LOG.info("Process Return Code: " + nReturnCode);
         }
 
         /* Checkstyle Informationen eintragen */
