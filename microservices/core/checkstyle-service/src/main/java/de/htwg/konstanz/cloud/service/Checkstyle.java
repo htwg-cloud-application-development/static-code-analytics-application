@@ -164,7 +164,7 @@ class Checkstyle {
         if (list != null) {
             for (File f : list) {
                 if (f.isDirectory()) {
-                    //ignore git folder (Speedreasons)
+                     //ignore git folder (Speedreasons)
                     if (!f.getPath().contains(".git")) {
                             //Crawling
                             walk(f.getPath(),javaFiles);
@@ -241,14 +241,11 @@ class Checkstyle {
     private void formatList(List<List<String>> lRepoList) {
         for (List<String> sRepoListInList : lRepoList) {
             Class oClass;
-
             for (String sRepo : sRepoListInList) {
                 String[] sFullPathSplitArray = sRepo.split(oOperatingSystemCheck.getOperatingSystemSeparator());
-
-                String sTmpClassName = sFullPathSplitArray[sFullPathSplitArray.length - 1];
                 String sTmpExerciseName = sFullPathSplitArray[2];
 
-                oClass = new Class(sTmpClassName, sRepo, sTmpExerciseName);
+                oClass = new Class(sRepo, sTmpExerciseName);
 
                 lFormattedClassList.add(oClass);
             }

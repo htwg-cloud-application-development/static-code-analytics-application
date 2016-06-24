@@ -4,9 +4,7 @@ import java.util.ArrayList;
 import java.util.List;
 
 public class Class {
-    private final String sClassName;
-
-    private final String sFullPath;
+	private final String sFullPath;
 
     private final List<Error> lError = new ArrayList<>();
 
@@ -18,14 +16,13 @@ public class Class {
 
     private int nIgnoreCount;
 
-    public Class(String sClassName, String sFullPath, String sExcerciseName) {
-        this.sClassName = sClassName;
-        this.sFullPath = sFullPath;
-        this.sExerciseName = sExcerciseName;
-        this.nErrorCount = 0;
-        this.nWarningCount = 0;
-        this.nIgnoreCount = 0;
-    }
+	public Class(String sFullPath, String sExcerciseName) {
+		this.sFullPath = sFullPath;
+		this.sExerciseName = sExcerciseName;
+		this.nErrorCount = 0;
+		this.nWarningCount = 0;
+		this.nIgnoreCount = 0;
+	}
 
     public void incErrorType(String sSeverity) {
         /* Count every Error Type we have found in the XML */
@@ -50,17 +47,17 @@ public class Class {
         return sExerciseName;
     }
 
-    public void incErrorCount() {
-        this.nErrorCount++;
-    }
+	private void incErrorCount() {
+		this.nErrorCount++;
+	}
 
-    public void incWarningCount() {
-        this.nWarningCount++;
-    }
+	private void incWarningCount() {
+		this.nWarningCount++;
+	}
 
-    public void incIgnoreCount() {
-        this.nIgnoreCount++;
-    }
+	private void incIgnoreCount() {
+		this.nIgnoreCount++;
+	}
 
     public int getErrorCount() {
         return this.nErrorCount;
