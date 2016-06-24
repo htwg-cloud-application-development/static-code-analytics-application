@@ -71,7 +71,6 @@ public class Util {
         Process proc = null;
         try {
             Runtime runtime = Runtime.getRuntime();
-            System.out.println("Runtime! exec:" + sPmdCommand);
             proc = runtime.exec(sPmdCommand);
 
             ReadStream s1 = new ReadStream("stdin", proc.getInputStream());
