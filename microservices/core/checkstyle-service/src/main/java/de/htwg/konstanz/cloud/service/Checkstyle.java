@@ -221,11 +221,16 @@ class Checkstyle {
             LOG.info("Checkstyle execution path: " + sCheckStyleCommand);
 
             int nReturnCode = oUtil.execCommand(sCheckStyleCommand);
-            System.out.println("Prozess Return Code: " + nReturnCode);
+            LOG.info("Process Return Code: " + nReturnCode);
 
-            if(nReturnCode == 0) {
-			    /* store Checkstyle Informationen in the global List */
-                storeCheckstyleInformation(sFullPath + ".xml", nClassPos);
+            switch(nReturnCode) {
+                case 0: {
+                    /* store Checkstyle Informationen in the global List */
+                    storeCheckstyleInformation(sFullPath + ".xml", nClassPos);
+                }
+                case -2: {
+                    //TODO: Fehler case
+                }
             }
         }
 
