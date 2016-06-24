@@ -14,6 +14,7 @@ public class Util {
 
     private final OperatingSystemCheck oOperatingSystemCheck = new OperatingSystemCheck();
 
+    //trys to parse a String into an int. if its no possible the function returns an default value of zero
     private int isParsable(String input) {
         int nValue;
 
@@ -26,12 +27,13 @@ public class Util {
         return nValue;
     }
 
+    //this method removes some unnecesarry parts of the filepath
     String removeUnnecessaryPathParts(String sFilePath) {
         String[] sFilePathSplitArray = sFilePath.split(oOperatingSystemCheck.getOperatingSystemSeparator());
         String sShortenPath = "";
         for (int nPathPos = 2; nPathPos < sFilePathSplitArray.length; nPathPos++) {
             if (nPathPos + 1 == sFilePathSplitArray.length) {
-                        /* last Part of the Path */
+                /* last Part of the Path */
                 sShortenPath += sFilePathSplitArray[nPathPos];
             } else {
                 sShortenPath += sFilePathSplitArray[nPathPos] + "\\";
@@ -41,7 +43,9 @@ public class Util {
         return sShortenPath;
     }
 
+    //execution of commands within the command line interface, java provides an own runtime for it
     public int execCommand(String sPmdCommand) {
+        //the return code of the process mades if possible to check if the execution was successful or not
         int nReturnCode = 0;
 
         try {
@@ -61,7 +65,7 @@ public class Util {
     }
 
     public List<String> getAllJavaFiles(String path, List<String> javaFiles) {
-        //crawl Method to detect .java Files
+        //crawl Method to detect all .java Files in a local path
         File root = new File(path);
         File[] list = root.listFiles();
         if (list != null) {
@@ -97,6 +101,7 @@ public class Util {
         return mainDir;
     }
 
+    //to catch nullpointer this method checks the json result
     public String checkJsonResult(JSONObject oJsonResult) {
         String sResult;
         if (null == oJsonResult) {
@@ -109,11 +114,12 @@ public class Util {
         return sResult;
     }
 
-
+    //try to parse a string into an int
     int getParsableElement(Element eElement, String sAttribute) {
         return isParsable(eElement.getAttribute(sAttribute));
     }
 
+    //check if the string parameter is empty (returns 0) or not (returns the attribute)
     String getNonEmptyElement(Element eElement, String sAttributeName) {
         if (!eElement.getAttribute(sAttributeName).isEmpty()) {
             return eElement.getAttribute(sAttributeName);

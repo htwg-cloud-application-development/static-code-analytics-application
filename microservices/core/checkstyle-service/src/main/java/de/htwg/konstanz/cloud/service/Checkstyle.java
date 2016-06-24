@@ -116,7 +116,7 @@ class Checkstyle {
         File mainDir;
         LOG.info("Local Directory: " + localDirectory);
 
-        /* Structure according to the specifications  */
+        /* Structure according to the specifications */
         mainDir = oUtil.checkLocalSrcDir(localDirectory);
 
         /* List all files for CheckstyleService */
