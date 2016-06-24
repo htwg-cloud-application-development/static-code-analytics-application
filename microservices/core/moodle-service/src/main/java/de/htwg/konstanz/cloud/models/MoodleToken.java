@@ -1,6 +1,7 @@
 package de.htwg.konstanz.cloud.models;
 
 import lombok.Data;
+
 import javax.validation.constraints.NotNull;
 
 /**

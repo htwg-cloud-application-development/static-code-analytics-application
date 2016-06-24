@@ -53,7 +53,7 @@ class Checkstyle {
 
 
     String startIt(String gitRepository) throws IOException, ParserConfigurationException,
-                                                SAXException, GitAPIException, BadLocationException {
+            SAXException, GitAPIException, BadLocationException {
         lFormattedClassList = new ArrayList<>();
         long lStartTime = System.currentTimeMillis();
         JSONObject oJsonResult;
@@ -115,7 +115,7 @@ class Checkstyle {
 
     private List<List<String>> generateCheckStyleServiceData(String localDirectory) {
         /* Generate Data for CheckstyleService */
-        ArrayList<List<String>>  list = new ArrayList<>();
+        ArrayList<List<String>> list = new ArrayList<>();
         File mainDir;
         LOG.info("Local Directory: " + localDirectory);
 
@@ -126,7 +126,7 @@ class Checkstyle {
         if (mainDir.exists()) {
             File[] files = mainDir.listFiles();
             //fill list with relevant Data
-            if(files != null) {
+            if (files != null) {
                 for (File file : files) {
                     //Head-Dir
                     File[] filesSub = new File(file.getPath()).listFiles();
@@ -147,11 +147,11 @@ class Checkstyle {
             }
         }
         /* Other Structure Workaround */
-        if(list.isEmpty()){
+        if (list.isEmpty()) {
             //Unregular Repo
             LOG.info("unregular repository");
-            List<String> javaFiles=new ArrayList<>();
-            list.add(walk(localDirectory,javaFiles));
+            List<String> javaFiles = new ArrayList<>();
+            list.add(walk(localDirectory, javaFiles));
         }
 
         return list;
@@ -160,20 +160,20 @@ class Checkstyle {
 
     private List<String> walk(String path, List<String> javaFiles) {
         //crawl Method to detect .java Files
-        File root = new File(path+"\\");
+        File root = new File(path + "\\");
         File[] list = root.listFiles();
         if (list != null) {
 
             for (File f : list) {
                 if (f.isDirectory()) {
                     //ignore git folder (Speedreasons)
-                    if (!f.getPath().contains(".git")|| !f.getPath().contains(".svn")) {
-                            //Crawling
-                            walk(f.getPath(),javaFiles);
+                    if (!f.getPath().contains(".git") || !f.getPath().contains(".svn")) {
+                        //Crawling
+                        walk(f.getPath(), javaFiles);
                     }
                 } else {
                     //Add .java Files to List
-                    if(f.getPath().endsWith(".java")) {
+                    if (f.getPath().endsWith(".java")) {
                         javaFiles.add(f.getPath());
                     }
                 }
@@ -202,7 +202,7 @@ class Checkstyle {
     }
 
     private JSONObject checkStyle(List<List<String>> lRepoList, String gitRepository, long lStartTime, String sLastUpdateTime)
-                                        throws ParserConfigurationException, SAXException, IOException {
+            throws ParserConfigurationException, SAXException, IOException {
         final String sCheckStylePath = "checkstyle-6.17-all.jar";
         JSONObject oJson;
 
@@ -217,14 +217,14 @@ class Checkstyle {
             }
 
             String sCheckStyleCommand = "java -jar " + sCheckStylePath + " -c " + sRuleSetPath + " " + sFullPath
-                                            + ".java -f xml -o " + sFullPath + ".xml";
+                    + ".java -f xml -o " + sFullPath + ".xml";
             LOG.info("Checkstyle execution path: " + sCheckStyleCommand);
 
             int nReturnCode = oUtil.execCommand(sCheckStyleCommand);
             System.out.println("Prozess Return Code: " + nReturnCode);
 
-            if(nReturnCode == 0) {
-			    /* store Checkstyle Informationen in the global List */
+            if (nReturnCode == 0) {
+                /* store Checkstyle Informationen in the global List */
                 storeCheckstyleInformation(sFullPath + ".xml", nClassPos);
             }
         }
@@ -254,7 +254,7 @@ class Checkstyle {
     }
 
     private void storeCheckstyleInformation(String sXmlPath, int nClassPos)
-                                                throws ParserConfigurationException, SAXException, IOException {
+            throws ParserConfigurationException, SAXException, IOException {
         InputStream inputStream = new FileInputStream(sXmlPath);
         Reader reader = new InputStreamReader(inputStream, "UTF-8");
         InputSource is = new InputSource(reader);
@@ -354,7 +354,7 @@ class Checkstyle {
                     lJsonErrors.put(oJsonError);
                 }
 
-                if(lJsonErrors.length() > 0) {
+                if (lJsonErrors.length() > 0) {
                     sTmpExcerciseName = sExcerciseName;
                     String sFilePath = oUtil.removeUnnecessaryPathParts(lFormattedClassList.get(nClassPos).getFullPath());
 

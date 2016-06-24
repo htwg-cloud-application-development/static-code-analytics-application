@@ -52,7 +52,7 @@ public class CourseService {
 
     //Returns one course without errors of pmd and checkstyle
     @RequestMapping(value = "/{courseId}", method = RequestMethod.GET)
-    public ResponseEntity<String> getCourse(@PathVariable final String courseId){
+    public ResponseEntity<String> getCourse(@PathVariable final String courseId) {
 
         final Course course = courseRepo.findOne(courseId);
         return new ResponseEntity<String>(removeErrors(course).toString(), HttpStatus.OK);
@@ -107,7 +107,7 @@ public class CourseService {
                 //checks if group has pmd result
                 if (group.has("pmd")) {
                     JSONObject pmd = group.getJSONObject("pmd");
-                    if (pmd.has(assignments)){
+                    if (pmd.has(assignments)) {
                         removeErrorsInAssignments(pmd);
                     }
 
@@ -126,7 +126,7 @@ public class CourseService {
     }
 
     //removes extensive Errors
-    public void removeErrorsInAssignments(JSONObject analysisResult){
+    public void removeErrorsInAssignments(JSONObject analysisResult) {
 
         // gets assignments
         JSONArray assignments = analysisResult.getJSONArray("assignments");
@@ -142,8 +142,8 @@ public class CourseService {
 
             //iterating over "key" array and remove errors
             for (int o = 0; o < files.length(); o++) {
-            JSONObject file = files.getJSONObject(o);
-            file.remove("errors");
+                JSONObject file = files.getJSONObject(o);
+                file.remove("errors");
             }
         }
     }

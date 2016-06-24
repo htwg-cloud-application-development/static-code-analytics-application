@@ -24,11 +24,11 @@ class Git {
 
     private String getLastCommit(org.eclipse.jgit.api.Git git) throws IOException, GitAPIException {
         //Get Last Commit of Git Repo
-        Iterable<RevCommit> revCommits =git.log().call();
+        Iterable<RevCommit> revCommits = git.log().call();
         return String.valueOf(revCommits.iterator().next().getCommitTime());
     }
 
-    String [] downloadGitRepo(String gitRepo) throws GitAPIException, IOException {
+    String[] downloadGitRepo(String gitRepo) throws GitAPIException, IOException {
         /* Checkout Git-Repo */
         org.eclipse.jgit.api.Git git = null;
 
@@ -46,11 +46,11 @@ class Git {
         if (isValidRepository(new URIish(f))) {
             git = org.eclipse.jgit.api.Git.cloneRepository().setURI(gitRepo)
                     .setDirectory(new File(localDirectory)).call();
-            returnValue= new String[]{localDirectory, getLastCommit(git)};
+            returnValue = new String[]{localDirectory, getLastCommit(git)};
         }
 
         /* Closing Object that we can delete the whole directory later */
-        if (null!=git) {
+        if (null != git) {
             git.getRepository().close();
         }
         /* Local Targetpath and Last Commit*/
@@ -80,7 +80,7 @@ class Git {
     private boolean isValidRemoteRepository(URIish repoUri) {
         boolean result;
         /*  Check Repository URI */
-        if (repoUri.getScheme().toLowerCase().startsWith("http") ) {
+        if (repoUri.getScheme().toLowerCase().startsWith("http")) {
             String path = repoUri.getPath();
             URIish checkUri = repoUri.setPath(path);
 
@@ -94,7 +94,7 @@ class Git {
             } catch (FileNotFoundException e) {
                 /* URI NOT FOUND */
                 LOG.info("URI not found: " + checkUri.toString());
-                result=false;
+                result = false;
             } catch (IOException e) {
                 /* IO ERROR */
                 LOG.info("IO Error: " + checkUri.toString());
@@ -102,15 +102,14 @@ class Git {
             } finally {
                 /* Close InputStream  */
                 try {
-                    if (null!=ins) {
+                    if (null != ins) {
                         ins.close();
                     }
-                }
-                catch (Exception e) {
+                } catch (Exception e) {
                     /* ignore */
                 }
             }
-        } else if (repoUri.getScheme().toLowerCase().startsWith("ssh") ) {
+        } else if (repoUri.getScheme().toLowerCase().startsWith("ssh")) {
             /* SSH-Validation */
             RemoteSession ssh = null;
             Process exec = null;
@@ -123,7 +122,7 @@ class Git {
                 Integer exitValue;
                 do {
                     exitValue = exec.exitValue();
-                   }
+                }
                 while (false);
 
                 result = exitValue == 0;
@@ -134,7 +133,7 @@ class Git {
             } finally {
                 /* Close Process */
                 try {
-                    if (exec!=null) {
+                    if (exec != null) {
                         exec.destroy();
                     }
                 } catch (Exception e) {
@@ -142,7 +141,7 @@ class Git {
                 }
                 /* Disconnect SSH */
                 try {
-                    if (ssh!=null) {
+                    if (ssh != null) {
                         ssh.disconnect();
                     }
                 } catch (Exception e) {

@@ -44,7 +44,8 @@ public class AssignmentService {
             courseRepo.save(course);
 
             responseEntity = new ResponseEntity(HttpStatus.OK);
-        }return responseEntity;
+        }
+        return responseEntity;
     }
 
     //returns search Assigmnet according to ID

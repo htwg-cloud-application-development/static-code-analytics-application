@@ -13,7 +13,7 @@ public class ValidationData {
     private String repository;
 
     @Override
-    public String toString(){
+    public String toString() {
         JSONObject json = new JSONObject();
         try {
             json.put("repository", repository);

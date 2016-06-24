@@ -4,73 +4,73 @@ import java.util.ArrayList;
 import java.util.List;
 
 public class Class {
-	private final String sClassName;
+    private final String sClassName;
 
-	private final String sFullPath;
+    private final String sFullPath;
 
-	private final List<Error> lError = new ArrayList<>();
+    private final List<Error> lError = new ArrayList<>();
 
-	private final String sExerciseName;
+    private final String sExerciseName;
 
-	private int nErrorCount;
+    private int nErrorCount;
 
-	private int nWarningCount;
+    private int nWarningCount;
 
-	private int nIgnoreCount;
+    private int nIgnoreCount;
 
-	public Class(String sClassName, String sFullPath, String sExcerciseName) {
-		this.sClassName = sClassName;
-		this.sFullPath = sFullPath;
-		this.sExerciseName = sExcerciseName;
-		this.nErrorCount = 0;
-		this.nWarningCount = 0;
-		this.nIgnoreCount = 0;
-	}
+    public Class(String sClassName, String sFullPath, String sExcerciseName) {
+        this.sClassName = sClassName;
+        this.sFullPath = sFullPath;
+        this.sExerciseName = sExcerciseName;
+        this.nErrorCount = 0;
+        this.nWarningCount = 0;
+        this.nIgnoreCount = 0;
+    }
 
-	public void incErrorType(String sSeverity) {
+    public void incErrorType(String sSeverity) {
         /* Count every Error Type we have found in the XML */
-		if (sSeverity.toLowerCase().equals("error")) {
-			incErrorCount();
-		} else if (sSeverity.toLowerCase().equals("warning")) {
-			incWarningCount();
-		} else if (sSeverity.toLowerCase().equals("ignore")) {
-			incIgnoreCount();
-		}
-	}
+        if (sSeverity.toLowerCase().equals("error")) {
+            incErrorCount();
+        } else if (sSeverity.toLowerCase().equals("warning")) {
+            incWarningCount();
+        } else if (sSeverity.toLowerCase().equals("ignore")) {
+            incIgnoreCount();
+        }
+    }
 
-	public String getFullPath() {
-		return sFullPath;
-	}
+    public String getFullPath() {
+        return sFullPath;
+    }
 
-	public List<Error> getErrorList() {
-		return lError;
-	}
+    public List<Error> getErrorList() {
+        return lError;
+    }
 
-	public String getsExcerciseName() {
-		return sExerciseName;
-	}
+    public String getsExcerciseName() {
+        return sExerciseName;
+    }
 
-	public void incErrorCount() {
-		this.nErrorCount++;
-	}
+    public void incErrorCount() {
+        this.nErrorCount++;
+    }
 
-	public void incWarningCount() {
-		this.nWarningCount++;
-	}
+    public void incWarningCount() {
+        this.nWarningCount++;
+    }
 
-	public void incIgnoreCount() {
-		this.nIgnoreCount++;
-	}
+    public void incIgnoreCount() {
+        this.nIgnoreCount++;
+    }
 
-	public int getErrorCount() {
-		return this.nErrorCount;
-	}
+    public int getErrorCount() {
+        return this.nErrorCount;
+    }
 
-	public int getWarningCount() {
-		return this.nWarningCount;
-	}
+    public int getWarningCount() {
+        return this.nWarningCount;
+    }
 
-	public int getIgnoreCount() {
-		return this.nIgnoreCount;
-	}
+    public int getIgnoreCount() {
+        return this.nIgnoreCount;
+    }
 }

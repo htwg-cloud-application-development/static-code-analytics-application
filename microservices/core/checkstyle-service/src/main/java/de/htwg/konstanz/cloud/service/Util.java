@@ -28,12 +28,11 @@ class Util {
     String removeUnnecessaryPathParts(String sFilePath) {
         String[] sFilePathSplitArray = sFilePath.split(oOperatingSystemCheck.getOperatingSystemSeparator());
         String sShortenPath = "";
-        for(int nPathPos = 2; nPathPos < sFilePathSplitArray.length; nPathPos++) {
-            if(nPathPos+1 == sFilePathSplitArray.length) {
+        for (int nPathPos = 2; nPathPos < sFilePathSplitArray.length; nPathPos++) {
+            if (nPathPos + 1 == sFilePathSplitArray.length) {
                         /* last Part of the Path */
                 sShortenPath += sFilePathSplitArray[nPathPos];
-            }
-            else {
+            } else {
                 sShortenPath += sFilePathSplitArray[nPathPos] + "\\";
             }
         }
