@@ -21,16 +21,16 @@ class Git {
 
     private String getLastCommit(org.eclipse.jgit.api.Git git) throws IOException, GitAPIException {
         //Get Last Commit of Git Repo
-        Iterable<RevCommit> revCommits =git.log().call();
+        Iterable<RevCommit> revCommits = git.log().call();
         return String.valueOf(revCommits.iterator().next().getCommitTime());
     }
 
-    String [] downloadGitRepo(String gitRepo) throws IOException, GitAPIException{
+    String[] downloadGitRepo(String gitRepo) throws IOException, GitAPIException {
         //Second Parameter changes the local Target-Path
-        return downloadGitRepo(gitRepo,null);
+        return downloadGitRepo(gitRepo, null);
     }
 
-    String [] downloadGitRepo(String gitRepo, String sPcdString) throws GitAPIException, IOException {
+    String[] downloadGitRepo(String gitRepo, String sPcdString) throws GitAPIException, IOException {
         // Checkout Git-Repo
         OperatingSystemCheck oOperatingSystemCheck = new OperatingSystemCheck();
         String sFileSeparator = oOperatingSystemCheck.getOperatingSystemSeparator();
@@ -43,15 +43,13 @@ class Git {
                 gitRepo.length()).replace(".", "_");
         directoryName = directoryName.substring(1);
         String localDirectory;
-        if(sPcdString == null) {
+        if (sPcdString == null) {
             //Build Local Target-Path
             localDirectory = "repositories" + sFileSeparator + directoryName + "_"
                     + System.currentTimeMillis() + sFileSeparator;
-        }
-        else{
+        } else {
             //Build Local Target-Path
-            localDirectory = sPcdString + sFileSeparator + directoryName + "_"
-                    + System.currentTimeMillis() + sFileSeparator;
+            localDirectory = "repositories" + sFileSeparator + sPcdString + sFileSeparator + directoryName + sFileSeparator;
         }
         LOG.info(localDirectory);
         // Clone Command with jGIT
@@ -59,7 +57,7 @@ class Git {
         if (isValidRepository(new URIish(f))) {
             org.eclipse.jgit.api.Git git = org.eclipse.jgit.api.Git.cloneRepository().setURI(gitRepo)
                     .setDirectory(new File(localDirectory)).call();
-            returnValue= new String[]{localDirectory, getLastCommit(git)};
+            returnValue = new String[]{localDirectory, getLastCommit(git)};
 
             // Closing Object that we can delete the whole directory later
             git.getRepository().close();
@@ -91,9 +89,9 @@ class Git {
     private boolean isValidRemoteRepository(URIish repoUri) {
         boolean result;
         /*  Check Repository URI with different schemes. more schems can be added in future */
-        if (repoUri.getScheme().toLowerCase().startsWith("http") ) {
+        if (repoUri.getScheme().toLowerCase().startsWith("http")) {
             result = httpValidation(repoUri);
-        } else if (repoUri.getScheme().toLowerCase().startsWith("ssh") ) {
+        } else if (repoUri.getScheme().toLowerCase().startsWith("ssh")) {
             result = sshValidation(repoUri);
         } else {
             // TODO need to implement tests for other schemas
@@ -127,7 +125,7 @@ class Git {
 
         } finally {
             /* Close Process */
-            if (exec!=null) {
+            if (exec != null) {
                 try {
                     exec.destroy();
                 } catch (Exception e) {
@@ -135,7 +133,7 @@ class Git {
                 }
             }
             /* Disconnect SSH */
-            if (ssh!=null) {
+            if (ssh != null) {
                 try {
                     ssh.disconnect();
                 } catch (Exception e) {
@@ -161,15 +159,14 @@ class Git {
         } catch (Exception e) {
             /* URI NOT FOUND */
             LOG.info("Error: " + checkUri.toString());
-            result=false;
+            result = false;
         } finally {
             /* Close InputStream  */
             try {
-                if (null!=ins) {
+                if (null != ins) {
                     ins.close();
                 }
-            }
-            catch (Exception e) {
+            } catch (Exception e) {
                 /* ignore */
             }
         }
