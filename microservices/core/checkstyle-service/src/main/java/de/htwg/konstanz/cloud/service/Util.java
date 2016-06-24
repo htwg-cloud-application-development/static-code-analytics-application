@@ -7,6 +7,7 @@ import org.w3c.dom.Element;
 
 import java.io.File;
 import java.io.IOException;
+import java.util.List;
 
 class Util {
     private static final Logger LOG = LoggerFactory.getLogger(Util.class);
@@ -57,6 +58,29 @@ class Util {
         }
 
         return nReturnCode;
+    }
+
+    List<String> getAllJavaFiles(String path, List<String> javaFiles) {
+        //crawl Method to detect .java Files
+        File root = new File(path);
+        File[] list = root.listFiles();
+        if (list != null) {
+            for (File f : list) {
+                if (f.isDirectory()) {
+                    //ignore git folder (Speedreasons)
+                    if (!f.getPath().contains(".git")) {
+                        //Crawling
+                        getAllJavaFiles(f.getPath(),javaFiles);
+                    }
+                } else {
+                    //Add .java Files to List
+                    if (f.getPath().endsWith(".java")) {
+                        javaFiles.add(f.getPath());
+                    }
+                }
+            }
+        }
+        return javaFiles;
     }
 
     File checkLocalSrcDir(String sLocalDirectory) {

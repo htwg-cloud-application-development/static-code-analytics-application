@@ -18,7 +18,7 @@ import static springfox.documentation.builders.PathSelectors.regex;
 @EnableSwagger2
 public class CheckstyleServiceApplication {
 
-    public static void main(String[] args) {
+    public static void main(String... args) {
         SpringApplication.run(CheckstyleServiceApplication.class, args);
     }
 

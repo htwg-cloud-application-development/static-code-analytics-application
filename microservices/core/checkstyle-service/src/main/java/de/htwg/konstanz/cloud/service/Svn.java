@@ -101,7 +101,9 @@ class Svn {
                 String localPathN = (localPath + sFileSeparator + parts[parts.length - 1]).replaceAll(" ", "");
 
                 // Create new Dir
-                if (!new File(localPathN).mkdir()) LOG.info("Error by making Directory");
+                if (!new File(localPathN).mkdir()) {
+                    LOG.info("Error by making Directory");
+                }
 
                 // Start recursiv Call for the located dir
                 svnCheckout(mainUrl + sFileSeparator + aListValue, authStringEnc,

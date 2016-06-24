@@ -46,7 +46,6 @@ public class Pmd {
         this.ruleSetPath = ruleSetPath;
     }
 
-
     String startIt(String gitRepository) throws IOException, ParserConfigurationException, SAXException,
             BadLocationException, GitAPIException, NullPointerException {
         lFormattedClassList = new ArrayList<>();
