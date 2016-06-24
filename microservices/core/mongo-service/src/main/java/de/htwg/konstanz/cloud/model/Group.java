@@ -1,13 +1,11 @@
 package de.htwg.konstanz.cloud.model;
 
 import lombok.Data;
-import lombok.EqualsAndHashCode;
 import org.springframework.data.annotation.Id;
 import org.springframework.data.mongodb.core.mapping.DBRef;
 import org.springframework.data.mongodb.core.mapping.Document;
 
 @Data
-@EqualsAndHashCode(of = {"userId"})
 @Document
 public class Group {
 
@@ -29,4 +27,5 @@ public class Group {
 
     @DBRef
     private CheckstyleResults checkstyle;
+
 }

@@ -6,7 +6,6 @@ import org.springframework.data.mongodb.core.mapping.DBRef;
 import org.springframework.data.mongodb.core.mapping.Document;
 
 import java.util.List;
-import java.util.Set;
 
 @Data
 @Document
@@ -29,5 +28,5 @@ public class Course {
     private List<Assignment> assignments;
 
     @DBRef
-    private Set<Group> groups;
+    private List<Group> groups;
 }

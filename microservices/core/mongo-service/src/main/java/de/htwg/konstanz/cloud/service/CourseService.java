@@ -13,7 +13,6 @@ import org.springframework.web.bind.annotation.*;
 import java.util.ArrayList;
 import java.util.LinkedList;
 import java.util.List;
-import java.util.Set;
 
 @RestController
 @RequestMapping("/courses")
@@ -75,14 +74,14 @@ public class CourseService {
 
     //Returns all groups to matching courseId
     @RequestMapping(value = "/groups/{courseId}", method = RequestMethod.GET)
-    public ResponseEntity<Set<Group>> getGroups(@PathVariable final String courseId) throws NoSuchFieldException {
+    public ResponseEntity<List<Group>> getGroups(@PathVariable final String courseId) throws NoSuchFieldException {
 
-        ResponseEntity<Set<Group>> responseEntity;
+        ResponseEntity<List<Group>> responseEntity;
         final Course course = courseRepo.findOne(courseId);
         if (null == course) {
-            responseEntity = new ResponseEntity<Set<Group>>(HttpStatus.NO_CONTENT);
+            responseEntity = new ResponseEntity<List<Group>>(HttpStatus.NO_CONTENT);
         } else {
-            responseEntity = new ResponseEntity<Set<Group>>(course.getGroups(), HttpStatus.OK);
+            responseEntity = new ResponseEntity<List<Group>>(course.getGroups(), HttpStatus.OK);
         }
         return responseEntity;
     }
