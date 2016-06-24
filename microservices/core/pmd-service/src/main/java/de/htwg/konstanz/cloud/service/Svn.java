@@ -8,6 +8,7 @@ import javax.swing.text.BadLocationException;
 import javax.swing.text.html.HTML;
 import javax.swing.text.html.HTMLDocument;
 import javax.swing.text.html.HTMLEditorKit;
+import java.io.*;
 import java.net.URL;
 import java.net.URLConnection;
 import java.net.URLDecoder;
