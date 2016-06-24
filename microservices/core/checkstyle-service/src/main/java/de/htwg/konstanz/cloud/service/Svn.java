@@ -8,6 +8,7 @@ import javax.swing.text.BadLocationException;
 import javax.swing.text.html.HTML;
 import javax.swing.text.html.HTMLDocument;
 import javax.swing.text.html.HTMLEditorKit;
+import java.io.*;
 import java.net.URL;
 import java.net.URLConnection;
 import java.net.URLDecoder;
@@ -38,10 +39,12 @@ class Svn {
         }
         //if not create Dir
         else {
-            if (!dir.mkdir()) LOG.info("Error by making Directory");
+            if (!dir.mkdir()) {
+                LOG.info("Error by making Directory");
+            }
         }
         //Check VPN Credentials
-        if ((name == null) && (password == null)) {
+        if (name == null && password == null) {
             LOG.info("invalid VPN credentials");
         } else {
             /* Split URL at every Slash */
@@ -50,7 +53,9 @@ class Svn {
             local = local + parts[parts.length - 1];
             local = "repositories" + sFileSeparator + local + "_" + System.currentTimeMillis() + sFileSeparator;
             //Create Repo-Directory
-            if (!new File(local).mkdir()) LOG.info("Error by making Directory");
+            if (!new File(local).mkdir()) {
+                LOG.info("Error by making Directory");
+            }
             //Start Checkout Logic
             svnCheckout(svnLink, genAuthString(name, password), local);
         }

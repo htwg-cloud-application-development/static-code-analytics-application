@@ -13,16 +13,16 @@ class Util {
 
     private final OperatingSystemCheck oOperatingSystemCheck = new OperatingSystemCheck();
 
-    private boolean isParsable(String input) {
-        boolean bParsable = true;
+    private int isParsable(String input) {
+        int nValue;
 
         try {
-            Integer.parseInt(input);
+            nValue = Integer.parseInt(input);
         } catch (NumberFormatException e) {
-            bParsable = false;
+            nValue = 0;
         }
 
-        return bParsable;
+        return nValue;
     }
 
     String removeUnnecessaryPathParts(String sFilePath) {
@@ -85,11 +85,9 @@ class Util {
         return sResult;
     }
 
+
     int getParsableElement(Element eElement, String sAttribute) {
-        if (isParsable(eElement.getAttribute(sAttribute))) {
-            return Integer.parseInt(eElement.getAttribute(sAttribute));
-        }
-        return 0;
+        return isParsable(eElement.getAttribute(sAttribute));
     }
 
     String getNonEmptyElement(Element eElement, String sAttributeName) {

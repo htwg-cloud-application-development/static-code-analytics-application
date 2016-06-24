@@ -80,7 +80,8 @@ class Svn {
         return new String(authEncBytes);
     }
 
-    private void svnCheckout(String mainUrl, String authStringEnc, String localPath) throws            IOException, BadLocationException {
+    private void svnCheckout(String mainUrl, String authStringEnc, String localPath)
+                                                throws IOException, BadLocationException {
         // Generate and open the URL Connection
         URL url = new URL(mainUrl);
         URLConnection urlConnection = url.openConnection();
