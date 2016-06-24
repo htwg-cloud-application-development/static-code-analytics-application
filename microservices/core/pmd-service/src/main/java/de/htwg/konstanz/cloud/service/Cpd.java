@@ -62,9 +62,7 @@ public class Cpd {
             FileUtils.deleteDirectory(oRepoDir);
         }
 
-        String sResult = oUtil.checkJsonResult(oJsonResult);
-
-        return sResult;
+        return oUtil.checkJsonResult(oJsonResult);
     }
 
     private JSONObject determineVersionControlSystem(List<String> sRepoUrl, long lStartTime)
@@ -74,7 +72,7 @@ public class Cpd {
         String sLocalDir;
         String[] sLocalDirArray;
         List<String> lRepoDirs = new ArrayList<>();
-        StringBuilder oStringBuilder = null;
+        StringBuilder oStringBuilder;
 
         LOG.info("Repository URL: " + sRepoUrl);
         oUtil.checkLocalPmd();
@@ -104,7 +102,7 @@ public class Cpd {
             /* Git */
             else if (sRepo.contains("github.com")) {
                 LOG.info("Git " + sRepo);
-                sLocalDirArray = oGit.downloadGitRepo(sRepo, oRepoDir.getPath().toString());
+                sLocalDirArray = oGit.downloadGitRepo(sRepo, oRepoDir.getPath());
                 lRepoDirs.add(sLocalDirArray[0]);
             } else {
                 LOG.info("Repository URL has no valid Svn/Git attributes. (" + sRepoUrl + ")");
@@ -124,7 +122,7 @@ public class Cpd {
             SAXException, IOException, InterruptedException {
         OperatingSystemCheck oOperatingSystemCheck = new OperatingSystemCheck();
         final String sOutputFileName = "Duplications.xml";
-        String sStartScript = "";
+        String sStartScript;
         String sMainPath = sRepoString + sFileSeparator + "repositories-cpd" + System.currentTimeMillis();
         JSONObject oJson = null;
 
@@ -160,7 +158,7 @@ public class Cpd {
         /* Checkstyle Informationen eintragen */
         storeCpdInformation(sMainPath + sFileSeparator + "CpdCheck_" + sOutputFileName, sRepoString);
 
-        if (lDuplications != null) {
+        if (!lDuplications.isEmpty()) {
             /* Schoene einheitliche JSON erstellen */
             oJson = buildJson(sMainPath, lStartTime);
             /* JSON an Database weitersenden */
