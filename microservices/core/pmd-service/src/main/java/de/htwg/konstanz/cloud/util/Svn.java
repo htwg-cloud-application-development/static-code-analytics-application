@@ -17,8 +17,9 @@ import java.util.List;
 
 public class Svn {
     /*
-    Actually the Checkout from Subversion should be realized with the LIB svnkit but these Lib wasn't able to connect to the Server because of Deprecated Methods.
-    --> The other possibility was to perform an CMD-Command and checkout the Repository. That solution wont work anyway because the Command dont determine because of Java
+    Actually the Checkout from Subversion should be realized with the LIB svnkit but these Lib wasn't able to
+    connect to the Server because of Deprecated Methods --> The other possibility was to perform an CMD-Command
+    and checkout the Repository. That solution wont work anyway because the Command dont determine because of Java
     For this Reason the following Workaround is developed:
      */
     private static final Logger LOG = LoggerFactory.getLogger(Svn.class);

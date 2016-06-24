@@ -186,7 +186,8 @@ public class Pmd {
                     + "-encoding UTF-8 -rulesets " + ruleSetPath + " -r " + sFullPath + ".xml";
             LOG.info("Pmd execution path: " + sPmdCommand);
 
-            util.execCommand(sPmdCommand);
+            int nReturnCode = util.execCommand(sPmdCommand);
+            LOG.info("Process Return Code: " + nReturnCode);
 
 			/* Checkstyle Informationen eintragen */
             storePmdInformation(sFullPath + ".xml", nClassPos);
