@@ -52,8 +52,8 @@ public class Util {
 
     /**
      * execution of commands within the command line interface, java provides an own runtime for it
-     * @param sPmdCommand
-     * @return
+     * @param sPmdCommand command to execute as string
+     * @return status code of execution
      */
     public int execCommand(String sPmdCommand) {
         //the return code of the process mades if possible to check if the execution was successful or not
