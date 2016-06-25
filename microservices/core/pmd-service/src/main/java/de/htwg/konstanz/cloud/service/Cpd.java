@@ -55,29 +55,28 @@ public class Cpd {
         OperatingSystemCheck oOperatingSystemCheck = new OperatingSystemCheck();
         sFileSeparator = oOperatingSystemCheck.getOperatingSystemSeparator();
 
-        oJsonResult = determination(gitRepository, lStartTime);
+        oJsonResult = determineVersionControlSystem(gitRepository, lStartTime);
         if (oRepoDir == null) {
             LOG.info("Error: Local Directory is null!");
         } else {
             FileUtils.deleteDirectory(oRepoDir);
         }
 
-        String sResult = oUtil.checkJsonResult(oJsonResult);
-
-        return sResult;
+        return oUtil.checkJsonResult(oJsonResult);
     }
 
-    private JSONObject determination(List<String> sRepoUrl, long lStartTime) throws IOException, BadLocationException,
-            GitAPIException, ParserConfigurationException, SAXException, InterruptedException {
+    private JSONObject determineVersionControlSystem(List<String> sRepoUrl, long lStartTime)
+            throws IOException, BadLocationException, GitAPIException, ParserConfigurationException,
+                                                                    SAXException, InterruptedException {
         JSONObject oJson = null;
         String sLocalDir;
         String[] sLocalDirArray;
         List<String> lRepoDirs = new ArrayList<>();
-        StringBuilder oStringBuilder = null;
+        StringBuilder oStringBuilder;
 
         LOG.info("Repository URL: " + sRepoUrl);
         oUtil.checkLocalPmd();
-        oRepoDir = oUtil.createDirectory("repositories_" + System.currentTimeMillis());
+        oRepoDir = oUtil.createDirectory("repositories" + sFileSeparator + "cpd-repositories");
 
         /* Download SVN or Git Repos */
         for (String sRepo : sRepoUrl) {
@@ -103,7 +102,7 @@ public class Cpd {
             /* Git */
             else if (sRepo.contains("github.com")) {
                 LOG.info("Git " + sRepo);
-                sLocalDirArray = oGit.downloadGitRepo(sRepo, oRepoDir.getPath().toString());
+                sLocalDirArray = oGit.downloadGitRepo(sRepo, oRepoDir.getPath());
                 lRepoDirs.add(sLocalDirArray[0]);
             } else {
                 LOG.info("Repository URL has no valid Svn/Git attributes. (" + sRepoUrl + ")");
@@ -123,7 +122,7 @@ public class Cpd {
             SAXException, IOException, InterruptedException {
         OperatingSystemCheck oOperatingSystemCheck = new OperatingSystemCheck();
         final String sOutputFileName = "Duplications.xml";
-        String sStartScript = "";
+        String sStartScript;
         String sMainPath = sRepoString + sFileSeparator + "repositories-cpd" + System.currentTimeMillis();
         JSONObject oJson = null;
 
@@ -135,10 +134,11 @@ public class Cpd {
             String sCpdCommand = sStartScript + " --minimum-tokens 75 --files " + oRepoDir.getAbsolutePath()
                     + " --skip-lexical-errors --format xml > " + sMainPath + sFileSeparator + "CpdCheck_" + sOutputFileName;
             LOG.info("Command: " + sCpdCommand);
-            oUtil.execCommand(sCpdCommand);
+            int nReturnCode = oUtil.execCommand(sCpdCommand);
+            LOG.info("Process Return Code: " + nReturnCode);
         } else if (oOperatingSystemCheck.isLinux()) {
             ArrayList<String> sProcessBuilder = new ArrayList<>();
-            
+
             sStartScript = "pmd-bin-5.4.2/bin/run.sh";
             sProcessBuilder.add(sStartScript);
             sProcessBuilder.add("cpd");
@@ -153,13 +153,14 @@ public class Cpd {
             ProcessBuilder oCommandExecure = new ProcessBuilder(sProcessBuilder);
             oCommandExecure.redirectOutput(new File(sMainPath + sFileSeparator + "CpdCheck_" + sOutputFileName));
             Process p = oCommandExecure.start();
-            p.waitFor();
+            int nReturnCode = p.waitFor();
+            LOG.info("Process Return Code: " + nReturnCode);
         }
 
         /* Checkstyle Informationen eintragen */
         storeCpdInformation(sMainPath + sFileSeparator + "CpdCheck_" + sOutputFileName, sRepoString);
 
-        if (lDuplications != null) {
+        if (!lDuplications.isEmpty()) {
             /* Schoene einheitliche JSON erstellen */
             oJson = buildJson(sMainPath, lStartTime);
             /* JSON an Database weitersenden */
@@ -203,9 +204,9 @@ public class Cpd {
                 for (int nNodeFilePos = 0; nNodeFilePos < nNodeFiles.getLength(); nNodeFilePos++) {
                     Node nNodeFile = nNodeFiles.item(nNodeFilePos);
                     Element eNodeFileElement = (Element) nNodeFile;
-                    String sRepoString = String.valueOf(eNodeFileElement.getAttribute("path")).
-                            substring(String.valueOf(eNodeFileElement.getAttribute("path")).
-                                    indexOf(sMainPath) + (sMainPath).length() + 1);
+                    String sRepoString = String.valueOf(eNodeFileElement.getAttribute("path"))
+                            .substring(String.valueOf(eNodeFileElement.getAttribute("path"))
+                                    .indexOf(sMainPath) + (sMainPath).length() + 1);
                     if (oUtil.checkIfDifferentReops(lInvolvedData, sRepoString)) {
                         lInvolvedData.add(sRepoString);
                     }

@@ -26,6 +26,11 @@ public class CheckstyleService {
     @Value("${spring.application.name}")
     private String serviceName;
 
+    /**
+     * executes the checkstyle validation
+     * @param data - given post request data
+     * @return - return a response entity within the json object and a status code
+     */
     @RequestMapping(value = "/validate", method = RequestMethod.POST,
             produces = "application/json", consumes = "application/json")
     public ResponseEntity validate(@RequestBody ValidationData data) {

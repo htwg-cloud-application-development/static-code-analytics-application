@@ -185,7 +185,7 @@ public class OwnJson {
     }
 
     private void setPriorityCounters(JSONObject oJsonClass, int nClassPos, List<Class> lClassList) {
-        oJsonClass.put("numberOfErros", lClassList.get(nClassPos).getCriticalCount()
+        oJsonClass.put("numberOfErrors", lClassList.get(nClassPos).getCriticalCount()
                                         + lClassList.get(nClassPos).getErrorCount());
         oJsonClass.put("numberOfWarnings", lClassList.get(nClassPos).getWarningCount());
         oJsonClass.put("numberOfIgnores", lClassList.get(nClassPos).getIgnoreCount());
