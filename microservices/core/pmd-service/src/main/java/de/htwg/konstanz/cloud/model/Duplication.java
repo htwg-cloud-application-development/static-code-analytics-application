@@ -2,6 +2,9 @@ package de.htwg.konstanz.cloud.model;
 
 import java.util.List;
 
+/**
+ * Pmd provides Copy Paste Detection (CPD) to find duplicate code. This class maps all attributes for the cpd analysis
+ */
 public class Duplication {
     private final int nDuplicatedLine;
 

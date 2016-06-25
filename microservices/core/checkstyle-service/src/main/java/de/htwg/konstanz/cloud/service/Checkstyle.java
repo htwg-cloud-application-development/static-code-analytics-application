@@ -44,6 +44,12 @@ class Checkstyle {
 
     private final String sRuleSetPath;
 
+    /**
+     * Constructor to initialize the Svn server ip and ruleset path of checkstyle.
+     * They are stored in the config file
+     * @param sSvnServerIp - SVN Server ip address
+     * @param sRuleSetPath - local path to the ruleset of checkstyle
+     */
     public Checkstyle(String sSvnServerIp, String sRuleSetPath) {
         this.sSvnServerIp = sSvnServerIp;
         this.sRuleSetPath = sRuleSetPath;
@@ -81,10 +87,11 @@ class Checkstyle {
     }
 
     /**
-     *
-     * @param sRepoUrl - within POST request given repository url
+     * checks if the given repository belongs to git or svn. After the checkout of the repository
+     * this method executes the analysis of checkstyle
+     * @param sRepoUrl - within POST request given repository url (svn or git)
      * @param lStartTime - start time of the service execution
-     * @return - The generated JSON file
+     * @return - The generated JSON file with all problems pmd has found
      * @throws IOException - throw for the handling in CheckstyleService
      * @throws BadLocationException - throw for the handling in CheckstyleService
      * @throws GitAPIException - throw for the handling in CheckstyleService
@@ -142,7 +149,7 @@ class Checkstyle {
     }
 
     /**
-     * Generate Data for CheckstyleService
+     * generates data for the CheckstyleService
      * @param localDirectory - Locale directory of the outchecked SVN or GIT repository
      * @return - A list with all directories and files
      */
@@ -180,10 +187,16 @@ class Checkstyle {
         }
 
         checkUnregularRepository(localDirectory, list);
-        
+
         return list;
     }
 
+    /**
+     * If the directory structure of the given url is not like defined in the manual, this method
+     * just gets all other java files without a correct assignment allocation
+     * @param localDirectory - local directory that should be checked
+     * @param list - list that contains all founded java files
+     */
     private void checkUnregularRepository(String localDirectory, ArrayList<List<String>> list) {
         /* Other Structure Workaround */
         if (list.isEmpty()) {
@@ -219,7 +232,7 @@ class Checkstyle {
     }
 
     /**
-     * execute checkstyle within the command line interface
+     * executes checkstyle within the command line interface
      * @param lRepoList - List of all repositories that were stored locally
      * @param versionControlRepository - String that represents the analyzed repository (SVN or GIT)
      * @param lStartTime - Start time of the execution
@@ -264,19 +277,21 @@ class Checkstyle {
             }
         }
 
-        /* generate JSON File */
+        /* generate a JSON File */
         oJson = oOwnJson.buildJson(versionControlRepository, lStartTime, sLastUpdateTime, lFormattedClassList);
 
         return oJson;
     }
 
     /**
-     *  removes unnecessary information
+     * removes unnecessary information
+     * @param lRepoList - List with all given repositories that should be redurced
      */
     private void formatList(List<List<String>> lRepoList) {
         for (List<String> sRepoListInList : lRepoList) {
             Class oClass;
             for (String sRepo : sRepoListInList) {
+                //splits the repository by the given file separator
                 String[] sFullPathSplitArray = sRepo.split(oOperatingSystemCheck.getOperatingSystemSeparator());
                 String sTmpExerciseName = sFullPathSplitArray[2];
 
@@ -288,7 +303,12 @@ class Checkstyle {
     }
 
     /**
-     *  opens the stored xml file of checkstyle and iterates through all errors to read the attributes-value pairs
+     * opens the stored xml file of checkstyle and iterates through all errors to read the attributes-value pairs
+     * @param sXmlPath - xml file path the should be read
+     * @param nClassPos - actual class position of the whole list --> to assign the founded errors correctly
+     * @throws ParserConfigurationException - Error while parsing xml document
+     * @throws SAXException - Error within SAX XML Parser
+     * @throws IOException - general io exception
      */
     private void storeCheckstyleInformation(String sXmlPath, int nClassPos)
             throws ParserConfigurationException, SAXException, IOException {

@@ -41,7 +41,7 @@ public class Util {
         return mainDir;
     }
 
-    public List<String> getAllJavaFiles(String path, List<String> javaFiles) throws FileNotFoundException {
+    public List<String> getAllJavaFiles(String path, List<String> javaFiles) {
         //Crawler
         File root = new File(path);
         File[] list = root.listFiles();

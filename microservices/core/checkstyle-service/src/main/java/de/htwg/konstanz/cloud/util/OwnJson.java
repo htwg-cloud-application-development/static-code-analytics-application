@@ -13,7 +13,8 @@ import org.w3c.dom.NodeList;
 
 import java.util.List;
 
-/*  To provide easy access to generated data objects, this class builds a JSON file,
+/*
+    To provide easy access to generated data objects, this class builds a JSON file,
     which will be easy to transmit attribute-value pairs to other services, like
     the database service.
  */
@@ -50,7 +51,7 @@ public class OwnJson {
             String sMessage = oUtil.getNonEmptyElement(eElement, "message");
             String sSource = oUtil.getNonEmptyElement(eElement, "source");
 
-            //all founded problems are stored in an data objekt Error
+            //all founded problems are stored in an data object Error
             Error oError = new Error(nLine, nColumn, sSeverity, sMessage, sSource);
             //this error object are added to the belonging java class
             lClassList.get(nClassPos).getErrorList().add(oError);
@@ -59,7 +60,7 @@ public class OwnJson {
 
     /**
      * counts all founded severities
-     * @param lClassList- list with all evaluated java classes
+     * @param lClassList - list with all evaluated java classes
      * @param oJsonRoot - main node of the json file
      */
     private void getClassSeverities(List<Class> lClassList, JSONObject oJsonRoot) {
@@ -86,9 +87,9 @@ public class OwnJson {
 
     /**
      *  buildJson provides  the main functionality to generate a customized JSON File.
-     *    following the structure of our JSON is shown:
+     *  following the structure of our JSON is shown:
      *
-     *     "numberOfIgnores": 0,                              <-- some general json information
+     *    "numberOfIgnores": 0,                              <-- some general json information
      *    "totalExpendedTime": 75730,
      *    "assignments": [                                   <-- Array for all exercises
      *       {
@@ -190,8 +191,8 @@ public class OwnJson {
     }
 
     /**
-     * this method adds information of the checkstyle validation to the json file.
-     * @param lClassList -list with all evaluated java classes
+     * adds information of the pmd validation to the json file.
+     * @param lClassList - list with all evaluated java classes
      * @param oOwnJsonProperties - object with important json attributes
      * @param bLastRun - is the actual iterations the last one?
      * @param bExcerciseNeverChanged - Flag which indicates, if there was only one exercise
@@ -200,7 +201,7 @@ public class OwnJson {
      */
     private void storeJsonInformation(List<Class> lClassList, OwnJsonProperties oOwnJsonProperties, boolean bLastRun,
                                       boolean bExcerciseNeverChanged, int nClassPos, String sExcerciseName) {
-        /* if errors where founded, a new exercise name is returned by analyeErrors */
+        /* if errors where founded, a new exercise name is returned by analyzeErrors */
         oOwnJsonProperties.setSTmpExcerciseName(analyzeErrors(lClassList, lClassList.get(nClassPos).getErrorList(),
                 oOwnJsonProperties.getLJsonClasses(), oOwnJsonProperties.getSTmpExcerciseName(),
                                                                             nClassPos, sExcerciseName));
@@ -230,7 +231,7 @@ public class OwnJson {
      * @param sTmpExerciseName - name of the class object before
      * @param nClassPos - actual position in the class list
      * @param sExerciseName - name of the actual considered class object
-     * @return -
+     * @return - exercise name of the checked file
      */
     private String analyzeErrors(List<Class> lClassList, List<Error> lTmpErrorList,
                                  JSONArray lJsonClasses, String sTmpExerciseName, int nClassPos, String sExerciseName) {
@@ -260,7 +261,7 @@ public class OwnJson {
             oJsonClass.put("errors", lJsonErrors);
             //set the severities for the represented "java file"
             setSeverityCounters(oJsonClass, nClassPos, lClassList);
-
+            //holds all json objects that represent java classes
             lJsonClasses.put(oJsonClass);
         }
 

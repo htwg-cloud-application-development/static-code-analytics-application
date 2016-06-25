@@ -82,9 +82,10 @@ public class Util {
      * @return - String list of all java files that were founded
      */
     public List<String> getAllJavaFiles(String path, List<String> javaFiles) {
-        //crawl Method to detect all .java Files in a local path
+        //crawl Method to detect all .java Files in the given local path
         File root = new File(path);
         File[] list = root.listFiles();
+
         if (list != null) {
             for (File f : list) {
                 if (f.isDirectory()) {
@@ -106,7 +107,7 @@ public class Util {
 
     /**
      * checks if there is a local src directory
-     * @param sLocalDirectory - local src directory that should be checked by the method
+     * @param sLocalDirectory - local src directory that should be checked by this method
      * @return - the local directory as a File object
      */
     public File checkLocalSrcDir(String sLocalDirectory) {

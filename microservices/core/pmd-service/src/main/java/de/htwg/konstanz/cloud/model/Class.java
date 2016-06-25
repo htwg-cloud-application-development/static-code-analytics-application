@@ -3,6 +3,9 @@ package de.htwg.konstanz.cloud.model;
 import java.util.ArrayList;
 import java.util.List;
 
+/**
+ * represents an analyzed java file
+ */
 public class Class {
     private final String sFullPath;
 

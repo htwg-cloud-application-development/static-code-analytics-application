@@ -27,6 +27,11 @@ public class PmdService {
     @Value("${app.config.pmd.ruleset}")
     private String ruleSetPath;
 
+    /**
+     * executes the pmd validation
+     * @param data - given post request data - expects a string repository link
+     * @return - return a response entity within the json object and a http status code
+     */
     @RequestMapping(value = "/validate", method = RequestMethod.POST,
             produces = "application/json", consumes = "application/json")
     public ResponseEntity validate(@RequestBody ValidationData data) {
@@ -41,11 +46,20 @@ public class PmdService {
         }
     }
 
+    /**
+     * Get Request to test the response of the pmd service
+     * @return - a simple string that indicates that the service is still alive
+     */
     @RequestMapping(value = "/info", method = RequestMethod.GET)
     public String info() {
         return "Pmd-Service";
     }
 
+    /**
+     * executes the copy paste detection validation
+     * @param data - given post request data - expects a string array with multiple repositories
+     * @return - return a response entity within the json object and a http  status code
+     */
     @RequestMapping(value = "/validate/copypaste", method = RequestMethod.POST,
             produces = "application/json", consumes = "application/json")
     public ResponseEntity<String> copypaste(@RequestBody String data) {
