@@ -41,12 +41,18 @@ public class CpdResultsService {
 
     @RequestMapping(value = "/getLastCpdResult/{courseId}", method = RequestMethod.GET)
     public ResponseEntity<CpdResults> getLastCpdResult(@PathVariable("courseId") final String courseId){
+        ResponseEntity<CpdResults> cpdResultsResponseEntity;
 
         Query query = new Query();
         query.addCriteria(Criteria.where("courseId").is(courseId));
         Sort sort = new Sort(Sort.Direction.DESC, "timestamp");
         List<CpdResults> cpdResult = mongo.find(query.with(sort).limit(1), CpdResults.class);
-        return new ResponseEntity<>(cpdResult.get(0), HttpStatus.OK);
 
+        if (cpdResult.isEmpty()){
+            cpdResultsResponseEntity = new ResponseEntity<CpdResults>(HttpStatus.NO_CONTENT);
+        } else {
+            cpdResultsResponseEntity = new ResponseEntity<CpdResults>(cpdResult.get(0), HttpStatus.OK);
+        }
+        return cpdResultsResponseEntity;
     }
 }
