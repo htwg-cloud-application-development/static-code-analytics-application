@@ -56,7 +56,7 @@ public class Util {
      * @return status code of execution
      */
     public int execCommand(String sPmdCommand) {
-        //the return code of the process mades if possible to check if the execution was successful or not
+        //the return code of the process mades it possible to check if the execution was successful or not
         int nReturnCode = 0;
 
         try {

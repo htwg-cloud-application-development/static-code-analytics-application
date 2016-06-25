@@ -51,6 +51,13 @@ class Checkstyle {
 
     /**
      * entry point for an incoming post request
+     * @param gitRepository - given git repository from post request
+     * @return - problems that checkstyle has found in a json file
+     * @throws IOException - throw for the handling in CheckstyleService
+     * @throws ParserConfigurationException - throw for the handling in CheckstyleService
+     * @throws SAXException - throw for the handling in CheckstyleService
+     * @throws GitAPIException - throw for the handling in CheckstyleService
+     * @throws BadLocationException - throw for the handling in CheckstyleService
      */
     String startIt(String gitRepository) throws IOException, ParserConfigurationException,
             SAXException, GitAPIException, BadLocationException {
@@ -78,11 +85,11 @@ class Checkstyle {
      * @param sRepoUrl - within POST request given repository url
      * @param lStartTime - start time of the service execution
      * @return - The generated JSON file
-     * @throws IOException - throws for the handling in CheckstyleService
-     * @throws BadLocationException - throws for the handling in CheckstyleService
-     * @throws GitAPIException - throws for the handling in CheckstyleService
-     * @throws ParserConfigurationException - throws for the handling in CheckstyleService
-     * @throws SAXException - throws for the handling in CheckstyleService
+     * @throws IOException - throw for the handling in CheckstyleService
+     * @throws BadLocationException - throw for the handling in CheckstyleService
+     * @throws GitAPIException - throw for the handling in CheckstyleService
+     * @throws ParserConfigurationException - throw for the handling in CheckstyleService
+     * @throws SAXException - throw for the handling in CheckstyleService
      */
     private JSONObject determineVersionControlSystem(String sRepoUrl, long lStartTime) throws
             IOException, BadLocationException, GitAPIException, ParserConfigurationException, SAXException {
@@ -171,6 +178,13 @@ class Checkstyle {
                 }
             }
         }
+
+        checkUnregularRepository(localDirectory, list);
+        
+        return list;
+    }
+
+    private void checkUnregularRepository(String localDirectory, ArrayList<List<String>> list) {
         /* Other Structure Workaround */
         if (list.isEmpty()) {
             //Unregular Repo
@@ -178,8 +192,6 @@ class Checkstyle {
             List<String> javaFiles = new ArrayList<>();
             list.add(oUtil.getAllJavaFiles(localDirectory, javaFiles));
         }
-
-        return list;
     }
 
     /**
