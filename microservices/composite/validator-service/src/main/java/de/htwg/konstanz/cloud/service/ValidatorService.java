@@ -279,5 +279,21 @@ public class ValidatorService {
         }
     }
 
+    /**
+     * return last cpd result of specific user
+     *
+     * @param userId alias groupd
+     * @return cpd result for user with userId
+     */
+    @RequestMapping(value = "/groups/{userId}/cpd/last-result", method = RequestMethod.GET, produces = APPLICATION_JSON)
+    public ResponseEntity<String> getLastCpdResult(@PathVariable String userId) {
+        try {
+            // call database to get last result
+            return util.createResponse(databaseService.getLastCpdResult(userId), HttpStatus.OK);
+        } catch (InstantiationException e) {
+            return util.createErrorResponse(e.getMessage(), HttpStatus.INTERNAL_SERVER_ERROR);
+        }
+    }
+
 
 }
