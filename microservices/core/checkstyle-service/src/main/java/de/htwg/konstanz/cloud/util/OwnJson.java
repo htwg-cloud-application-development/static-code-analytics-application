@@ -274,7 +274,7 @@ public class OwnJson {
      * @param lClassList - list with all evaluated java classes
      */
     private void setSeverityCounters(JSONObject oJsonClass, int nClassPos, List<Class> lClassList) {
-        oJsonClass.put("numberOfErros", lClassList.get(nClassPos).getErrorCount());
+        oJsonClass.put("numberOfErrors", lClassList.get(nClassPos).getErrorCount());
         oJsonClass.put("numberOfWarnings", lClassList.get(nClassPos).getWarningCount());
         oJsonClass.put("numberOfIgnores", lClassList.get(nClassPos).getIgnoreCount());
     }
