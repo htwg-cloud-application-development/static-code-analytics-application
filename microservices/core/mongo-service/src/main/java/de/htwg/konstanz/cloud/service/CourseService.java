@@ -68,13 +68,8 @@ public class CourseService {
                         update.set("idnumber", course.getIdnumber());
                         update.set("visible", course.getVisible());
 
-                        if (course.getGroups() != null){
-                            update.set("groups", course.getGroups());
-                        }
-
-                        if (course.getAssignments() != null){
-                            update.set("assignments", course.getAssignments());
-                        }
+                        update.set("groups", storedCourse.getGroups());
+                        update.set("assignments", storedCourse.getAssignments());
 
                         mongo.upsert(query, update, Course.class);
 
