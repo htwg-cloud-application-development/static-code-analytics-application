@@ -44,7 +44,7 @@ public class MongoService {
         checkstyleResults.setTimestamp(String.valueOf(new Date().getTime()));
 
         final String userId = checkstyleResults.getUserId();
-        final Group group = mongo.findOne(Query.query(Criteria.where("userId").is(userId)), Group.class);
+        final Group group = mongo.findOne(Query.query(Criteria.where("id").is(userId)), Group.class);
 
         if (null == group) {
             responseEntity = new ResponseEntity(HttpStatus.NO_CONTENT);
@@ -52,7 +52,7 @@ public class MongoService {
         } else {
             checkstyleRepo.save(checkstyleResults);
             //set pmd in gorup
-            mongo.updateFirst(Query.query(Criteria.where("userId").is(userId)),
+            mongo.updateFirst(Query.query(Criteria.where("id").is(userId)),
                     Update.update("checkstyle", checkstyleResults), Group.class);
             responseEntity = new ResponseEntity(HttpStatus.OK);
         }
@@ -88,14 +88,14 @@ public class MongoService {
         pmdResults.setTimestamp(String.valueOf(new Date().getTime()));
 
         final String userId = pmdResults.getUserId();
-        final Group group = mongo.findOne(Query.query(Criteria.where("userId").is(userId)), Group.class);
+        final Group group = mongo.findOne(Query.query(Criteria.where("id").is(userId)), Group.class);
 
         if (null == group) {
             responseEntity = new ResponseEntity(HttpStatus.NO_CONTENT);
         } else {
             pmdRepo.save(pmdResults);
             //set pmd in gorup
-            mongo.updateFirst(Query.query(Criteria.where("userId").is(userId)), Update.update("pmd", pmdResults), Group.class);
+            mongo.updateFirst(Query.query(Criteria.where("id").is(userId)), Update.update("pmd", pmdResults), Group.class);
             responseEntity = new ResponseEntity(HttpStatus.OK);
         }
         return responseEntity;
