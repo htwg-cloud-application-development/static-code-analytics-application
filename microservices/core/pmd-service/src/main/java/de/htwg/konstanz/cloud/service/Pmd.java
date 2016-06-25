@@ -21,10 +21,9 @@ import java.util.ArrayList;
 import java.util.List;
 
 public class Pmd {
+    private static final Logger LOG = LoggerFactory.getLogger(Pmd.class);
 
     private final Util util = new Util();
-
-    private static final Logger LOG = LoggerFactory.getLogger(Pmd.class);
 
     private List<Class> lFormattedClassList;
 
@@ -42,11 +41,28 @@ public class Pmd {
 
     private final String ruleSetPath;
 
+    /**
+     * Constructor to initialize the Svn server ip and ruleset path of checkstyle.
+     * They are stored in the config file
+     * @param svnServerIp - SVN Server ip address
+     * @param ruleSetPath - local path to the ruleset of pmd
+     */
     public Pmd(String svnServerIp, String ruleSetPath) {
         this.svnServerIp = svnServerIp;
         this.ruleSetPath = ruleSetPath;
     }
 
+    /**
+     * entry point for an incoming post request
+     * @param gitRepository - given git repository from post request
+     * @return - problems that pmd has found in a json file
+     * @throws IOException - throw for the handling in CheckstyleService
+     * @throws ParserConfigurationException - throw for the handling in CheckstyleService
+     * @throws SAXException - throw for the handling in CheckstyleService
+     * @throws BadLocationException - throw for the handling in CheckstyleService
+     * @throws GitAPIException - throw for the handling in CheckstyleService
+     * @throws NullPointerException - throw for the handling in CheckstyleService
+     */
     String startIt(String gitRepository) throws IOException, ParserConfigurationException, SAXException,
             BadLocationException, GitAPIException, NullPointerException {
         lFormattedClassList = new ArrayList<>();
@@ -54,6 +70,7 @@ public class Pmd {
         JSONObject oJsonResult;
         String sResult;
 
+        //checks if the post contains a repository of git or svn
         oJsonResult = determineVersionControlSystem(gitRepository, lStartTime);
 
         if (oRepoDir == null) {
@@ -62,11 +79,24 @@ public class Pmd {
             FileUtils.deleteDirectory(oRepoDir);
         }
 
+        //tests the result to avoid a nullpointer exception
         sResult = util.checkJsonResult(oJsonResult);
 
         return sResult;
     }
 
+    /**
+     * checks if the given repository belongs to git or svn. After the checkout of the repository
+     * this method executes the analysis of pmd
+     * @param sRepoUrl - within POST request given repository url (svn or git)
+     * @param lStartTime - start time of the service execution
+     * @return  - generated JSON file with all problems pmd has found
+     * @throws IOException - throw for the handling in CheckstyleService
+     * @throws BadLocationException - throw for the handling in CheckstyleService
+     * @throws GitAPIException - throw for the handling in CheckstyleService
+     * @throws ParserConfigurationException - throw for the handling in CheckstyleService
+     * @throws SAXException - throw for the handling in CheckstyleService
+     */
     private JSONObject determineVersionControlSystem(String sRepoUrl, long lStartTime)
             throws IOException, BadLocationException, GitAPIException, ParserConfigurationException, SAXException {
         JSONObject oJson = null;
@@ -75,6 +105,8 @@ public class Pmd {
         StringBuilder oStringBuilder = new StringBuilder();
 
         LOG.info("Repository URL: " + sRepoUrl);
+        //to run pmd, the binary files are needed. If they are not present locally, this method will download
+        // and unzip it automatically
         util.checkLocalPmd();
         oRepoDir = util.createDirectory("repositories");
 
@@ -92,14 +124,22 @@ public class Pmd {
             }
 
             LOG.info("Svn");
+            //download the given svn repository and returns the locally path of it
             sLocalDir = oSvn.downloadSvnRepo(oStringBuilder.toString());
+            /* Last Update Time (last parameter) of SVN is empty because it does not provide this information */
+            // generate some parsable pmd data and run pmd for the locally stored svn repository
             oJson = runPmd(generatePmdData(sLocalDir), sRepoUrl, lStartTime, "");
             oRepoDir = new File(sLocalDir);
         }
         /* Git Checkout */
         else if (sRepoUrl.contains("github.com")) {
             LOG.info("Git");
+            //download the given git repository and returns the locally path of it and the last updated time
+            // [0] --> locally Path
+            // [1] --> Last Update Time
             sLocalDirArray = oGit.downloadGitRepo(sRepoUrl);
+            /* Last Update Time (last parameter) of the git repositry */
+            // generate some parsable checkstyle data and run pmd for the locally stored git repository
             oJson = runPmd(generatePmdData(sLocalDirArray[0]), sRepoUrl, lStartTime, sLocalDirArray[1]);
             oRepoDir = new File(sLocalDirArray[0]);
         } else {
@@ -109,8 +149,13 @@ public class Pmd {
         return oJson;
     }
 
+    /**
+     * generate data for the pmd service
+     * @param sLocalDirectory - Locale directory of the outchecked SVN or GIT repository
+     * @return - A list with all directories and files
+     */
     private List<List<String>> generatePmdData(String sLocalDirectory) throws FileNotFoundException {
-        /* Generate Data for CheckstyleService */
+        //crawl Method to detect all .java Files in the given local path
         List<List<String>> list = new ArrayList<>();
         File mainDir;
         LOG.info("Local Directory: " + sLocalDirectory);
@@ -120,9 +165,7 @@ public class Pmd {
         /* List all files for CheckstyleService */
         if (mainDir.exists()) {
             File[] files = mainDir.listFiles();
-
             if (files != null) {
-
                 for (File file : mainDir.listFiles()) {
                     if (file != null) {
                         //Head-Dirs
@@ -151,7 +194,13 @@ public class Pmd {
         return list;
     }
 
-    private void checkUnregularRepository(String sLocalDirectory, List<List<String>> list) throws FileNotFoundException {
+    /**
+     * If the directory structure of the given url is not like defined in the manual, this method
+     * just gets all other java files without a correct assignment allocation
+     * @param sLocalDirectory - local directory that should be checked
+     * @param list - list that contains all founded java files
+     */
+    private void checkUnregularRepository(String sLocalDirectory, List<List<String>> list) {
         /* Other Structure Workaround */
         if (list.isEmpty()) {
             //Unregular Repo
@@ -161,18 +210,30 @@ public class Pmd {
         }
     }
 
+    /**
+     * executes pmd within the command line interface
+     * @param lRepoList - List of all repositories that were stored locally
+     * @param gitRepository - String that represents the analyzed repository (SVN or GIT)
+     * @param lStartTime - Start time of the execution
+     * @param sLastUpdateTime - Last update of the repository
+     * @return - returns a JSON Object with all provided information of checkstyle
+     * @throws ParserConfigurationException - Error while parsing xml document
+     * @throws SAXException - Error within SAX XML Parser
+     * @throws IOException - general io exception
+     */
     private JSONObject runPmd(List<List<String>> lRepoList, String gitRepository, long lStartTime, String sLastUpdateTime)
             throws ParserConfigurationException, SAXException, IOException {
 
         String sStartScript = "";
 
+        //check the actual operating system and build the path with the correct file separator
         if (oOperatingSystemCheck.isWindows()) {
             sStartScript = "pmd-bin-5.4.2\\bin\\pmd.bat";
         } else if (oOperatingSystemCheck.isLinux()) {
             sStartScript = "pmd-bin-5.4.2/bin/run.sh pmd";
         }
 
-		/* Listeninhalt kuerzen, um JSON vorbereiten */
+		/* reduce the content of the repository list for the json creation */
         formatList(lRepoList);
 
         for (int nClassPos = 0; nClassPos < lFormattedClassList.size(); nClassPos++) {
@@ -182,28 +243,34 @@ public class Pmd {
                 sFullPath = sFullPath.substring(0, sFullPath.length() - 5);
             }
 
+            //builds the execution command of pmd for the command line interace
             String sPmdCommand = sStartScript + " -d " + sFullPath + ".java -f xml -failOnViolation false "
                     + "-encoding UTF-8 -rulesets " + ruleSetPath + " -r " + sFullPath + ".xml";
             LOG.info("Pmd execution path: " + sPmdCommand);
 
+            //execute it and validate the return code to get files which were not parsable by pmd
             int nReturnCode = util.execCommand(sPmdCommand);
             LOG.info("Process Return Code: " + nReturnCode);
 
-			/* Checkstyle Informationen eintragen */
+			/* store pmd Informationen in the global List */
             storePmdInformation(sFullPath + ".xml", nClassPos);
         }
 
-        /* Schoene einheitliche JSON erstellen */
+        /* generate a JSON File */
         return oOwnJson.buildJson(gitRepository, lStartTime, sLastUpdateTime, lFormattedClassList);
     }
 
+    /**
+     * removes unnecessary information
+     * @param lRepoList - List with all given repositories that should be redurced
+     */
     private void formatList(List<List<String>> lRepoList) {
         OperatingSystemCheck oOperatingSystemCheck = new OperatingSystemCheck();
 
         for (List<String> lRepoListInList : lRepoList) {
             Class oClass;
-
             for (String sRepo : lRepoListInList) {
+                //splits the repository by the given file separator
                 String[] sFullPathSplitArray = sRepo.split(oOperatingSystemCheck.getOperatingSystemSeparator());
 
                 String sTmpExerciseName = sFullPathSplitArray[2];
@@ -214,6 +281,14 @@ public class Pmd {
         }
     }
 
+    /**
+     * opens the stored xml file of pmd and iterates through all errors to read the attributes-value pairs
+     * @param sXmlPath - xml file path the should be read
+     * @param nClassPos - actual class position of the whole list --> to assign the founded errors correctly
+     * @throws ParserConfigurationException - Error while parsing xml document
+     * @throws SAXException - Error within SAX XML Parser
+     * @throws IOException - general io exception
+     */
     private void storePmdInformation(String sXmlPath, int nClassPos) throws
             ParserConfigurationException, SAXException, IOException {
         InputStream inputStream = new FileInputStream(sXmlPath);

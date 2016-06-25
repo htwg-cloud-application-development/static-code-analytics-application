@@ -189,21 +189,22 @@ public class ValidatorService {
             JSONObject repositories = new JSONObject().put("repositories", util.getRepositoriesFromJsonObject(course));
 
             // Call validation asynchronous
-            Future<String> pmdRepo =
+            Future<String> cpdRepo =
                     validateRepositoryService.validateCodeDublication(repositories.toString(), pmdInstance.getUri());
 
             // Wait until they are done
-            while (!pmdRepo.isDone()) {
+            while (!cpdRepo.isDone()) {
                 //10-millisecond pause between each check
                 Thread.sleep(500);
             }
 
             // build result json
-            JSONObject result = new JSONObject();
-            JSONObject duplication = new JSONObject(pmdRepo.get());
-            result.putOpt("duplication", duplication);
+            JSONObject duplication = new JSONObject(cpdRepo.get());
+            duplication.put("courseId", courseId);
 
-            return util.createResponse(result.toString(), HttpStatus.OK);
+            databaseService.saveCpdResult(duplication.toString());
+
+            return util.createResponse(duplication.toString(), HttpStatus.OK);
         } catch (Exception e) {
             LOG.error(e.getMessage());
             return util.createErrorResponse(e.getMessage(), HttpStatus.INTERNAL_SERVER_ERROR);
@@ -273,6 +274,22 @@ public class ValidatorService {
         try {
             // call database to get last result
             return util.createResponse(databaseService.getLastPmdResult(userId), HttpStatus.OK);
+        } catch (InstantiationException e) {
+            return util.createErrorResponse(e.getMessage(), HttpStatus.INTERNAL_SERVER_ERROR);
+        }
+    }
+
+    /**
+     * return last cpd result of specific user
+     *
+     * @param userId alias groupd
+     * @return cpd result for user with userId
+     */
+    @RequestMapping(value = "/groups/{userId}/cpd/last-result", method = RequestMethod.GET, produces = APPLICATION_JSON)
+    public ResponseEntity<String> getLastCpdResult(@PathVariable String userId) {
+        try {
+            // call database to get last result
+            return util.createResponse(databaseService.getLastCpdResult(userId), HttpStatus.OK);
         } catch (InstantiationException e) {
             return util.createErrorResponse(e.getMessage(), HttpStatus.INTERNAL_SERVER_ERROR);
         }

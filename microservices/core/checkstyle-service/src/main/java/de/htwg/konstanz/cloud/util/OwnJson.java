@@ -13,7 +13,8 @@ import org.w3c.dom.NodeList;
 
 import java.util.List;
 
-/*  To provide easy access to generated data objects, this class builds a JSON file,
+/*
+    To provide easy access to generated data objects, this class builds a JSON file,
     which will be easy to transmit attribute-value pairs to other services, like
     the database service.
  */
@@ -50,7 +51,7 @@ public class OwnJson {
             String sMessage = oUtil.getNonEmptyElement(eElement, "message");
             String sSource = oUtil.getNonEmptyElement(eElement, "source");
 
-            //all founded problems are stored in an data objekt Error
+            //all founded problems are stored in an data object Error
             Error oError = new Error(nLine, nColumn, sSeverity, sMessage, sSource);
             //this error object are added to the belonging java class
             lClassList.get(nClassPos).getErrorList().add(oError);
@@ -59,7 +60,7 @@ public class OwnJson {
 
     /**
      * counts all founded severities
-     * @param lClassList- list with all evaluated java classes
+     * @param lClassList - list with all evaluated java classes
      * @param oJsonRoot - main node of the json file
      */
     private void getClassSeverities(List<Class> lClassList, JSONObject oJsonRoot) {
@@ -68,10 +69,13 @@ public class OwnJson {
         int nTmpIgnoreCounter = 0;
 
         /* get severities of the whole project files */
-        for (Class oFormattedClassList : lClassList) {
-            nTmpErrorCount += oFormattedClassList.getErrorCount();
-            nTmpWarningCount += oFormattedClassList.getWarningCount();
-            nTmpIgnoreCounter += oFormattedClassList.getIgnoreCount();
+        for (Class oTmpClass : lClassList) {
+            if(oTmpClass.getErrorCount() == 1) {
+                System.out.println(oTmpClass.getFullPath());
+            }
+            nTmpErrorCount += oTmpClass.getErrorCount();
+            nTmpWarningCount += oTmpClass.getWarningCount();
+            nTmpIgnoreCounter += oTmpClass.getIgnoreCount();
         }
 
         //adds all severitys to the json Root file (first level of the json object)
@@ -86,9 +90,9 @@ public class OwnJson {
 
     /**
      *  buildJson provides  the main functionality to generate a customized JSON File.
-     *    following the structure of our JSON is shown:
+     *  following the structure of our JSON is shown:
      *
-     *     "numberOfIgnores": 0,                              <-- some general json information
+     *    "numberOfIgnores": 0,                              <-- some general json information
      *    "totalExpendedTime": 75730,
      *    "assignments": [                                   <-- Array for all exercises
      *       {
@@ -124,7 +128,6 @@ public class OwnJson {
         OwnJsonProperties oOwnJsonProperties = new OwnJsonProperties();
         boolean bExerciseChange = false;
         boolean bLastRun = false;
-        boolean bExerciseNeverChanged = true;
 
 		/* add general information to the JSON object - in the first level */
         oOwnJsonProperties.getOJsonRoot().put("repository", sRepo);
@@ -148,10 +151,10 @@ public class OwnJson {
             // the same as the actual. It is needed for a valid json representation.
             if (sExcerciseName.equals(oOwnJsonProperties.getSTmpExcerciseName())
                     || oOwnJsonProperties.getSTmpExcerciseName().equals("")) {
-                storeJsonInformation(lClassList, oOwnJsonProperties, bLastRun, bExerciseNeverChanged, nClassPos, sExcerciseName);
+                storeJsonInformation(lClassList, oOwnJsonProperties, bLastRun, nClassPos, sExcerciseName);
             }
-			// the last exercise is different through the actual
             else {
+                // the last exercise is different through the actual
                 // add the exercise and all related classes and related errors through the Json array for all exercises
                 // decrements the class position with the flag bExerciseChange
                 // to even check the exercise which did not correspond
@@ -165,7 +168,6 @@ public class OwnJson {
                     oOwnJsonProperties.setLJsonClasses(new JSONArray());
                     oOwnJsonProperties.setSTmpExcerciseName(lClassList.get(nClassPos).getsExcerciseName());
                     bExerciseChange = true;
-                    bExerciseNeverChanged = false;
 
 				    /* decrement the position to get the last class from the list */
                     if (nClassPos + 1 == lClassList.size()) {
@@ -190,17 +192,16 @@ public class OwnJson {
     }
 
     /**
-     * this method adds information of the checkstyle validation to the json file.
-     * @param lClassList -list with all evaluated java classes
+     * adds information of the pmd validation to the json file.
+     * @param lClassList - list with all evaluated java classes
      * @param oOwnJsonProperties - object with important json attributes
      * @param bLastRun - is the actual iterations the last one?
-     * @param bExcerciseNeverChanged - Flag which indicates, if there was only one exercise
      * @param nClassPos - actual position in the class list
      * @param sExcerciseName - name of the actual considered class object
      */
     private void storeJsonInformation(List<Class> lClassList, OwnJsonProperties oOwnJsonProperties, boolean bLastRun,
-                                      boolean bExcerciseNeverChanged, int nClassPos, String sExcerciseName) {
-        /* if errors where founded, a new exercise name is returned by analyeErrors */
+                                      int nClassPos, String sExcerciseName) {
+        /* if errors where founded, a new exercise name is returned by analyzeErrors */
         oOwnJsonProperties.setSTmpExcerciseName(analyzeErrors(lClassList, lClassList.get(nClassPos).getErrorList(),
                 oOwnJsonProperties.getLJsonClasses(), oOwnJsonProperties.getSTmpExcerciseName(),
                                                                             nClassPos, sExcerciseName));
@@ -214,7 +215,7 @@ public class OwnJson {
         }
 
         /* Condition for the last run and if there was just one exercise with various exercises */
-        if ((nClassPos + 1) == lClassList.size() && bExcerciseNeverChanged) {
+        if ((nClassPos + 1) == lClassList.size()) {
             oOwnJsonProperties.getOJsonExercise().put(oOwnJsonProperties.getSTmpExcerciseName(),
                                                             oOwnJsonProperties.getLJsonClasses());
             oOwnJsonProperties.getLJsonExercises().put(oOwnJsonProperties.getOJsonExercise());
@@ -230,7 +231,7 @@ public class OwnJson {
      * @param sTmpExerciseName - name of the class object before
      * @param nClassPos - actual position in the class list
      * @param sExerciseName - name of the actual considered class object
-     * @return -
+     * @return - exercise name of the checked file
      */
     private String analyzeErrors(List<Class> lClassList, List<Error> lTmpErrorList,
                                  JSONArray lJsonClasses, String sTmpExerciseName, int nClassPos, String sExerciseName) {
@@ -260,7 +261,7 @@ public class OwnJson {
             oJsonClass.put("errors", lJsonErrors);
             //set the severities for the represented "java file"
             setSeverityCounters(oJsonClass, nClassPos, lClassList);
-
+            //holds all json objects that represent java classes
             lJsonClasses.put(oJsonClass);
         }
 
@@ -274,7 +275,7 @@ public class OwnJson {
      * @param lClassList - list with all evaluated java classes
      */
     private void setSeverityCounters(JSONObject oJsonClass, int nClassPos, List<Class> lClassList) {
-        oJsonClass.put("numberOfErros", lClassList.get(nClassPos).getErrorCount());
+        oJsonClass.put("numberOfErrors", lClassList.get(nClassPos).getErrorCount());
         oJsonClass.put("numberOfWarnings", lClassList.get(nClassPos).getWarningCount());
         oJsonClass.put("numberOfIgnores", lClassList.get(nClassPos).getIgnoreCount());
     }

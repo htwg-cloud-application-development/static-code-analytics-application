@@ -1,5 +1,8 @@
 package de.htwg.konstanz.cloud.model;
 
+/**
+ * Class for various column attributes of the pmd evaluation
+ */
 public class Column {
     private  final int nColumnBegin;
 

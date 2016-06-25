@@ -4,6 +4,9 @@ import lombok.Data;
 import org.json.JSONArray;
 import org.json.JSONObject;
 
+/**
+ * Properties for the json file
+ */
 @Data
 public class OwnJsonProperties {
     JSONObject oJsonRoot = new JSONObject();
