@@ -39,7 +39,7 @@ public class CpdResultsService {
     }
 
 
-    @RequestMapping(value = "/getLastCpdResult/{courseId}", method = RequestMethod.GET)
+    @RequestMapping(value = "/courses/{courseId}/findLastCpdResult", method = RequestMethod.GET)
     public ResponseEntity<CpdResults> getLastCpdResult(@PathVariable("courseId") final String courseId){
         ResponseEntity<CpdResults> cpdResultsResponseEntity;
 
