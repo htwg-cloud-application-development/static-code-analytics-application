@@ -67,7 +67,7 @@ public class Cpd {
 
     private JSONObject determineVersionControlSystem(List<String> sRepoUrl, long lStartTime)
             throws IOException, BadLocationException, GitAPIException, ParserConfigurationException,
-            SAXException, InterruptedException {
+                                                                    SAXException, InterruptedException {
         JSONObject oJson = null;
         String sLocalDir;
         String[] sLocalDirArray;
@@ -249,7 +249,7 @@ public class Cpd {
             }
             oJsonDuplication.put("filePaths", lJsonFilePaths);
             oJsonDuplication.put("codefragment", oDuplaction.getDuplicatedCode());
-            lJsonDuplicatiions.put(oJsonDuplication);
+            lJsonDuplicatiions.put(new JSONObject().put("duplication", oJsonDuplication));
             nDuplicationCounter++;
         }
         oJsonRoot.put("duplications", lJsonDuplicatiions);
