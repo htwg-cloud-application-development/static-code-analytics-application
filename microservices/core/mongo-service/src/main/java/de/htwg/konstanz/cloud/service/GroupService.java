@@ -56,31 +56,46 @@ public class GroupService {
             /** if course has already associatd groups **/
             else {
                 /** check all groups and determine if group is already associated with course **/
+                /** if yes updated **/
                 for (Group group : groups) {
-                    if (storedDbGroups.contains(group)){
-                        Query query = new Query();
-                        query .addCriteria(Criteria.where("id").is(group.getId()));
+                    boolean groupFound = false;
+                    for (Group storedGroup : storedDbGroups) {
 
-                        Update update = new Update();
-                        update.set("attemptnumber", group.getAttemptnumber());
-                        update.set("timecreated", group.getTimecreated());
-                        update.set("timemodified", group.getTimemodified());
-                        update.set("status", group.getStatus());
-                        update.set("repository", group.getRepository());
+                        if (group.equals(storedDbGroups)) {
+                            groupFound = true;
 
-                        /** only update pmd & checkstyle if it is given in new group **/
-                        if (group.getPmd() != null) {
-                            update.set("pmd", group.getPmd());
+                            Query query = new Query();
+                            query.addCriteria(Criteria.where("id").is(group.getId()));
+
+                            Update update = new Update();
+                            update.set("attemptnumber", group.getAttemptnumber());
+                            update.set("timecreated", group.getTimecreated());
+                            update.set("timemodified", group.getTimemodified());
+                            update.set("status", group.getStatus());
+                            update.set("repository", group.getRepository());
+
+                            /** only update pmd & checkstyle if it is given in new group **/
+                            /** if not use stored pmd entry **/
+                            if (group.getPmd() != null) {
+                                update.set("pmd", group.getPmd());
+                            } else {
+                                update.set("pmd", storedGroup.getPmd());
+                            }
+
+                            if (group.getCheckstyle() != null) {
+                                update.set("checkstyle", group.getCheckstyle());
+                            } else {
+                                update.set("checkstyle", storedGroup.getCheckstyle());
+                            }
+
+                            mongo.upsert(query, update, Group.class);
                         }
-                        if (group.getCheckstyle() != null) {
-                            update.set("checkstyle", group.getCheckstyle());
-                        }
-                        mongo.upsert(query, update, Group.class);
 
-                    } else {
+                    }
+
+                    if (!groupFound){
                         groupRepository.save(group);
                         course.getGroups().add(group);
-
                     }
                 }
                 /** save updated associations **/
