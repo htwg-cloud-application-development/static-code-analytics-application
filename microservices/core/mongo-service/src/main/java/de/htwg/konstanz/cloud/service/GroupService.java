@@ -3,11 +3,16 @@ package de.htwg.konstanz.cloud.service;
 import de.htwg.konstanz.cloud.model.Course;
 import de.htwg.konstanz.cloud.model.Group;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.data.geo.Circle;
 import org.springframework.data.mongodb.core.MongoOperations;
+import org.springframework.data.mongodb.core.query.Criteria;
+import org.springframework.data.mongodb.core.query.Query;
+import org.springframework.data.mongodb.core.query.Update;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
+import java.util.List;
 import java.util.Set;
 
 @RestController
@@ -26,10 +31,10 @@ public class GroupService {
     /** Consumes a set of groups and updates/creates the entries **/
     /** Associates the set of gorups with the {courseId} **/
     @RequestMapping(path = "/{courseId}", method = RequestMethod.POST, consumes = "application/json")
-    public ResponseEntity create(@RequestBody final Set<Group> groups, @PathVariable final String courseId) {
+    public ResponseEntity create(@RequestBody List<Group> groups, @PathVariable final String courseId) {
         ResponseEntity responseEntity;
         /** find course **/
-        final Course course = courseRepo.findOne(courseId);
+        Course course = courseRepo.findOne(courseId);
 
         /** don't save empty groups or if no course is found **/
         if (groups.isEmpty() || null == course) {
@@ -38,7 +43,7 @@ public class GroupService {
         /** course found and group set not empty **/
         else {
             /** get already stored groups of course **/
-            final Set<Group> storedDbGroups = course.getGroups();
+            final List<Group> storedDbGroups = course.getGroups();
 
             /** if course doesn't have groups, save all groups from RequestBody**/
             if (null == storedDbGroups) {
@@ -51,14 +56,31 @@ public class GroupService {
             /** if course has already associatd groups **/
             else {
                 /** check all groups and determine if group is already associated with course **/
+                System.out.println(groups);
                 for (Group group : groups) {
-                    /** group is already associated, just update group**/
-                    if ((storedDbGroups.contains(group))) {
-                        groupRepository.save(group);
+                    System.out.println("dont i iterate?");
+                    if (storedDbGroups.contains(group)){
+                        Query query = new Query();
+                        query .addCriteria(Criteria.where("userId").is(group.getUserId()));
+
+                        Update update = new Update();
+                        update.set("attemptnumber", group.getAttemptnumber());
+                        update.set("timecreated", group.getTimecreated());
+                        update.set("timemodified", group.getTimemodified());
+                        update.set("status", group.getStatus());
+                        update.set("repository", group.getRepository());
+                        if (group.getPmd() != null) {
+                            update.set("pmd", group.getPmd());
+                        }
+                        if (group.getCheckstyle() != null) {
+                            update.set("checkstyle", group.getCheckstyle());
+                        }
+                        mongo.upsert(query, update, Group.class);
+
                     } else {
-                        /** group is new, needs to be associated with course **/
                         groupRepository.save(group);
                         course.getGroups().add(group);
+
                     }
                 }
                 /** save updated associations **/

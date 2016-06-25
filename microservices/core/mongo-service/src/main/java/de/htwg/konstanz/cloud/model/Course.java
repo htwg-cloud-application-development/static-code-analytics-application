@@ -29,5 +29,5 @@ public class Course {
     private List<Assignment> assignments;
 
     @DBRef
-    private Set<Group> groups;
+    private List<Group> groups;
 }
