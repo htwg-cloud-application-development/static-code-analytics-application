@@ -1,4 +1,4 @@
-package de.htwg.konstanz.cloud.service;
+    package de.htwg.konstanz.cloud.service;
 
 import de.htwg.konstanz.cloud.model.Course;
 import de.htwg.konstanz.cloud.model.Group;

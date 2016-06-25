@@ -25,4 +25,6 @@ public class CpdResults {
     private Object duplications;
 
     private String timestamp;
+
+    private String courseId;
 }
