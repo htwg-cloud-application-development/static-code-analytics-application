@@ -67,7 +67,7 @@ public class Cpd {
 
     private JSONObject determineVersionControlSystem(List<String> sRepoUrl, long lStartTime)
             throws IOException, BadLocationException, GitAPIException, ParserConfigurationException,
-            SAXException, InterruptedException {
+                                                                    SAXException, InterruptedException {
         JSONObject oJson = null;
         String sLocalDir;
         String[] sLocalDirArray;
@@ -234,25 +234,25 @@ public class Cpd {
         oJsonRoot.put("duplicationCursPath", sMainDir);
 
 		/* all Classes */
-        JSONArray lJsonDuplicatiions = new JSONArray();
-        for (Duplication oDuplaction : lDuplications) {
+        JSONArray lJsonDuplications = new JSONArray();
+        for (Duplication oDuplication : lDuplications) {
             JSONObject oJsonDuplication = new JSONObject();
 
 			/* Duplication Infos*/
-            oJsonDuplication.put("duplicatedLines", oDuplaction.getDuplicatedLine());
-            oJsonDuplication.put("tokens", oDuplaction.getTokens());
+            oJsonDuplication.put("duplicatedLines", oDuplication.getDuplicatedLine());
+            oJsonDuplication.put("tokens", oDuplication.getTokens());
 
             //New Json Array with involved Paths
             JSONArray lJsonFilePaths = new JSONArray();
-            for (String sDuplicationFilePath : oDuplaction.getInvolvedData()) {
+            for (String sDuplicationFilePath : oDuplication.getInvolvedData()) {
                 lJsonFilePaths.put(new JSONObject().put("filePath", sDuplicationFilePath));
             }
             oJsonDuplication.put("filePaths", lJsonFilePaths);
-            oJsonDuplication.put("codefragment", oDuplaction.getDuplicatedCode());
-            lJsonDuplicatiions.put(oJsonDuplication);
+            oJsonDuplication.put("codefragment", oDuplication.getDuplicatedCode());
+            lJsonDuplications.put(new JSONObject().put("duplication", oJsonDuplication));
             nDuplicationCounter++;
         }
-        oJsonRoot.put("duplications", lJsonDuplicatiions);
+        oJsonRoot.put("duplications", lJsonDuplications);
 
         long lEndTime = System.currentTimeMillis();
         long lTotalTime = (lEndTime - lStartTime);

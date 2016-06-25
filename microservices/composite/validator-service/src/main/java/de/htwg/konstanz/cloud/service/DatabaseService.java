@@ -48,8 +48,12 @@ public class DatabaseService {
     public Future<String> savePmdResult(String result) throws InstantiationException {
         String route = "/addPmdEntry";
         return addResultToDatabase(result, route);
+    }
 
-
+    @Async
+    public Future<String> saveCpdResult(String result) throws InstantiationException {
+        String route = "/cpdresults";
+        return addResultToDatabase(result, route);
     }
 
     private Future<String> addResultToDatabase(String result, String saveRoute) throws InstantiationException {
@@ -99,6 +103,5 @@ public class DatabaseService {
         }
         throw new InstantiationException("service is not available");
     }
-
 }
 
