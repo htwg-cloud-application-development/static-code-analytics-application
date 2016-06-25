@@ -123,7 +123,7 @@ class Util {
                 .withImageId(imageId)
                 .withMinCount(minCount)
                 .withMaxCount(maxCount)
-                .withMonitoring(true)
+                .withMonitoring(false)
                 .withKeyName(keyName)
                 .withSecurityGroupIds(securityGroup);
         RunInstancesResult result = ec2.runInstances(runInstancesRequest);
