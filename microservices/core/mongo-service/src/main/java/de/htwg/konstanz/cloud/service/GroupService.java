@@ -59,7 +59,7 @@ public class GroupService {
                 for (Group group : groups) {
                     if (storedDbGroups.contains(group)){
                         Query query = new Query();
-                        query .addCriteria(Criteria.where("userId").is(group.getUserId()));
+                        query .addCriteria(Criteria.where("id").is(group.getId()));
 
                         Update update = new Update();
                         update.set("attemptnumber", group.getAttemptnumber());
