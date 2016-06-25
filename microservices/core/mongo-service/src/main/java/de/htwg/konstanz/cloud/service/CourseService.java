@@ -1,4 +1,4 @@
-package de.htwg.konstanz.cloud.service;
+    package de.htwg.konstanz.cloud.service;
 
 import de.htwg.konstanz.cloud.model.Course;
 import de.htwg.konstanz.cloud.model.Group;
@@ -6,6 +6,10 @@ import de.htwg.konstanz.cloud.model.User;
 import org.json.JSONArray;
 import org.json.JSONObject;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.data.mongodb.core.MongoOperations;
+import org.springframework.data.mongodb.core.query.Criteria;
+import org.springframework.data.mongodb.core.query.Query;
+import org.springframework.data.mongodb.core.query.Update;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
@@ -13,10 +17,14 @@ import org.springframework.web.bind.annotation.*;
 import java.util.ArrayList;
 import java.util.LinkedList;
 import java.util.List;
+import java.util.Set;
 
 @RestController
 @RequestMapping("/courses")
 public class CourseService {
+
+    @Autowired
+    private MongoOperations mongo;
 
     @Autowired
     private UserRepository userRepo;
@@ -29,6 +37,8 @@ public class CourseService {
     @RequestMapping(path = "/{userId}", method = RequestMethod.POST, consumes = "application/json")
     public ResponseEntity create(@RequestBody final Course course, @PathVariable final String userId) {
 
+        //TODO darf alte course entries nicht überschreiben
+
         ResponseEntity responseEntity;
         //check if user exits
         final User user = userRepo.findOne(userId);
@@ -36,6 +46,50 @@ public class CourseService {
             responseEntity = new ResponseEntity(HttpStatus.NO_CONTENT);
         } else {
 
+            List<Course> storedCourses = user.getCourses();
+
+            if (storedCourses == null){
+                /** if first entry and user has no courses **/
+                courseRepo.save(course);
+                List<Course> courseList = new ArrayList<Course>();
+                courseList.add(course);
+                user.setCourses(courseList);
+                userRepo.save(user);
+
+            } else {
+
+                for (Course storedCourse: storedCourses){
+                    if (storedCourses.contains(course)) {
+                        Query query = new Query();
+                        query.addCriteria(Criteria.where("id").is(course.getId()));
+
+                        Update update = new Update();
+                        update.set("shortname", course.getShortname());
+                        update.set("fullname", course.getFullname());
+                        update.set("enrolledusercount", course.getEnrolledusercount());
+                        update.set("idnumber", course.getIdnumber());
+                        update.set("visible", course.getVisible());
+
+                        if (course.getGroups() != null){
+                            update.set("groups", course.getGroups());
+                        }
+
+                        if (course.getAssignments() != null){
+                            update.set("assignments", course.getAssignments());
+                        }
+
+                        mongo.upsert(query, update, Course.class);
+
+                    } else {
+                        courseRepo.save(course);
+                        user.getCourses().add(course);
+                    }
+                }
+
+                userRepo.save(user);
+
+            }
+/*
             courseRepo.save(course);
             List<Course> courses = user.getCourses();
             //if no course attached to user first create List
@@ -44,7 +98,7 @@ public class CourseService {
             }
             courses.add(course);
             user.setCourses(courses);
-            userRepo.save(user);
+            userRepo.save(user); */
             responseEntity = new ResponseEntity(HttpStatus.OK);
         }
         return responseEntity;

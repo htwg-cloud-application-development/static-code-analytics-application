@@ -28,8 +28,8 @@ public class CheckstyleService {
 
     /**
      * executes the checkstyle validation
-     * @param data - given post request data
-     * @return - return a response entity within the json object and a status code
+     * @param data - given post request data - expects a string repository link
+     * @return - return a response entity within the json object and a http status code
      */
     @RequestMapping(value = "/validate", method = RequestMethod.POST,
             produces = "application/json", consumes = "application/json")
@@ -45,6 +45,10 @@ public class CheckstyleService {
         }
     }
 
+    /**
+     * Get Request to test the response of the pmd service
+     * @returna - simple string that indicates that the service is still alive
+     */
     @RequestMapping(value = "/info", method = RequestMethod.GET)
     public String info() {
         return serviceName;

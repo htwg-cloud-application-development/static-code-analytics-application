@@ -1,5 +1,8 @@
 package de.htwg.konstanz.cloud.model;
 
+/**
+ * Class for various line attributes of the pmd evaluation
+ */
 public class Line {
     private final int nLineBegin;
 
