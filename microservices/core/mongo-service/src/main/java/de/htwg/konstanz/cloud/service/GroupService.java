@@ -44,6 +44,7 @@ public class GroupService {
         else {
             /** get already stored groups of course **/
             final List<Group> storedDbGroups = course.getGroups();
+            System.out.println(storedDbGroups);
 
             /** if course doesn't have groups, save all groups from RequestBody**/
             if (null == storedDbGroups) {
@@ -55,51 +56,37 @@ public class GroupService {
             }
             /** if course has already associatd groups **/
             else {
-                /** check all groups and determine if group is already associated with course **/
-                /** if yes updated **/
-                for (Group group : groups) {
-                    boolean groupFound = false;
-                    for (Group storedGroup : storedDbGroups) {
 
-                        if (group.equals(storedDbGroups)) {
-                            groupFound = true;
+                for (Group newGroup: groups){
+                    boolean matchFound = false;
 
+                    for (Group storedGroup: storedDbGroups){
+                        if (newGroup.equals(storedGroup)){
+                            matchFound = true;
                             Query query = new Query();
-                            query.addCriteria(Criteria.where("id").is(group.getId()));
+                            query.addCriteria(Criteria.where("id").is(newGroup.getId()));
 
                             Update update = new Update();
-                            update.set("attemptnumber", group.getAttemptnumber());
-                            update.set("timecreated", group.getTimecreated());
-                            update.set("timemodified", group.getTimemodified());
-                            update.set("status", group.getStatus());
-                            update.set("repository", group.getRepository());
 
-                            /** only update pmd & checkstyle if it is given in new group **/
-                            /** if not use stored pmd entry **/
-                            if (group.getPmd() != null) {
-                                update.set("pmd", group.getPmd());
-                            } else {
-                                update.set("pmd", storedGroup.getPmd());
-                            }
-
-                            if (group.getCheckstyle() != null) {
-                                update.set("checkstyle", group.getCheckstyle());
-                            } else {
-                                update.set("checkstyle", storedGroup.getCheckstyle());
-                            }
+                            update.set("attemptnumber", newGroup.getAttemptnumber());
+                            update.set("repository", newGroup.getRepository());
+                            update.set("status", newGroup.getStatus());
+                            update.set("timecreated", newGroup.getTimecreated());
+                            update.set("timemodified", newGroup.getTimemodified());
+                            update.set("pmd", storedGroup.getPmd());
+                            update.set("checkstyle", storedGroup.getCheckstyle());
 
                             mongo.upsert(query, update, Group.class);
                         }
 
                     }
 
-                    if (!groupFound){
-                        groupRepository.save(group);
-                        course.getGroups().add(group);
+                    if (!matchFound){
+                        groupRepository.save(newGroup);
+                        course.getGroups().add(newGroup);
+                        courseRepo.save(course);
                     }
                 }
-                /** save updated associations **/
-                courseRepo.save(course);
             }
             responseEntity = new ResponseEntity(HttpStatus.OK);
         }
