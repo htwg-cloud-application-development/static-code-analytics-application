@@ -8,6 +8,10 @@ import net.lingala.zip4j.exception.ZipException;
  */
 class Zip {
 
+    /**
+     * unzips a given unencrypted zip file
+     * @param sZipFile - string of the zip file name
+     */
     void unzipFile(String sZipFile) {
         try {
             ZipFile oZipFile = new ZipFile(sZipFile);

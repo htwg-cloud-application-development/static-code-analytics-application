@@ -112,7 +112,7 @@ public class OwnJson {
         /* add general information to the JSON object */
         oOwnJsonProperties.getOJsonRoot().put("repository", sRepo);
 
-        getClassSeverities(lClassList, oOwnJsonProperties.getOJsonRoot());
+        getClassPriorities(lClassList, oOwnJsonProperties.getOJsonRoot());
 
         oOwnJsonProperties.getOJsonRoot().put("lastRepoUpdateTime", sLastRepoUpdateTime);
         LOG.info("Last Update Time: " + sLastRepoUpdateTime);
@@ -199,7 +199,7 @@ public class OwnJson {
      * @param lClassList - list with all evaluated java classes
      * @param oJsonRoot - main node of the json file
      */
-    private void getClassSeverities(List<Class> lClassList, JSONObject oJsonRoot) {
+    private void getClassPriorities(List<Class> lClassList, JSONObject oJsonRoot) {
         int nTmpErrorCount = 0;
         int nTmpWarningCount = 0;
         int nTmpIgnoreCounter = 0;
@@ -279,6 +279,7 @@ public class OwnJson {
      * @param lClassList - list with all evaluated java classes
      */
     private void setPriorityCounters(JSONObject oJsonClass, int nClassPos, List<Class> lClassList) {
+        //pmd provides different errors levels. All high priorities are summarized by one category - errors
         oJsonClass.put("numberOfErrors", lClassList.get(nClassPos).getCriticalCount()
                                         + lClassList.get(nClassPos).getErrorCount());
         oJsonClass.put("numberOfWarnings", lClassList.get(nClassPos).getWarningCount());
