@@ -49,9 +49,6 @@ public class ValidatorService {
     @Autowired
     Util util;
 
-    @Autowired
-    CustomScheduler customScheduler;
-
     // config property from application yml
     @Value("${spring.application.name}")
     private String serviceName;
@@ -88,7 +85,7 @@ public class ValidatorService {
             // check if service runs on aws
             if (environment.getActiveProfiles()[0].equals("aws")) {
                 // run custom scheduler
-                result = customScheduler.runValidationSchedulerOnAws(groups);
+                result = new CustomScheduler().runValidationSchedulerOnAws(groups);
             }
 
             // return json result
