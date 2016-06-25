@@ -69,10 +69,14 @@ public class OwnJson {
         int nTmpIgnoreCounter = 0;
 
         /* get severities of the whole project files */
-        for (Class oFormattedClassList : lClassList) {
-            nTmpErrorCount += oFormattedClassList.getErrorCount();
-            nTmpWarningCount += oFormattedClassList.getWarningCount();
-            nTmpIgnoreCounter += oFormattedClassList.getIgnoreCount();
+        for (Class oTmpClass : lClassList) {
+            if(oTmpClass.getErrorCount() == 1) {
+                System.out.println("Class Name: " + oTmpClass.getFullPath());
+            }
+
+            nTmpErrorCount += oTmpClass.getErrorCount();
+            nTmpWarningCount += oTmpClass.getWarningCount();
+            nTmpIgnoreCounter += oTmpClass.getIgnoreCount();
         }
 
         //adds all severitys to the json Root file (first level of the json object)
