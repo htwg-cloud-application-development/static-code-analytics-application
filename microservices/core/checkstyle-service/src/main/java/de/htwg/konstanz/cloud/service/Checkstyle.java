@@ -1,6 +1,7 @@
 package de.htwg.konstanz.cloud.service;
 
 import de.htwg.konstanz.cloud.model.Class;
+import de.htwg.konstanz.cloud.model.Error;
 import de.htwg.konstanz.cloud.util.*;
 import org.apache.commons.io.FileUtils;
 import org.eclipse.jgit.api.errors.GitAPIException;
@@ -266,14 +267,17 @@ class Checkstyle {
             int nReturnCode = oUtil.execCommand(sCheckStyleCommand);
             LOG.info("Process Return Code: " + nReturnCode);
 
-            //valid file
+            //compilable for checkstyle --> valid file
             if(nReturnCode == 0) {
                 /* store Checkstyle Informationen in the global List */
                 storeCheckstyleInformation(sFullPath + ".xml", nClassPos);
             }
-            //non valid file
+            //uncompilable for checkstyle -->  invalid file
             else if(nReturnCode == -2){
-                //TODO: Fehler case
+                Error oError = new Error(-1, -1, "error", "FATAL ERROR: NO NORMAL TERMINATION OF THE "
+                        + "CHECKSTYLE PROCESS! PLEASE CHECK THE JAVA FILE!!!", "");
+                lFormattedClassList.get(nClassPos).getErrorList().add(oError);
+                lFormattedClassList.get(nClassPos).incErrorType("error");
             }
         }
 

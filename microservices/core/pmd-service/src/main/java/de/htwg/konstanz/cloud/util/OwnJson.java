@@ -107,7 +107,6 @@ public class OwnJson {
         OwnJsonProperties oOwnJsonProperties = new OwnJsonProperties();
         boolean bExerciseChange = false;
         boolean bLastRun = false;
-        boolean bExerciseNeverChanged = true;
 
         /* add general information to the JSON object */
         oOwnJsonProperties.getOJsonRoot().put("repository", sRepo);
@@ -129,8 +128,7 @@ public class OwnJson {
 			/* first run the TmpName is empty */
             if (sExcerciseName.equals(oOwnJsonProperties.getSTmpExerciseName())
                     || "".equals(oOwnJsonProperties.getSTmpExerciseName())) {
-                storeJsonInformation(lClassList, oOwnJsonProperties, bLastRun, bExerciseNeverChanged,
-                                                                            nClassPos, sExcerciseName);
+                storeJsonInformation(lClassList, oOwnJsonProperties, bLastRun, nClassPos, sExcerciseName);
             }
             /* swap for a different exercise */
             else {
@@ -142,7 +140,6 @@ public class OwnJson {
                     oOwnJsonProperties.setLJsonClasses(new JSONArray());
                     oOwnJsonProperties.setSTmpExerciseName(lClassList.get(nClassPos).getExerciseName());
                     bExerciseChange = true;
-                    bExerciseNeverChanged = false;
 
 				    /* decrement the position to get the last class from the list */
                     if (nClassPos + 1 == lClassList.size()) {
@@ -169,12 +166,11 @@ public class OwnJson {
      * @param lClassList - list with all evaluated java classes
      * @param ownJsonProperties - object with important json attributes
      * @param bLastRun - is the actual iterations the last one?
-     * @param bExerciseNeverChanged - Flag which indicates, if there was only one exercise
      * @param nClassPos - actual position in the class list
      * @param sExerciseName - name of the actual considered class object
      */
     private void storeJsonInformation(List<Class> lClassList, OwnJsonProperties ownJsonProperties, boolean bLastRun,
-                                                boolean bExerciseNeverChanged, int nClassPos, String sExerciseName) {
+                                                int nClassPos, String sExerciseName) {
         /* if errors where founded, a new exercise name is returned by analyzeErrors */
         ownJsonProperties.setSTmpExerciseName(analyzeErrors(lClassList, lClassList.get(nClassPos).getErrorList(),
                                     ownJsonProperties.getLJsonClasses(), ownJsonProperties.getSTmpExerciseName(),
@@ -187,7 +183,7 @@ public class OwnJson {
             ownJsonProperties.getLJsonExercises().put(ownJsonProperties.getOJsonExercise());
         }
         /* Condition for the last run and if there was just one exercise with various exercises */
-        if ((nClassPos + 1) == lClassList.size() && bExerciseNeverChanged) {
+        if ((nClassPos + 1) == lClassList.size()) {
             ownJsonProperties.getOJsonExercise().put(ownJsonProperties.getSTmpExerciseName(),
                                                         ownJsonProperties.getLJsonClasses());
             ownJsonProperties.getLJsonExercises().put(ownJsonProperties.getOJsonExercise());

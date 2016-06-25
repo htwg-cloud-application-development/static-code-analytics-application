@@ -69,10 +69,13 @@ public class OwnJson {
         int nTmpIgnoreCounter = 0;
 
         /* get severities of the whole project files */
-        for (Class oFormattedClassList : lClassList) {
-            nTmpErrorCount += oFormattedClassList.getErrorCount();
-            nTmpWarningCount += oFormattedClassList.getWarningCount();
-            nTmpIgnoreCounter += oFormattedClassList.getIgnoreCount();
+        for (Class oTmpClass : lClassList) {
+            if(oTmpClass.getErrorCount() == 1) {
+                System.out.println(oTmpClass.getFullPath());
+            }
+            nTmpErrorCount += oTmpClass.getErrorCount();
+            nTmpWarningCount += oTmpClass.getWarningCount();
+            nTmpIgnoreCounter += oTmpClass.getIgnoreCount();
         }
 
         //adds all severitys to the json Root file (first level of the json object)
@@ -125,7 +128,6 @@ public class OwnJson {
         OwnJsonProperties oOwnJsonProperties = new OwnJsonProperties();
         boolean bExerciseChange = false;
         boolean bLastRun = false;
-        boolean bExerciseNeverChanged = true;
 
 		/* add general information to the JSON object - in the first level */
         oOwnJsonProperties.getOJsonRoot().put("repository", sRepo);
@@ -149,10 +151,10 @@ public class OwnJson {
             // the same as the actual. It is needed for a valid json representation.
             if (sExcerciseName.equals(oOwnJsonProperties.getSTmpExcerciseName())
                     || oOwnJsonProperties.getSTmpExcerciseName().equals("")) {
-                storeJsonInformation(lClassList, oOwnJsonProperties, bLastRun, bExerciseNeverChanged, nClassPos, sExcerciseName);
+                storeJsonInformation(lClassList, oOwnJsonProperties, bLastRun, nClassPos, sExcerciseName);
             }
-			// the last exercise is different through the actual
             else {
+                // the last exercise is different through the actual
                 // add the exercise and all related classes and related errors through the Json array for all exercises
                 // decrements the class position with the flag bExerciseChange
                 // to even check the exercise which did not correspond
@@ -166,7 +168,6 @@ public class OwnJson {
                     oOwnJsonProperties.setLJsonClasses(new JSONArray());
                     oOwnJsonProperties.setSTmpExcerciseName(lClassList.get(nClassPos).getsExcerciseName());
                     bExerciseChange = true;
-                    bExerciseNeverChanged = false;
 
 				    /* decrement the position to get the last class from the list */
                     if (nClassPos + 1 == lClassList.size()) {
@@ -195,12 +196,11 @@ public class OwnJson {
      * @param lClassList - list with all evaluated java classes
      * @param oOwnJsonProperties - object with important json attributes
      * @param bLastRun - is the actual iterations the last one?
-     * @param bExcerciseNeverChanged - Flag which indicates, if there was only one exercise
      * @param nClassPos - actual position in the class list
      * @param sExcerciseName - name of the actual considered class object
      */
     private void storeJsonInformation(List<Class> lClassList, OwnJsonProperties oOwnJsonProperties, boolean bLastRun,
-                                      boolean bExcerciseNeverChanged, int nClassPos, String sExcerciseName) {
+                                      int nClassPos, String sExcerciseName) {
         /* if errors where founded, a new exercise name is returned by analyzeErrors */
         oOwnJsonProperties.setSTmpExcerciseName(analyzeErrors(lClassList, lClassList.get(nClassPos).getErrorList(),
                 oOwnJsonProperties.getLJsonClasses(), oOwnJsonProperties.getSTmpExcerciseName(),
@@ -215,7 +215,7 @@ public class OwnJson {
         }
 
         /* Condition for the last run and if there was just one exercise with various exercises */
-        if ((nClassPos + 1) == lClassList.size() && bExcerciseNeverChanged) {
+        if ((nClassPos + 1) == lClassList.size()) {
             oOwnJsonProperties.getOJsonExercise().put(oOwnJsonProperties.getSTmpExcerciseName(),
                                                             oOwnJsonProperties.getLJsonClasses());
             oOwnJsonProperties.getLJsonExercises().put(oOwnJsonProperties.getOJsonExercise());
