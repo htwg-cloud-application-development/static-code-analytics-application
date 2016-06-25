@@ -194,7 +194,7 @@ class Util {
                 .withActionsEnabled(true));
     }
 
-    void removeFirstElementFormList(List<URI> availableCheckstyleInstancesList) {
+    public void removeFirstElementFormList(List<URI> availableCheckstyleInstancesList) {
         // remove first element of available Instance list
         Iterator<URI> it = availableCheckstyleInstancesList.iterator();
         if (it.hasNext()) {
