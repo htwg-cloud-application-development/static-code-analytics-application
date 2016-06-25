@@ -29,7 +29,7 @@ public class CpdResultsService {
     @Autowired
     CpdResultsRepository cpdResultsRepository;
 
-    @RequestMapping(value = "/addcpdresult", method = RequestMethod.POST ,consumes = "application/json")
+    @RequestMapping(method = RequestMethod.POST ,consumes = "application/json")
     public ResponseEntity addCpdResult(@RequestBody final CpdResults cpdResults){
         ResponseEntity responseEntity;
 
@@ -47,7 +47,7 @@ public class CpdResultsService {
         query.addCriteria(Criteria.where("courseId").is(courseId));
         Sort sort = new Sort(Sort.Direction.DESC, "timestamp");
         List<CpdResults> cpdResult = mongo.find(query.with(sort).limit(1), CpdResults.class);
-
+        
         if (cpdResult.isEmpty()){
             cpdResultsResponseEntity = new ResponseEntity<CpdResults>(HttpStatus.NO_CONTENT);
         } else {
