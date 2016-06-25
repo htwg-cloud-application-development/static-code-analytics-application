@@ -71,7 +71,7 @@ public class CourseService {
                         update.set("groups", storedCourse.getGroups());
                         update.set("assignments", storedCourse.getAssignments());
 
-                        mongo.upsert(query, update, Course.class);
+                        mongo.upsert(query, update, Course.class, "course");
 
                     } else {
                         courseRepo.save(course);

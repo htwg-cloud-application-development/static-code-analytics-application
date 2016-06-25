@@ -35,6 +35,7 @@ public class GroupService {
         ResponseEntity responseEntity;
         /** find course **/
         Course course = courseRepo.findOne(courseId);
+        System.out.print(course);
 
         /** don't save empty groups or if no course is found **/
         if (groups.isEmpty() || null == course) {
@@ -76,7 +77,7 @@ public class GroupService {
                             update.set("pmd", storedGroup.getPmd());
                             update.set("checkstyle", storedGroup.getCheckstyle());
 
-                            mongo.upsert(query, update, Group.class);
+                            mongo.upsert(query, update, Group.class, "group");
                         }
 
                     }
