@@ -78,7 +78,7 @@ public class CustomScheduler {
                 list.add(jsonObject);
                 status.putIntoPipeline(executionTime, list);
             }
-            status.putIntoRepoUserInformationMap(jsonObject.getString(REPOSITORY), jsonObject.getString("userId"));
+            status.putIntoRepoUserInformationMap(jsonObject.getString(REPOSITORY), jsonObject.getString("id"));
         }
 
         return startScheduling(status);
