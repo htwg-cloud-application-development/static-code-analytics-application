@@ -56,9 +56,7 @@ public class GroupService {
             /** if course has already associatd groups **/
             else {
                 /** check all groups and determine if group is already associated with course **/
-                System.out.println(groups);
                 for (Group group : groups) {
-                    System.out.println("dont i iterate?");
                     if (storedDbGroups.contains(group)){
                         Query query = new Query();
                         query .addCriteria(Criteria.where("userId").is(group.getUserId()));
@@ -69,6 +67,8 @@ public class GroupService {
                         update.set("timemodified", group.getTimemodified());
                         update.set("status", group.getStatus());
                         update.set("repository", group.getRepository());
+
+                        /** only update pmd & checkstyle if it is given in new group **/
                         if (group.getPmd() != null) {
                             update.set("pmd", group.getPmd());
                         }
