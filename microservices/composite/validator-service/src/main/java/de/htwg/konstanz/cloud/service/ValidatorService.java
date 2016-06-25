@@ -189,17 +189,20 @@ public class ValidatorService {
             JSONObject repositories = new JSONObject().put("repositories", util.getRepositoriesFromJsonObject(course));
 
             // Call validation asynchronous
-            Future<String> pmdRepo =
+            Future<String> cpdRepo =
                     validateRepositoryService.validateCodeDublication(repositories.toString(), pmdInstance.getUri());
 
             // Wait until they are done
-            while (!pmdRepo.isDone()) {
+            while (!cpdRepo.isDone()) {
                 //10-millisecond pause between each check
                 Thread.sleep(500);
             }
 
             // build result json
-            JSONObject duplication = new JSONObject(pmdRepo.get());
+            JSONObject duplication = new JSONObject(cpdRepo.get());
+            duplication.put("courseId", courseId);
+
+            databaseService.saveCpdResult(duplication.toString());
 
             return util.createResponse(duplication.toString(), HttpStatus.OK);
         } catch (Exception e) {
