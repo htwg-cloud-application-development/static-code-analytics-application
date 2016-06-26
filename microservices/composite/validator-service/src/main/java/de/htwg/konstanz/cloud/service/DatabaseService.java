@@ -60,7 +60,7 @@ public class DatabaseService {
     @Async
     public Future<String> updateExecutionTimeOfGroup(long duration, String id) throws JSONException, InstantiationException {
         String data = "{\"executiontime\": " + duration + "}";
-        String route = "/updateExecutiontime/" + id;
+        String route = "/groups/updateExecutiontime/" + id;
         return addResultToDatabase(data, route);
     }
 
