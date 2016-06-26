@@ -188,7 +188,7 @@ public class CustomScheduler {
         checkstyleStatus.getCheckstyleTaskList().add(checkstyleFuture);
 
         Future<String> pmdFuture = validateRepositoryService.validateRepository(validationData.toString(),
-                checkstyleIinstance.getUri());
+                pmdInstance.getUri());
         pmdStatus.getBlockedPmdInstancesList().put(pmdInstance.getUri(), task.toString());
         pmdStatus.getPmdTaskList().add(pmdFuture);
 
@@ -247,7 +247,7 @@ public class CustomScheduler {
                 JSONObject checkstyleObj = new JSONObject(checkstyleStatus.getCheckstyleTaskList().get(i).get());
                 checkstyleObj.put("userId", status.getRepoUserInformationMap().get(checkstyleObj.getString(REPOSITORY)));
                 JSONObject pmdObj = new JSONObject(pmdStatus.getPmdTaskList().get(i).get());
-                pmdObj.put("userId", status.getRepoUserInformationMap().get(checkstyleObj.getString(REPOSITORY)));
+                pmdObj.put("userId", status.getRepoUserInformationMap().get(pmdObj.getString(REPOSITORY)));
                 JSONObject result = new JSONObject();
                 result.put("checkstyle", checkstyleObj);
                 result.put("pmd", pmdObj);
