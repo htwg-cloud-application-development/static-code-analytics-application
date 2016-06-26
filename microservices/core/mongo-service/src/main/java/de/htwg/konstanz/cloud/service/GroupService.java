@@ -110,15 +110,16 @@ public class GroupService {
 
     /**
      * Updates executiontime of group
-     * @param executiontime executiontime to update
+     * @param body executiontime to update
      * @param userId id for group
      * @return HttpStatus
      */
-    @RequestMapping(value = "/updateExecutiontime/{userId}", method = RequestMethod.POST)
-    public ResponseEntity updateExecutiontime(@RequestBody final JSONObject executiontime, @PathVariable final String userId){
+    @RequestMapping(value = "/updateExecutiontime/{userId}", method = RequestMethod.POST, consumes = "application/json")
+    public ResponseEntity updateExecutiontime(@RequestBody final String body, @PathVariable final String userId){
 
+        JSONObject jsonObject = new JSONObject(body);
         Group group = mongo.findOne(Query.query(Criteria.where("id").is(userId)), Group.class);
-        group.setExecutiontime(executiontime.getLong("executiontime"));
+        group.setExecutiontime( jsonObject.getLong("executiontime"));
         groupRepository.save(group);
 
         return new ResponseEntity(HttpStatus.OK);
