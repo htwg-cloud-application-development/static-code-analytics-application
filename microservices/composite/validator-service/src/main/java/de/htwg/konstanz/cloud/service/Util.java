@@ -126,7 +126,7 @@ class Util {
                 .withSecurityGroupIds(securityGroup);
         RunInstancesResult result = ec2.runInstances(runInstancesRequest);
         for (Instance instance : result.getReservation().getInstances()) {
-            createDefaultAlarm(instance.getInstanceId());
+            //TODO createDefaultAlarm(instance.getInstanceId());
         }
         return result;
     }

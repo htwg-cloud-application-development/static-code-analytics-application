@@ -278,7 +278,6 @@ public class CustomScheduler {
     }
 
 
-
     private void startInstances(int numberOfInstances, AmazonEC2 ec2) throws NoSuchFieldException {
         if (util.getNumberOfActiveCheckstyleInstances(ec2) < numberOfInstances) {
             util.runNewCheckstyleInstance(ec2, numberOfInstances, numberOfInstances);
@@ -293,6 +292,8 @@ public class CustomScheduler {
     private int magicCalculateForNumberOfIstances(int numberOfExecutions, int fullExecutionTime) {
         int numberOfInstances;
 
+        LOG.info("initInstanceDuration: " + initInstancetDuration);
+
         if (fullExecutionTime < (2 * initInstancetDuration) || numberOfExecutions < 2) {
             numberOfInstances = 1;
         } else if (fullExecutionTime < (3 * initInstancetDuration) || numberOfExecutions < 3) {
@@ -304,6 +305,7 @@ public class CustomScheduler {
         } else {
             numberOfInstances = maxNumberOfInstancesGreaterFour;
         }
+        LOG.info("Instance calculation result: " + numberOfInstances);
         return numberOfInstances;
     }
 
