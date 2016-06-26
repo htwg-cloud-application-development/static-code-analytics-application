@@ -20,10 +20,8 @@ import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Component;
 
-import java.net.URI;
 import java.util.ArrayList;
 import java.util.HashMap;
-import java.util.Iterator;
 import java.util.List;
 import java.util.stream.Collectors;
 
@@ -123,7 +121,7 @@ class Util {
                 .withImageId(imageId)
                 .withMinCount(minCount)
                 .withMaxCount(maxCount)
-                .withMonitoring(true)
+                .withMonitoring(false)
                 .withKeyName(keyName)
                 .withSecurityGroupIds(securityGroup);
         RunInstancesResult result = ec2.runInstances(runInstancesRequest);
@@ -184,23 +182,14 @@ class Util {
                 .withAlarmName(instanceId)
                 .withStatistic(Statistic.Average)
                 .withThreshold(40.00)
-                .withPeriod(600)
+                .withPeriod(60)
                 .withMetricName("CPUUtilization")
                 .withNamespace("AWS/EC2")
                 .withComparisonOperator(ComparisonOperator.LessThanOrEqualToThreshold)
                 .withDimensions(dimension)
                 .withAlarmActions("arn:aws:automate:eu-central-1:ec2:terminate")
-                .withEvaluationPeriods(1)
+                .withEvaluationPeriods(10)
                 .withActionsEnabled(true));
-    }
-
-    void removeFirstElementFormList(List<URI> availableCheckstyleInstancesList) {
-        // remove first element of available Instance list
-        Iterator<URI> it = availableCheckstyleInstancesList.iterator();
-        if (it.hasNext()) {
-            it.next();
-            it.remove();
-        }
     }
 
     /**

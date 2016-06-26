@@ -1,5 +1,6 @@
 package de.htwg.konstanz.cloud.service;
 
+import com.amazonaws.util.json.JSONException;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.cloud.client.ServiceInstance;
 import org.springframework.cloud.client.loadbalancer.LoadBalancerClient;
@@ -56,6 +57,13 @@ public class DatabaseService {
         return addResultToDatabase(result, route);
     }
 
+    @Async
+    public Future<String> updateExecutionTimeOfGroup(long duration, String id) throws JSONException, InstantiationException {
+        String data = "{\"executiontime\": " + duration + "}";
+        String route = "/groups/updateExecutiontime/" + id;
+        return addResultToDatabase(data, route);
+    }
+
     private Future<String> addResultToDatabase(String result, String saveRoute) throws InstantiationException {
         // get database service instance
         ServiceInstance instance = loadBalancer.choose("mongo");
@@ -106,7 +114,5 @@ public class DatabaseService {
         }
         throw new InstantiationException("service is not available");
     }
-
-
 }
 

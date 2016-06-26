@@ -1,4 +1,4 @@
-package de.htwg.konstanz.cloud.service;//NOPMD
+package de.htwg.konstanz.cloud.service;
 
 import com.amazonaws.auth.EnvironmentVariableCredentialsProvider;
 import com.amazonaws.regions.Regions;
@@ -7,6 +7,9 @@ import com.amazonaws.services.ec2.AmazonEC2Client;
 import com.amazonaws.util.json.JSONArray;
 import com.amazonaws.util.json.JSONException;
 import com.amazonaws.util.json.JSONObject;
+import de.htwg.konstanz.cloud.model.CheckstyleStatus;
+import de.htwg.konstanz.cloud.model.PmdStatus;
+import de.htwg.konstanz.cloud.model.Status;
 import de.htwg.konstanz.cloud.model.ValidationData;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -17,16 +20,18 @@ import org.springframework.cloud.client.loadbalancer.LoadBalancerClient;
 import org.springframework.stereotype.Component;
 
 import java.net.URI;
-import java.util.*;
+import java.util.ArrayList;
+import java.util.Iterator;
+import java.util.List;
 import java.util.concurrent.ExecutionException;
 import java.util.concurrent.Future;
 
 @Component
-public class CustomScheduler {//NOPMD
+public class CustomScheduler {
 
-    private static final Logger LOG = LoggerFactory.getLogger(CustomScheduler.class); //NOPMD
+    private static final Logger LOG = LoggerFactory.getLogger(CustomScheduler.class);
 
-    private static final String REPOSITORY = "repository"; //NOPMD
+    public static final String REPOSITORY = "repository";
 
     @Autowired
     Util util;
@@ -44,269 +49,247 @@ public class CustomScheduler {//NOPMD
     private int maxNumberOfInstancesGreaterFour;
 
     @Autowired
-    DatabaseService databaseService;
+    private DatabaseService databaseService;
+
+    @Autowired
+    private SchedulerHelper helper;
 
     ArrayList<JSONObject> runValidationSchedulerOnAws(JSONArray groups) throws JSONException, InstantiationException,
             ExecutionException, InterruptedException, NoSuchFieldException {
 
-
-        int fullExecutionTime = 0;
-        Map<Integer, List<JSONObject>> pipeline = new TreeMap<>();
-        Map<String, String> repoUserInformationMap = new HashMap<>();
+        // init status object
+        Status status = new Status();
+        status.setNumberOfOpenTasks(groups.length());
+        status.setNumberOfTasks(groups.length());
 
         for (int i = 0; i < groups.length(); i++) {
             JSONObject jsonObject = (JSONObject) groups.get(i);
-            int executionTime = jsonObject.optInt("executiontime", 60000);
-            fullExecutionTime += executionTime;
+            int executionTime = jsonObject.optInt("executiontime", 100000);
+            if(executionTime == 0) {
+                executionTime = 100000;
+            }
+            status.increaseFullExecutionTimeWith(executionTime);
 
             LOG.info(jsonObject.toString());
             LOG.info("Executiontime for repo " + i + " is: " + executionTime);
 
             // if execution time not exists, add new key to pipeline
-            if (pipeline.containsKey(executionTime)) {
+            if (status.getPipeline().containsKey(executionTime)) {
                 // if execution time exists, add to object to existing list
-                List<JSONObject> list = pipeline.get(executionTime);
+                List<JSONObject> list = status.getPipeline().get(executionTime);
                 list.add(jsonObject);
-                pipeline.put(executionTime, list);
+                status.putIntoPipeline(executionTime, list);
             } else {
                 List<JSONObject> list = new ArrayList<>();
                 list.add(jsonObject);
-                pipeline.put(executionTime, list);
+                status.putIntoPipeline(executionTime, list);
             }
-            repoUserInformationMap.put(jsonObject.getString(REPOSITORY), jsonObject.getString("userId"));
+            status.putIntoRepoUserInformationMap(jsonObject.getString(REPOSITORY), jsonObject.getString("id"));
         }
 
-        return startScheduling(groups, fullExecutionTime, pipeline, repoUserInformationMap);
+        return startScheduling(status);
     }
 
-    private ArrayList<JSONObject> startScheduling(JSONArray groups, int fullExecutionTime, Map<Integer,//NOPMD
-            List<JSONObject>> pipeline, Map<String, String> repoUserInformationMap) throws NoSuchFieldException,
+    private ArrayList<JSONObject> startScheduling(Status status) throws NoSuchFieldException,
             JSONException, InterruptedException, ExecutionException, InstantiationException {
 
         AmazonEC2 ec2 = new AmazonEC2Client(new EnvironmentVariableCredentialsProvider());
         ec2.setRegion(com.amazonaws.regions.Region.getRegion(Regions.EU_CENTRAL_1));
 
-
-        List<Future<String>> checkstyleTaskList = new ArrayList<>();
-        List<Future<String>> pmdTaskList = new ArrayList<>();
-        List<Long> startTimeList = new ArrayList<>();
-        List<URI> availableCheckstyleInstancesList = new ArrayList<>();
-        List<URI> availablePmdInstancesList = new ArrayList<>();
-        Map<URI, String> blockedCheckstyleInstancesList = new HashMap<>();
-        Map<URI, String> blockedPmdInstancesList = new HashMap<>();
-        ArrayList<JSONObject> resultList = new ArrayList<>();
-
-        int openTasks = groups.length();
-        int numberOfInstancesToStart = magicCalculateForNumberOfIstances(openTasks, fullExecutionTime);
-        int availableCheckstyleInstances;
-        int availablePmdInstances;
-        int runningTasks = 0;
-        int indexOfNextTask = 0;
-
-        LOG.info("Full execution time: " + fullExecutionTime);
-        LOG.info("Number of Instances to start: " + numberOfInstancesToStart);
-        LOG.info("open tasks: " + openTasks);
-
+        int numberOfInstancesToStart = magicCalculateForNumberOfIstances(status.getNumberOfTasks(), status.getFullExecutionTime());
         startInstances(numberOfInstancesToStart, ec2);
+
+        LOG.info("Full execution time: " + status.getFullExecutionTime());
+        LOG.info("Number of Instances to start: " + numberOfInstancesToStart);
+        LOG.info("open tasks: " + status.getNumberOfOpenTasks());
+
+        CheckstyleStatus checkstyleStatus = new CheckstyleStatus();
+        PmdStatus pmdStatus = new PmdStatus();
 
         boolean noFinished = true;
         // while execution not finished
-        while (openTasks > 0 || noFinished) {
+        while (status.getNumberOfOpenTasks() > 0 || noFinished) {
+            LOG.info("NumberOfOpenTasks: " + status.getNumberOfOpenTasks());
+            LOG.info("noFinished: " + noFinished);
 
             // check if new instance available and free
-            availableCheckstyleInstances = util.getNumberOfActiveCheckstyleInstances(ec2) - runningTasks;
-            availablePmdInstances = util.getNumberOfActivePmdInstances(ec2) - runningTasks;
+            checkstyleStatus.setAvailableCheckstyleInstances(util.getNumberOfActiveCheckstyleInstances(ec2) - status.getNumberOfRunningTasks());
+            pmdStatus.setAvailablePmdInstances(util.getNumberOfActivePmdInstances(ec2) - status.getNumberOfRunningTasks());
 
-            if (availableCheckstyleInstances > 0 && availablePmdInstances > 0) {
-                LOG.info("availableCheckstyleInstances: " + availableCheckstyleInstances);
-                LOG.info("availablePmdInstances: " + availablePmdInstances);
-                JSONObject task = getTaskWithLongestDuration(pipeline, indexOfNextTask);
-                if (task != null) {
-                    boolean isExecute = false;
-                    if (availableCheckstyleInstancesList.isEmpty() && availablePmdInstancesList.isEmpty()) {
-                        ServiceInstance checkstyleIinstance = loadBalancer.choose("checkstyle");
-                        ServiceInstance pmdInstance = loadBalancer.choose("pmd");
+            LOG.info("numberOfActiveChecksyyleInstances: " + checkstyleStatus.getAvailableCheckstyleInstances());
+            LOG.info("numberOfActivePmdInstances: " + pmdStatus.getAvailablePmdInstances());
 
-                        LOG.info("checkstlye instanceurl: " + checkstyleIinstance.getUri());
-                        LOG.info("pmd instanceurl: " + pmdInstance.getUri());
-
-                        if (!blockedCheckstyleInstancesList.containsKey(checkstyleIinstance.getUri())
-                                && !blockedPmdInstancesList.containsKey(pmdInstance.getUri())) {
-
-                            validateWithNewInstance(checkstyleTaskList, blockedCheckstyleInstancesList, task,
-                                    checkstyleIinstance);
-                            validateWithNewInstance(pmdTaskList, blockedPmdInstancesList, task, pmdInstance);
-
-                            isExecute = true;
-                        }
-                    } else {
-
-                        validateWithAvailableInstance(checkstyleTaskList, availableCheckstyleInstancesList,
-                                blockedCheckstyleInstancesList, task.toString());
-                        validateWithAvailableInstance(pmdTaskList, availablePmdInstancesList, blockedPmdInstancesList,
-                                task.toString());
-
-                        util.removeFirstElementFormList(availableCheckstyleInstancesList);
-                        util.removeFirstElementFormList(availablePmdInstancesList);
-
-                        isExecute = true;
-                    }
-
-                    // update status of task execution
-                    if (isExecute) {
-                        startTimeList.add(System.currentTimeMillis());
-                        runningTasks++;
-                        indexOfNextTask++;
-                        openTasks--;
-
-                        LOG.info("running tasks: " + runningTasks);
-                        LOG.info("open tasks: " + openTasks);
-                        LOG.info("index of next task: " + indexOfNextTask);
-                    }
-                }
+            //if (status.getAvailableCheckstyleInstances() > 0 && status.getAvailablePmdInstances() > 0) {
+            if (checkstyleStatus.isServiceAvailable() && pmdStatus.isServiceAvailable()) {
+                startValidationIfServicesActive(status, checkstyleStatus, pmdStatus);
             }
 
+            checkRunningTasks(status, checkstyleStatus, pmdStatus);
 
-            runningTasks = checkRunningTasks(repoUserInformationMap, checkstyleTaskList, pmdTaskList, startTimeList,
-                    availableCheckstyleInstancesList, availablePmdInstancesList, blockedCheckstyleInstancesList,
-                    blockedPmdInstancesList, resultList, runningTasks);
-
-            if (resultList.size() == groups.length()) {
+            LOG.info("resultListSize: " + status.getResultList().size());
+            LOG.info("number of Tasks: " + status.getNumberOfTasks());
+            if (status.getResultList().size() == status.getNumberOfTasks()) {
                 noFinished = false;
             }
 
             // slepp 1 second
             Thread.sleep(1000);
         }
-        return resultList;
+        return status.getResultList();
     }
 
-    private int checkRunningTasks(Map<String, String> repoUserInformationMap, List<Future<String>> checkstyleTaskList,//NOPMD
-                                  List<Future<String>> pmdTaskList, List<Long> startTimeList,
-                                  List<URI> availableCheckstyleInstancesList,
-                                  List<URI> availablePmdInstancesList, Map<URI, String> blockedCheckstyleInstancesList,
-                                  Map<URI, String> blockedPmdInstancesList, ArrayList<JSONObject> resultList,
-                                  int runningTasks)
+    private void startValidationIfServicesActive(Status status, CheckstyleStatus checkstyleStatus, PmdStatus pmdStatus) {
+        LOG.info("availableCheckstyleInstances: " + checkstyleStatus.getAvailableCheckstyleInstances());
+        LOG.info("availablePmdInstances: " + pmdStatus.getAvailablePmdInstances());
+        JSONObject task = helper.getTaskWithLongestDuration(status.getPipeline(), status.getIndexOfNextTask());
+        if (task != null) {
+            boolean isExecute = false;
+            if (checkstyleStatus.noInstanceAvailable() && pmdStatus.noInstanceAvailable()) {
+                ServiceInstance checkstyleIinstance = loadBalancer.choose("checkstyle");
+                ServiceInstance pmdInstance = loadBalancer.choose("pmd");
+
+                LOG.info("checkstlye instanceurl: " + checkstyleIinstance.getUri());
+                LOG.info("pmd instanceurl: " + pmdInstance.getUri());
+
+                if (!checkstyleStatus.containsBlockedCheckstyleInstance(checkstyleIinstance.getUri())
+                        && !pmdStatus.containsBlockedPmdInstance(pmdInstance.getUri())) {
+
+                    isExecute = executeWithNewInstances(status, checkstyleStatus, pmdStatus, task, checkstyleIinstance, pmdInstance);
+                }
+            } else {
+
+                isExecute = executeFromAvailableInstances(status, checkstyleStatus, pmdStatus, task);
+            }
+
+            // update status of task execution
+            if (isExecute) {
+                status.addToStartTimeList(System.currentTimeMillis());
+                status.increaseRunningTasks();
+                status.increaseNextTask();
+                status.decreaseNumberOfOpenTasks();
+
+                LOG.info("running tasks: " + status.getNumberOfRunningTasks());
+                LOG.info("open tasks: " + status.getNumberOfOpenTasks());
+                LOG.info("index of next task: " + status.getIndexOfNextTask());
+            }
+        }
+    }
+
+    private boolean executeWithNewInstances(Status status, CheckstyleStatus checkstyleStatus, PmdStatus pmdStatus, JSONObject task, ServiceInstance checkstyleIinstance, ServiceInstance pmdInstance) {
+        boolean isExecute;
+
+
+        ValidationData validationData = new ValidationData();
+        try {
+            validationData.setRepository(task.getString("repository"));
+        } catch (JSONException e) {
+            e.printStackTrace();
+        }
+        Future<String> checkstyleFuture = validateRepositoryService.validateRepository(validationData.toString(),
+                checkstyleIinstance.getUri());
+        checkstyleStatus.getBlockedCheckstyleInstancesList().put(checkstyleIinstance.getUri(), task.toString());
+        checkstyleStatus.getCheckstyleTaskList().add(checkstyleFuture);
+
+        Future<String> pmdFuture = validateRepositoryService.validateRepository(validationData.toString(),
+                pmdInstance.getUri());
+        pmdStatus.getBlockedPmdInstancesList().put(pmdInstance.getUri(), task.toString());
+        pmdStatus.getPmdTaskList().add(pmdFuture);
+
+        isExecute = true;
+        return isExecute;
+    }
+
+    private boolean executeFromAvailableInstances(Status status, CheckstyleStatus checkstyleStatus, PmdStatus pmdStatus, JSONObject task) {
+        boolean isExecute;
+
+        ValidationData validationData = new ValidationData();
+        try {
+            validationData.setRepository(task.getString("repository"));
+        } catch (JSONException e) {
+            e.printStackTrace();
+        }
+
+        Future<String> checkstyleFuture = validateRepositoryService.validateRepository(validationData.toString(),
+                checkstyleStatus.getAvailableCheckstyleInstancesList().get(0));
+        checkstyleStatus.getBlockedCheckstyleInstancesList().put(checkstyleStatus.getAvailableCheckstyleInstancesList().remove(0), task.toString());
+        checkstyleStatus.getCheckstyleTaskList().add(checkstyleFuture);
+
+
+        Future<String> pmdFuture = validateRepositoryService.validateRepository(validationData.toString(),
+                pmdStatus.getAvailablePmdInstancesList().get(0));
+        pmdStatus.getBlockedPmdInstancesList().put(pmdStatus.getAvailablePmdInstancesList().remove(0), task.toString());
+        pmdStatus.getPmdTaskList().add(pmdFuture);
+        // remove first element of available Instance list
+
+
+        Iterator<URI> itCheckstyle = checkstyleStatus.getAvailableCheckstyleInstancesList().iterator();
+        Iterator<URI> itPmd = pmdStatus.getAvailablePmdInstancesList().iterator();
+        if (itCheckstyle.hasNext()) {
+            itCheckstyle.next();
+            itPmd.next();
+            itCheckstyle.remove();
+            itPmd.remove();
+        }
+
+        isExecute = true;
+        return isExecute;
+    }
+
+    private void checkRunningTasks(Status status, CheckstyleStatus checkstyleStatus, PmdStatus pmdStatus)
             throws JSONException, InterruptedException, ExecutionException, InstantiationException {
         ArrayList<Integer> toDelete = new ArrayList<>();
 
-        for (int i = 0; i < runningTasks; i++) {
+        for (int i = 0; i < status.getNumberOfRunningTasks(); i++) {
             LOG.info("check running task nr: " + i);
-            if (checkstyleTaskList.get(i) != null
-                    && checkstyleTaskList.get(i).isDone()
-                    && pmdTaskList.get(i) != null
-                    && pmdTaskList.get(i).isDone()) {
+            if (checkstyleStatus.getCheckstyleTaskList().get(i) != null
+                    && checkstyleStatus.getCheckstyleTaskList().get(i).isDone()
+                    && pmdStatus.getPmdTaskList().get(i) != null
+                    && pmdStatus.getPmdTaskList().get(i).isDone()) {
                 LOG.info("checkstyle and pmd tasks are done");
 
-                JSONObject checkstyleObj = new JSONObject(checkstyleTaskList.get(i).get());
-                JSONObject pmdObj = new JSONObject(checkstyleTaskList.get(i).get());
+                JSONObject checkstyleObj = new JSONObject(checkstyleStatus.getCheckstyleTaskList().get(i).get());
+                checkstyleObj.put("userId", status.getRepoUserInformationMap().get(checkstyleObj.getString(REPOSITORY)));
+                JSONObject pmdObj = new JSONObject(pmdStatus.getPmdTaskList().get(i).get());
+                pmdObj.put("userId", status.getRepoUserInformationMap().get(pmdObj.getString(REPOSITORY)));
                 JSONObject result = new JSONObject();
                 result.put("checkstyle", checkstyleObj);
                 result.put("pmd", pmdObj);
-                result.put("userId", repoUserInformationMap.get(checkstyleObj.getString(REPOSITORY)));
-                result.put("duration", (System.currentTimeMillis() - startTimeList.get(i)));
+                result.put("id", status.getRepoUserInformationMap().get(checkstyleObj.getString(REPOSITORY)));
+                long duration = (System.currentTimeMillis() - status.getStartTimeList().get(i));
+                result.put("duration", duration);
                 result.put(REPOSITORY, checkstyleObj.getString(REPOSITORY));
                 ValidationData data = new ValidationData();
                 data.setRepository(checkstyleObj.getString(REPOSITORY));
 
-                URI availableCheckstyleUri = getUriWithValue(blockedCheckstyleInstancesList, data.toString());
-                URI availablePmdUri = getUriWithValue(blockedPmdInstancesList, data.toString());
+                URI availableCheckstyleUri = helper.getUriWithValue(checkstyleStatus.getBlockedCheckstyleInstancesList(), data.toString());
+                URI availablePmdUri = helper.getUriWithValue(pmdStatus.getBlockedPmdInstancesList(), data.toString());
 
-                availableCheckstyleInstancesList.add(availableCheckstyleUri);
-                availablePmdInstancesList.add(availablePmdUri);
+                checkstyleStatus.getAvailableCheckstyleInstancesList().add(availableCheckstyleUri);
+                pmdStatus.getAvailablePmdInstancesList().add(availablePmdUri);
 
                 // remove entry from blocked instance list
-                removeEntryFromBlockedInstanceListe(blockedCheckstyleInstancesList, availableCheckstyleUri);
-                removeEntryFromBlockedInstanceListe(blockedPmdInstancesList, availablePmdUri);
+                helper.removeEntryFromBlockedInstanceListe(checkstyleStatus.getBlockedCheckstyleInstancesList(), availableCheckstyleUri);
+                helper.removeEntryFromBlockedInstanceListe(pmdStatus.getBlockedPmdInstancesList(), availablePmdUri);
 
-                resultList.add(result);
-
+                status.getResultList().add(result);
+                LOG.info("ToSave:" + checkstyleObj.toString());
                 toDelete.add(i);
                 databaseService.saveCheckstleResult(checkstyleObj.toString());
                 databaseService.savePmdResult(pmdObj.toString());
+                databaseService.updateExecutionTimeOfGroup(duration, status.getRepoUserInformationMap().get(checkstyleObj.getString(REPOSITORY)));
+
+                LOG.info("Task finished - numberOfRunnigntasks before: " + status.getNumberOfRunningTasks());
+                status.decreaseNumberOfRunningTasks();
+                LOG.info("Task finished - numberOfRunnigntasks after: " + status.getNumberOfRunningTasks());
+
             }
         }
 
         if (!toDelete.isEmpty()) {
-            return removeTaskFromLists(checkstyleTaskList, pmdTaskList, startTimeList, runningTasks, toDelete);
-        }
-        return runningTasks;
-    }
-
-    private int removeTaskFromLists(List<Future<String>> checkstyleTaskList, List<Future<String>> pmdTaskList,
-                                    List<Long> startTimeList, int runningTasksParam, ArrayList<Integer> toDelete) {
-        int runningTasks = runningTasksParam;
-        Iterator<Future<String>> it = checkstyleTaskList.listIterator();
-        Iterator<Future<String>> itPmd = pmdTaskList.listIterator();
-        Iterator<Long> itTime = startTimeList.iterator();
-        int j = 0;
-        while (it.hasNext()) {
-            it.next();
-            itPmd.next();
-            itTime.next();
-            if (toDelete.contains(j)) {
-                it.remove();
-                itPmd.remove();
-                itTime.remove();
-                runningTasks--;
-            }
-            j++;
-        }
-        toDelete.clear();
-        return runningTasks;
-    }
-
-    private void removeEntryFromBlockedInstanceListe(Map<URI, String> blockedCheckstyleInstancesList,
-                                                     URI availableCheckstyleUri) {
-        for (Iterator<Map.Entry<URI, String>> it = blockedCheckstyleInstancesList.entrySet().iterator(); it.hasNext(); ) {
-            Map.Entry<URI, String> entry = it.next();
-            if (entry.getKey().equals(availableCheckstyleUri)) {
-                it.remove();
-            }
+            helper.removeTaskFromLists(status, checkstyleStatus, pmdStatus, toDelete);
         }
     }
 
-    private void validateWithNewInstance(List<Future<String>> checkstyleTaskList, Map<URI,
-            String> blockedCheckstyleInstancesList, JSONObject task, ServiceInstance checkstyleIinstance) {
-        Future<String> checkstyleFuture = validateRepositoryService.validateRepository(task.toString(),
-                checkstyleIinstance.getUri());
-        blockedCheckstyleInstancesList.put(checkstyleIinstance.getUri(), task.toString());
-        checkstyleTaskList.add(checkstyleFuture);
-    }
-
-    private void validateWithAvailableInstance(List<Future<String>> checkstyleTaskList,
-                                               List<URI> availableCheckstyleInstancesList,
-                                               Map<URI, String> blockedCheckstyleInstancesList,
-                                               String taskToExecute) {
-        Future<String> checkstyleFuture = validateRepositoryService.validateRepository(taskToExecute,
-                availableCheckstyleInstancesList.get(0));
-        blockedCheckstyleInstancesList.put(availableCheckstyleInstancesList.remove(0), taskToExecute);
-        checkstyleTaskList.add(checkstyleFuture);
-    }
-
-    private URI getUriWithValue(Map<URI, String> blockedInstancesList, String s) throws JSONException {
-        ArrayList<URI> keys = new ArrayList<>(blockedInstancesList.keySet());
-        JSONObject sObject = new JSONObject(s);
-        for (int i = 0; i < blockedInstancesList.size(); i++) {
-            JSONObject jsonObject = new JSONObject(blockedInstancesList.get(keys.get(i)));
-
-            String repoUrl = jsonObject.getString(REPOSITORY);
-            if (repoUrl.endsWith("/")) {
-                repoUrl = repoUrl.substring(0, repoUrl.length() - 1);
-            }
-
-            String repoUrl2 = sObject.getString(REPOSITORY);
-            if (repoUrl2.endsWith("/")) {
-                repoUrl2 = repoUrl2.substring(0, repoUrl2.length() - 1);
-            }
-
-            if (repoUrl.equals(repoUrl2)) {
-                LOG.info("key: " + keys.get(i));
-                return keys.get(i);
-            }
-        }
-        return null;
-    }
 
     private void startInstances(int numberOfInstances, AmazonEC2 ec2) throws NoSuchFieldException {
         if (util.getNumberOfActiveCheckstyleInstances(ec2) < numberOfInstances) {
@@ -318,24 +301,11 @@ public class CustomScheduler {//NOPMD
     }
 
 
-    private JSONObject getTaskWithLongestDuration(Map<Integer, List<JSONObject>> pipeline, int index) {
-        int j = 0;
-        ArrayList<Integer> keys = new ArrayList<>(pipeline.keySet());
-        for (int i = pipeline.size() - 1; i >= 0; i--) {
-            List<JSONObject> list = pipeline.get(keys.get(i));
-            for (JSONObject obj : list) {
-                if (j == index) {
-                    return obj;
-                }
-                j++;
-            }
-        }
-        return null;
-    }
-
     // magic calculation
     private int magicCalculateForNumberOfIstances(int numberOfExecutions, int fullExecutionTime) {
         int numberOfInstances;
+
+        LOG.info("initInstanceDuration: " + initInstancetDuration);
 
         if (fullExecutionTime < (2 * initInstancetDuration) || numberOfExecutions < 2) {
             numberOfInstances = 1;
@@ -348,6 +318,7 @@ public class CustomScheduler {//NOPMD
         } else {
             numberOfInstances = maxNumberOfInstancesGreaterFour;
         }
+        LOG.info("Instance calculation result: " + numberOfInstances);
         return numberOfInstances;
     }
 
