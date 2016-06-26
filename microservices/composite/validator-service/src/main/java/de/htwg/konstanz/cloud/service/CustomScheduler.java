@@ -21,8 +21,8 @@ import org.springframework.stereotype.Component;
 
 import java.net.URI;
 import java.util.ArrayList;
+import java.util.Iterator;
 import java.util.List;
-import java.util.Map;
 import java.util.concurrent.ExecutionException;
 import java.util.concurrent.Future;
 
@@ -166,9 +166,16 @@ public class CustomScheduler {
 
     private boolean executeWithNewInstances(Status status, CheckstyleStatus checkstyleStatus, PmdStatus pmdStatus, JSONObject task, ServiceInstance checkstyleIinstance, ServiceInstance pmdInstance) {
         boolean isExecute;
-        validateWithNewInstance(checkstyleStatus.getCheckstyleTaskList(), checkstyleStatus.getBlockedCheckstyleInstancesList(), task,
-                checkstyleIinstance);
-        validateWithNewInstance(pmdStatus.getPmdTaskList(), pmdStatus.getBlockedPmdInstancesList(), task, pmdInstance);
+
+        Future<String> checkstyleFuture = validateRepositoryService.validateRepository(task.toString(),
+                checkstyleIinstance.getUri());
+        checkstyleStatus.getBlockedCheckstyleInstancesList().put(checkstyleIinstance.getUri(), task.toString());
+        checkstyleStatus.getCheckstyleTaskList().add(checkstyleFuture);
+
+        Future<String> pmdFuture = validateRepositoryService.validateRepository(task.toString(),
+                checkstyleIinstance.getUri());
+        pmdStatus.getBlockedPmdInstancesList().put(pmdInstance.getUri(), task.toString());
+        pmdStatus.getPmdTaskList().add(pmdFuture);
 
         isExecute = true;
         return isExecute;
@@ -176,13 +183,28 @@ public class CustomScheduler {
 
     private boolean executeFromAvailableInstances(Status status, CheckstyleStatus checkstyleStatus, PmdStatus pmdStatus, JSONObject task) {
         boolean isExecute;
-        validateWithAvailableInstance(checkstyleStatus.getCheckstyleTaskList(), checkstyleStatus.getAvailableCheckstyleInstancesList(),
-                checkstyleStatus.getBlockedCheckstyleInstancesList(), task.toString());
-        validateWithAvailableInstance(pmdStatus.getPmdTaskList(), pmdStatus.getAvailablePmdInstancesList(), pmdStatus.getBlockedPmdInstancesList(),
-                task.toString());
 
-        util.removeFirstElementFormList(checkstyleStatus.getAvailableCheckstyleInstancesList());
-        util.removeFirstElementFormList(pmdStatus.getAvailablePmdInstancesList());
+        Future<String> checkstyleFuture = validateRepositoryService.validateRepository(task.toString(),
+                checkstyleStatus.getAvailableCheckstyleInstancesList().get(0));
+        checkstyleStatus.getBlockedCheckstyleInstancesList().put(checkstyleStatus.getAvailableCheckstyleInstancesList().remove(0), task.toString());
+        checkstyleStatus.getCheckstyleTaskList().add(checkstyleFuture);
+
+
+        Future<String> pmdFuture = validateRepositoryService.validateRepository(task.toString(),
+                pmdStatus.getAvailablePmdInstancesList().get(0));
+        pmdStatus.getBlockedPmdInstancesList().put(pmdStatus.getAvailablePmdInstancesList().remove(0), task.toString());
+        pmdStatus.getPmdTaskList().add(pmdFuture);
+        // remove first element of available Instance list
+
+
+        Iterator<URI> itCheckstyle = checkstyleStatus.getAvailableCheckstyleInstancesList().iterator();
+        Iterator<URI> itPmd = pmdStatus.getAvailablePmdInstancesList().iterator();
+        if (itCheckstyle.hasNext()) {
+            itCheckstyle.next();
+            itPmd.next();
+            itCheckstyle.remove();
+            itPmd.remove();
+        }
 
         isExecute = true;
         return isExecute;
@@ -234,23 +256,7 @@ public class CustomScheduler {
         }
     }
 
-    private void validateWithNewInstance(List<Future<String>> checkstyleTaskList, Map<URI,
-            String> blockedCheckstyleInstancesList, JSONObject task, ServiceInstance checkstyleIinstance) {
-        Future<String> checkstyleFuture = validateRepositoryService.validateRepository(task.toString(),
-                checkstyleIinstance.getUri());
-        blockedCheckstyleInstancesList.put(checkstyleIinstance.getUri(), task.toString());
-        checkstyleTaskList.add(checkstyleFuture);
-    }
 
-    private void validateWithAvailableInstance(List<Future<String>> checkstyleTaskList,
-                                               List<URI> availableCheckstyleInstancesList,
-                                               Map<URI, String> blockedCheckstyleInstancesList,
-                                               String taskToExecute) {
-        Future<String> checkstyleFuture = validateRepositoryService.validateRepository(taskToExecute,
-                availableCheckstyleInstancesList.get(0));
-        blockedCheckstyleInstancesList.put(availableCheckstyleInstancesList.remove(0), taskToExecute);
-        checkstyleTaskList.add(checkstyleFuture);
-    }
 
     private void startInstances(int numberOfInstances, AmazonEC2 ec2) throws NoSuchFieldException {
         if (util.getNumberOfActiveCheckstyleInstances(ec2) < numberOfInstances) {

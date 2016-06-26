@@ -20,10 +20,8 @@ import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Component;
 
-import java.net.URI;
 import java.util.ArrayList;
 import java.util.HashMap;
-import java.util.Iterator;
 import java.util.List;
 import java.util.stream.Collectors;
 
@@ -192,15 +190,6 @@ class Util {
                 .withAlarmActions("arn:aws:automate:eu-central-1:ec2:terminate")
                 .withEvaluationPeriods(1)
                 .withActionsEnabled(true));
-    }
-
-    public void removeFirstElementFormList(List<URI> availableCheckstyleInstancesList) {
-        // remove first element of available Instance list
-        Iterator<URI> it = availableCheckstyleInstancesList.iterator();
-        if (it.hasNext()) {
-            it.next();
-            it.remove();
-        }
     }
 
     /**
