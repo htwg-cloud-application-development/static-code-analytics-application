@@ -44,13 +44,13 @@ public class ValidatorService {
     ValidateRepositoryService validateRepositoryService;
 
     @Autowired
+    CustomScheduler customScheduler;
+
+    @Autowired
     DatabaseService databaseService;
 
     @Autowired
     Util util;
-
-    @Autowired
-    CustomScheduler customScheduler;
 
     // config property from application yml
     @Value("${spring.application.name}")
