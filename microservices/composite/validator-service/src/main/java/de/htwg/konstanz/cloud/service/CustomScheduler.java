@@ -105,6 +105,8 @@ public class CustomScheduler {
         boolean noFinished = true;
         // while execution not finished
         while (status.getNumberOfOpenTasks() > 0 || noFinished) {
+            LOG.info("NumberOfOpenTasks: " + status.getNumberOfOpenTasks());
+            LOG.info("noFinished: " + noFinished);
 
             // check if new instance available and free
             checkstyleStatus.setAvailableCheckstyleInstances(util.getNumberOfActiveCheckstyleInstances(ec2) - status.getNumberOfRunningTasks());
@@ -120,6 +122,8 @@ public class CustomScheduler {
 
             checkRunningTasks(status, checkstyleStatus, pmdStatus);
 
+            LOG.info("resultListSize: " + status.getResultList().size());
+            LOG.info("number of Tasks: " + status.getNumberOfTasks());
             if (status.getResultList().size() == status.getNumberOfTasks()) {
                 noFinished = false;
             }
