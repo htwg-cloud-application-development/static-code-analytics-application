@@ -64,7 +64,10 @@ public class CustomScheduler {
 
         for (int i = 0; i < groups.length(); i++) {
             JSONObject jsonObject = (JSONObject) groups.get(i);
-            int executionTime = jsonObject.optInt("executiontime", 60000);
+            int executionTime = jsonObject.optInt("executiontime", 100000);
+            if(executionTime == 0) {
+                executionTime = 100000;
+            }
             status.increaseFullExecutionTimeWith(executionTime);
 
             LOG.info(jsonObject.toString());
