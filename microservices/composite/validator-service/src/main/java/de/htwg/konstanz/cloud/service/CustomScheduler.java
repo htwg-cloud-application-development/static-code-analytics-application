@@ -244,7 +244,9 @@ public class CustomScheduler {
                 LOG.info("checkstyle and pmd tasks are done");
 
                 JSONObject checkstyleObj = new JSONObject(checkstyleStatus.getCheckstyleTaskList().get(i).get());
+                checkstyleObj.put("userId", status.getRepoUserInformationMap().get(checkstyleObj.getString(REPOSITORY)));
                 JSONObject pmdObj = new JSONObject(pmdStatus.getPmdTaskList().get(i).get());
+                pmdObj.put("userId", status.getRepoUserInformationMap().get(checkstyleObj.getString(REPOSITORY)));
                 JSONObject result = new JSONObject();
                 result.put("checkstyle", checkstyleObj);
                 result.put("pmd", pmdObj);
@@ -269,6 +271,11 @@ public class CustomScheduler {
                 toDelete.add(i);
                 databaseService.saveCheckstleResult(checkstyleObj.toString());
                 databaseService.savePmdResult(pmdObj.toString());
+
+                LOG.info("Task finished - numberOfRunnigntasks before: " + status.getNumberOfRunningTasks());
+                status.decreaseNumberOfRunningTasks();
+                LOG.info("Task finished - numberOfRunnigntasks after: " + status.getNumberOfRunningTasks());
+
             }
         }
 

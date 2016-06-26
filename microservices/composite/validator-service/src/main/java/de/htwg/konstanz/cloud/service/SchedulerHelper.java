@@ -84,7 +84,6 @@ public class SchedulerHelper {
                 it.remove();
                 itPmd.remove();
                 itTime.remove();
-                status.decreaseNumberOfRunningTasks();
             }
             j++;
         }
