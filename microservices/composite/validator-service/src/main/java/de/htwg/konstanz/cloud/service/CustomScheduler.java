@@ -167,12 +167,19 @@ public class CustomScheduler {
     private boolean executeWithNewInstances(Status status, CheckstyleStatus checkstyleStatus, PmdStatus pmdStatus, JSONObject task, ServiceInstance checkstyleIinstance, ServiceInstance pmdInstance) {
         boolean isExecute;
 
-        Future<String> checkstyleFuture = validateRepositoryService.validateRepository(task.toString(),
+
+        ValidationData validationData = new ValidationData();
+        try {
+            validationData.setRepository(task.getString("repository"));
+        } catch (JSONException e) {
+            e.printStackTrace();
+        }
+        Future<String> checkstyleFuture = validateRepositoryService.validateRepository(validationData.toString(),
                 checkstyleIinstance.getUri());
         checkstyleStatus.getBlockedCheckstyleInstancesList().put(checkstyleIinstance.getUri(), task.toString());
         checkstyleStatus.getCheckstyleTaskList().add(checkstyleFuture);
 
-        Future<String> pmdFuture = validateRepositoryService.validateRepository(task.toString(),
+        Future<String> pmdFuture = validateRepositoryService.validateRepository(validationData.toString(),
                 checkstyleIinstance.getUri());
         pmdStatus.getBlockedPmdInstancesList().put(pmdInstance.getUri(), task.toString());
         pmdStatus.getPmdTaskList().add(pmdFuture);
@@ -184,13 +191,20 @@ public class CustomScheduler {
     private boolean executeFromAvailableInstances(Status status, CheckstyleStatus checkstyleStatus, PmdStatus pmdStatus, JSONObject task) {
         boolean isExecute;
 
-        Future<String> checkstyleFuture = validateRepositoryService.validateRepository(task.toString(),
+        ValidationData validationData = new ValidationData();
+        try {
+            validationData.setRepository(task.getString("repository"));
+        } catch (JSONException e) {
+            e.printStackTrace();
+        }
+
+        Future<String> checkstyleFuture = validateRepositoryService.validateRepository(validationData.toString(),
                 checkstyleStatus.getAvailableCheckstyleInstancesList().get(0));
         checkstyleStatus.getBlockedCheckstyleInstancesList().put(checkstyleStatus.getAvailableCheckstyleInstancesList().remove(0), task.toString());
         checkstyleStatus.getCheckstyleTaskList().add(checkstyleFuture);
 
 
-        Future<String> pmdFuture = validateRepositoryService.validateRepository(task.toString(),
+        Future<String> pmdFuture = validateRepositoryService.validateRepository(validationData.toString(),
                 pmdStatus.getAvailablePmdInstancesList().get(0));
         pmdStatus.getBlockedPmdInstancesList().put(pmdStatus.getAvailablePmdInstancesList().remove(0), task.toString());
         pmdStatus.getPmdTaskList().add(pmdFuture);
