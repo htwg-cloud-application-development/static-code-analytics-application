@@ -265,7 +265,7 @@ public class CustomScheduler {
                 helper.removeEntryFromBlockedInstanceListe(pmdStatus.getBlockedPmdInstancesList(), availablePmdUri);
 
                 status.getResultList().add(result);
-
+                LOG.info("ToSave:" + checkstyleObj.toString());
                 toDelete.add(i);
                 databaseService.saveCheckstleResult(checkstyleObj.toString());
                 databaseService.savePmdResult(pmdObj.toString());
