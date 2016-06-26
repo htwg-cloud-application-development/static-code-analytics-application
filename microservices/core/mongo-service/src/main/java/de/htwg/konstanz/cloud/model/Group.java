@@ -24,7 +24,7 @@ public class Group {
 
     private String repository;
 
-    private String executiontime;
+    private long executiontime;
 
     @DBRef
     private PmdResults pmd;

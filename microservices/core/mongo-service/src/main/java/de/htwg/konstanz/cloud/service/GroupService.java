@@ -2,6 +2,7 @@ package de.htwg.konstanz.cloud.service;
 
 import de.htwg.konstanz.cloud.model.Course;
 import de.htwg.konstanz.cloud.model.Group;
+import org.json.JSONObject;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.mongodb.core.MongoOperations;
 import org.springframework.data.mongodb.core.query.Criteria;
@@ -107,4 +108,19 @@ public class GroupService {
         return new ResponseEntity<Group>(groupRepository.findOne(userId), HttpStatus.OK);
     }
 
+    /**
+     * Updates executiontime of group
+     * @param executiontime executiontime to update
+     * @param userId id for group
+     * @return HttpStatus
+     */
+    @RequestMapping(value = "/updateExecutiontime/{userId}", method = RequestMethod.POST)
+    public ResponseEntity updateExecutiontime(@RequestBody final JSONObject executiontime, @PathVariable final String userId){
+
+        Group group = mongo.findOne(Query.query(Criteria.where("id").is(userId)), Group.class);
+        group.setExecutiontime(executiontime.getLong("executiontime"));
+        groupRepository.save(group);
+
+        return new ResponseEntity(HttpStatus.OK);
+    }
 }
