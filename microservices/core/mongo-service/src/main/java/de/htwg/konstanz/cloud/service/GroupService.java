@@ -86,6 +86,7 @@ public class GroupService {
                     savedGroup.setStatus(group.getStatus());
                     savedGroup.setTimecreated(group.getTimecreated());
                     savedGroup.setTimemodified(group.getTimemodified());
+                    savedGroup.setExecutiontime(group.getExecutiontime());
                     /** save updates **/
                     groupRepository.save(savedGroup);
                 }
@@ -105,4 +106,5 @@ public class GroupService {
     public ResponseEntity<Group> getGroup(@PathVariable final String userId) {
         return new ResponseEntity<Group>(groupRepository.findOne(userId), HttpStatus.OK);
     }
+
 }
