@@ -76,7 +76,7 @@ public class Cpd {
 
         LOG.info("Repository URL: " + sRepoUrl);
         oUtil.checkLocalPmd();
-        oRepoDir = oUtil.createDirectory("repositories" + sFileSeparator + "cpd-repositories");
+        oRepoDir = oUtil.createDirectory("repositories" + sFileSeparator + "cpd-repositories_" + System.currentTimeMillis());
 
         /* Download SVN or Git Repos */
         for (String sRepo : sRepoUrl) {
