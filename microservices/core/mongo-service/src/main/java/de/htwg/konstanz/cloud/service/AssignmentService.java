@@ -54,7 +54,7 @@ public class AssignmentService {
 
     /**
      * Finds assignment by id
-     * @param assignmentId
+     * @param assignmentId id to querry
      * @return assignment
      */
     @RequestMapping(path = "/{assignmentId}", method = RequestMethod.GET)
