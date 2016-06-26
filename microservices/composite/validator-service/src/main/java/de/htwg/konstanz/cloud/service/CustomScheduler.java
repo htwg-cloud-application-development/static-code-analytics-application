@@ -80,7 +80,7 @@ public class CustomScheduler {
                 list.add(jsonObject);
                 status.putIntoPipeline(executionTime, list);
             }
-            status.putIntoRepoUserInformationMap(jsonObject.getString(REPOSITORY), jsonObject.getString("id"));
+            status.putIntoRepoUserInformationMap(jsonObject.getString(REPOSITORY), jsonObject.getString("userId"));
         }
 
         return startScheduling(status);
@@ -109,6 +109,9 @@ public class CustomScheduler {
             // check if new instance available and free
             checkstyleStatus.setAvailableCheckstyleInstances(util.getNumberOfActiveCheckstyleInstances(ec2) - status.getNumberOfRunningTasks());
             pmdStatus.setAvailablePmdInstances(util.getNumberOfActivePmdInstances(ec2) - status.getNumberOfRunningTasks());
+
+            LOG.info("numberOfActiveChecksyyleInstances: " + checkstyleStatus.getAvailableCheckstyleInstances());
+            LOG.info("numberOfActivePmdInstances: " + pmdStatus.getAvailablePmdInstances());
 
             //if (status.getAvailableCheckstyleInstances() > 0 && status.getAvailablePmdInstances() > 0) {
             if (checkstyleStatus.isServiceAvailable() && pmdStatus.isServiceAvailable()) {
