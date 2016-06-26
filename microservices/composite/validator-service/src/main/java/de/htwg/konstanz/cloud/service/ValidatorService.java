@@ -44,6 +44,9 @@ public class ValidatorService {
     ValidateRepositoryService validateRepositoryService;
 
     @Autowired
+    CustomScheduler customScheduler;
+
+    @Autowired
     DatabaseService databaseService;
 
     @Autowired
@@ -85,7 +88,7 @@ public class ValidatorService {
             // check if service runs on aws
             if (environment.getActiveProfiles()[0].equals("aws")) {
                 // run custom scheduler
-                result = new CustomScheduler().runValidationSchedulerOnAws(groups);
+                result = customScheduler.runValidationSchedulerOnAws(groups);
             }
 
             // return json result
