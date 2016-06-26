@@ -7,6 +7,7 @@ import de.htwg.konstanz.cloud.model.PmdStatus;
 import de.htwg.konstanz.cloud.model.Status;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.stereotype.Component;
 
 import java.net.URI;
 import java.util.ArrayList;
@@ -15,6 +16,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.concurrent.Future;
 
+@Component
 public class SchedulerHelper {
 
     private static final Logger LOG = LoggerFactory.getLogger(SchedulerHelper.class);
