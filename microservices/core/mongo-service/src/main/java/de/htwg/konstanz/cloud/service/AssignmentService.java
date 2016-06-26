@@ -20,14 +20,18 @@ public class AssignmentService {
     @Autowired
     AssignmentRepository assignmentRepo;
 
-    //creates an Assignment and matches it give Course
-    //if no course found return NO_CONTENT
+    /**
+     * Saves an assignment and machtes it to the given course
+     * @param courseId course to associate assignment
+     * @param assignment assignment to save
+     * @return HttpStatus
+     */
     @RequestMapping(path = "/{courseId}", method = RequestMethod.POST, consumes = "application/json")
     public ResponseEntity create(@PathVariable final String courseId, @RequestBody final Assignment assignment) {
 
         ResponseEntity responseEntity;
         final Course course = courseRepo.findOne(courseId);
-        //if no course found
+        /** if no course found **/
         if (null == course) {
             responseEntity = new ResponseEntity(HttpStatus.NO_CONTENT);
         } else {
@@ -35,7 +39,7 @@ public class AssignmentService {
             assignmentRepo.save(assignment);
             List<Assignment> assignments = course.getAssignments();
 
-            //if no previous assignments on course create ArrayList
+            /** if no previous assignments on course create ArrayList **/
             if (null == assignments) {
                 assignments = new ArrayList<>();
             }
@@ -48,7 +52,11 @@ public class AssignmentService {
         return responseEntity;
     }
 
-    //returns search Assigmnet according to ID
+    /**
+     * Finds assignment by id
+     * @param assignmentId
+     * @return assignment
+     */
     @RequestMapping(path = "/{assignmentId}", method = RequestMethod.GET)
     public ResponseEntity<Assignment> getAssignment(@PathVariable final String assignmentId) {
         return new ResponseEntity<Assignment>(assignmentRepo.findOne(assignmentId), HttpStatus.OK);
