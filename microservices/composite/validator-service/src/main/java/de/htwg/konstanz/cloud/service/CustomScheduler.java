@@ -156,12 +156,13 @@ public class CustomScheduler {
                 if (!checkstyleStatus.containsBlockedCheckstyleInstance(checkstyleIinstance.getUri())
                         && !pmdStatus.containsBlockedPmdInstance(pmdInstance.getUri())) {
 
-                    isExecute = executeWithNewInstances(status, checkstyleStatus, pmdStatus, task, checkstyleIinstance,
+                    executeWithNewInstances(status, checkstyleStatus, pmdStatus, task, checkstyleIinstance,
                             pmdInstance);
+                    isExecute = true;
                 }
             } else {
-
-                isExecute = executeFromAvailableInstances(status, checkstyleStatus, pmdStatus, task);
+                executeFromAvailableInstances(status, checkstyleStatus, pmdStatus, task);
+                isExecute = true;
             }
 
             // update status of task execution
@@ -178,10 +179,8 @@ public class CustomScheduler {
         }
     }
 
-    private boolean executeWithNewInstances(Status status, CheckstyleStatus checkstyleStatus, PmdStatus pmdStatus,
+    private void executeWithNewInstances(Status status, CheckstyleStatus checkstyleStatus, PmdStatus pmdStatus,
                                             JSONObject task, ServiceInstance checkstyleIinstance, ServiceInstance pmdInstance) {
-        boolean isExecute;
-
 
         ValidationData validationData = new ValidationData();
         try {
@@ -198,15 +197,10 @@ public class CustomScheduler {
                 pmdInstance.getUri());
         pmdStatus.getBlockedPmdInstancesList().put(pmdInstance.getUri(), task.toString());
         pmdStatus.getPmdTaskList().add(pmdFuture);
-
-        isExecute = true;
-        return isExecute;
     }
 
-    private boolean executeFromAvailableInstances(Status status, CheckstyleStatus checkstyleStatus, PmdStatus pmdStatus,
+    private void executeFromAvailableInstances(Status status, CheckstyleStatus checkstyleStatus, PmdStatus pmdStatus,
                                                   JSONObject task) {
-        boolean isExecute;
-
         ValidationData validationData = new ValidationData();
         try {
             validationData.setRepository(task.getString("repository"));
@@ -225,9 +219,8 @@ public class CustomScheduler {
                 pmdStatus.getAvailablePmdInstancesList().get(0));
         pmdStatus.getBlockedPmdInstancesList().put(pmdStatus.getAvailablePmdInstancesList().remove(0), task.toString());
         pmdStatus.getPmdTaskList().add(pmdFuture);
+
         // remove first element of available Instance list
-
-
         Iterator<URI> itCheckstyle = checkstyleStatus.getAvailableCheckstyleInstancesList().iterator();
         Iterator<URI> itPmd = pmdStatus.getAvailablePmdInstancesList().iterator();
         if (itCheckstyle.hasNext()) {
@@ -236,9 +229,6 @@ public class CustomScheduler {
             itCheckstyle.remove();
             itPmd.remove();
         }
-
-        isExecute = true;
-        return isExecute;
     }
 
     private void checkRunningTasks(Status status, CheckstyleStatus checkstyleStatus, PmdStatus pmdStatus)
