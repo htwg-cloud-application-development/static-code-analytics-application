@@ -65,7 +65,7 @@ public class CustomScheduler {
         for (int i = 0; i < groups.length(); i++) {
             JSONObject jsonObject = (JSONObject) groups.get(i);
             int executionTime = jsonObject.optInt("executiontime", 100000);
-            if(executionTime == 0) {
+            if (executionTime == 0) {
                 executionTime = 100000;
             }
             status.increaseFullExecutionTimeWith(executionTime);
@@ -96,7 +96,8 @@ public class CustomScheduler {
         AmazonEC2 ec2 = new AmazonEC2Client(new EnvironmentVariableCredentialsProvider());
         ec2.setRegion(com.amazonaws.regions.Region.getRegion(Regions.EU_CENTRAL_1));
 
-        int numberOfInstancesToStart = magicCalculateForNumberOfIstances(status.getNumberOfTasks(), status.getFullExecutionTime());
+        int numberOfInstancesToStart = magicCalculateForNumberOfIstances(status.getNumberOfTasks(),
+                status.getFullExecutionTime());
         startInstances(numberOfInstancesToStart, ec2);
 
         LOG.info("Full execution time: " + status.getFullExecutionTime());
@@ -113,7 +114,8 @@ public class CustomScheduler {
             LOG.info("noFinished: " + noFinished);
 
             // check if new instance available and free
-            checkstyleStatus.setAvailableCheckstyleInstances(util.getNumberOfActiveCheckstyleInstances(ec2) - status.getNumberOfRunningTasks());
+            checkstyleStatus.setAvailableCheckstyleInstances(util.getNumberOfActiveCheckstyleInstances(ec2)
+                    - status.getNumberOfRunningTasks());
             pmdStatus.setAvailablePmdInstances(util.getNumberOfActivePmdInstances(ec2) - status.getNumberOfRunningTasks());
 
             LOG.info("numberOfActiveChecksyyleInstances: " + checkstyleStatus.getAvailableCheckstyleInstances());
@@ -154,7 +156,8 @@ public class CustomScheduler {
                 if (!checkstyleStatus.containsBlockedCheckstyleInstance(checkstyleIinstance.getUri())
                         && !pmdStatus.containsBlockedPmdInstance(pmdInstance.getUri())) {
 
-                    isExecute = executeWithNewInstances(status, checkstyleStatus, pmdStatus, task, checkstyleIinstance, pmdInstance);
+                    isExecute = executeWithNewInstances(status, checkstyleStatus, pmdStatus, task, checkstyleIinstance,
+                            pmdInstance);
                 }
             } else {
 
@@ -175,7 +178,8 @@ public class CustomScheduler {
         }
     }
 
-    private boolean executeWithNewInstances(Status status, CheckstyleStatus checkstyleStatus, PmdStatus pmdStatus, JSONObject task, ServiceInstance checkstyleIinstance, ServiceInstance pmdInstance) {
+    private boolean executeWithNewInstances(Status status, CheckstyleStatus checkstyleStatus, PmdStatus pmdStatus,
+                                            JSONObject task, ServiceInstance checkstyleIinstance, ServiceInstance pmdInstance) {
         boolean isExecute;
 
 
@@ -199,7 +203,8 @@ public class CustomScheduler {
         return isExecute;
     }
 
-    private boolean executeFromAvailableInstances(Status status, CheckstyleStatus checkstyleStatus, PmdStatus pmdStatus, JSONObject task) {
+    private boolean executeFromAvailableInstances(Status status, CheckstyleStatus checkstyleStatus, PmdStatus pmdStatus,
+                                                  JSONObject task) {
         boolean isExecute;
 
         ValidationData validationData = new ValidationData();
@@ -211,7 +216,8 @@ public class CustomScheduler {
 
         Future<String> checkstyleFuture = validateRepositoryService.validateRepository(validationData.toString(),
                 checkstyleStatus.getAvailableCheckstyleInstancesList().get(0));
-        checkstyleStatus.getBlockedCheckstyleInstancesList().put(checkstyleStatus.getAvailableCheckstyleInstancesList().remove(0), task.toString());
+        checkstyleStatus.getBlockedCheckstyleInstancesList()
+                .put(checkstyleStatus.getAvailableCheckstyleInstancesList().remove(0), task.toString());
         checkstyleStatus.getCheckstyleTaskList().add(checkstyleFuture);
 
 
@@ -261,14 +267,16 @@ public class CustomScheduler {
                 ValidationData data = new ValidationData();
                 data.setRepository(checkstyleObj.getString(REPOSITORY));
 
-                URI availableCheckstyleUri = helper.getUriWithValue(checkstyleStatus.getBlockedCheckstyleInstancesList(), data.toString());
+                URI availableCheckstyleUri = helper.getUriWithValue(checkstyleStatus.getBlockedCheckstyleInstancesList(),
+                        data.toString());
                 URI availablePmdUri = helper.getUriWithValue(pmdStatus.getBlockedPmdInstancesList(), data.toString());
 
                 checkstyleStatus.getAvailableCheckstyleInstancesList().add(availableCheckstyleUri);
                 pmdStatus.getAvailablePmdInstancesList().add(availablePmdUri);
 
                 // remove entry from blocked instance list
-                helper.removeEntryFromBlockedInstanceListe(checkstyleStatus.getBlockedCheckstyleInstancesList(), availableCheckstyleUri);
+                helper.removeEntryFromBlockedInstanceListe(checkstyleStatus.getBlockedCheckstyleInstancesList(),
+                        availableCheckstyleUri);
                 helper.removeEntryFromBlockedInstanceListe(pmdStatus.getBlockedPmdInstancesList(), availablePmdUri);
 
                 status.getResultList().add(result);
@@ -276,7 +284,8 @@ public class CustomScheduler {
                 toDelete.add(i);
                 databaseService.saveCheckstleResult(checkstyleObj.toString());
                 databaseService.savePmdResult(pmdObj.toString());
-                databaseService.updateExecutionTimeOfGroup(duration, status.getRepoUserInformationMap().get(checkstyleObj.getString(REPOSITORY)));
+                databaseService.updateExecutionTimeOfGroup(duration, status.getRepoUserInformationMap()
+                        .get(checkstyleObj.getString(REPOSITORY)));
 
                 LOG.info("Task finished - numberOfRunnigntasks before: " + status.getNumberOfRunningTasks());
                 status.decreaseNumberOfRunningTasks();
