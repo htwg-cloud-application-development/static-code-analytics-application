@@ -17,7 +17,11 @@ public class UserService {
     @Autowired
     UserRepository userRepo;
 
-    //creates user
+    /**
+     * Saves user
+     * @param user user to save
+     * @return HttpStatus
+     */
     @RequestMapping(value = "/add", method = RequestMethod.POST)
     public ResponseEntity addUser(@RequestBody final User user) {
 
@@ -25,6 +29,11 @@ public class UserService {
         return new ResponseEntity(HttpStatus.OK);
     }
 
+    /**
+     * Finds user
+     * @param userId id to querry
+     * @return User
+     */
     @RequestMapping(value = "{userId}", method = RequestMethod.GET)
     public ResponseEntity<User> getUser(@PathVariable final String userId) {
         return new ResponseEntity<User>(userRepo.findOne(userId), HttpStatus.OK);
