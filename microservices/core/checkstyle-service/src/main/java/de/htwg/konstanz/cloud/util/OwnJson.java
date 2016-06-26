@@ -215,7 +215,7 @@ public class OwnJson {
         }
 
         /* Condition for the last run and if there was just one exercise with various exercises */
-        if ((nClassPos + 1) == lClassList.size()) {
+        if (nClassPos + 1 == lClassList.size()) {
             oOwnJsonProperties.getOJsonExercise().put(oOwnJsonProperties.getSTmpExcerciseName(),
                                                             oOwnJsonProperties.getLJsonClasses());
             oOwnJsonProperties.getLJsonExercises().put(oOwnJsonProperties.getOJsonExercise());
