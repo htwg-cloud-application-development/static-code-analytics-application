@@ -44,54 +44,34 @@ public class CourseService {
             responseEntity = new ResponseEntity(HttpStatus.NO_CONTENT);
         } else {
 
-            List<Course> storedCourses = user.getCourses();
+            Query query = new Query();
+            query.addCriteria(Criteria.where("id").is(course.getId()));
 
-            if (storedCourses == null){
-                /** if first entry and user has no courses **/
-                courseRepo.save(course);
-                List<Course> courseList = new ArrayList<Course>();
-                courseList.add(course);
-                user.setCourses(courseList);
-                userRepo.save(user);
+            Course savedCourse = mongo.findOne(query, Course.class);
+
+            if (savedCourse != null){
+
+                savedCourse.setEnrolledusercount(course.getEnrolledusercount());
+                savedCourse.setFullname(course.getFullname());
+                savedCourse.setIdnumber(course.getIdnumber());
+                savedCourse.setShortname(course.getShortname());
+                savedCourse.setVisible(course.getVisible());
+                courseRepo.save(savedCourse);
 
             } else {
 
-                for (Course storedCourse: storedCourses){
-                    if (storedCourses.contains(course)) {
-                        Query query = new Query();
-                        query.addCriteria(Criteria.where("id").is(course.getId()));
+                courseRepo.save(course);
 
-                        Update update = new Update();
-                        update.set("shortname", course.getShortname());
-                        update.set("fullname", course.getFullname());
-                        update.set("enrolledusercount", course.getEnrolledusercount());
-                        update.set("idnumber", course.getIdnumber());
-                        update.set("visible", course.getVisible());
-
-                        update.set("groups", storedCourse.getGroups());
-                        update.set("assignments", storedCourse.getAssignments());
-
-                        mongo.upsert(query, update, Course.class, "course");
-
-                    } else {
-                        courseRepo.save(course);
-                        user.getCourses().add(course);
-                    }
+                if (user.getCourses() == null){
+                    List<Course> initCourseList = new ArrayList<>();
+                    initCourseList.add(course);
+                    user.setCourses(initCourseList);
+                } else {
+                    user.getCourses().add(course);
                 }
-
                 userRepo.save(user);
+            }
 
-            }
-/*
-            courseRepo.save(course);
-            List<Course> courses = user.getCourses();
-            //if no course attached to user first create List
-            if (null == courses) {
-                courses = new ArrayList<>();
-            }
-            courses.add(course);
-            user.setCourses(courses);
-            userRepo.save(user); */
             responseEntity = new ResponseEntity(HttpStatus.OK);
         }
         return responseEntity;

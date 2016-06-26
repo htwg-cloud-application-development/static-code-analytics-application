@@ -12,6 +12,7 @@ import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Set;
 
@@ -35,7 +36,7 @@ public class GroupService {
         ResponseEntity responseEntity;
         /** find course **/
         Course course = courseRepo.findOne(courseId);
-        System.out.print(course);
+        System.out.print("Course: " + course);
 
         /** don't save empty groups or if no course is found **/
         if (groups.isEmpty() || null == course) {
@@ -43,50 +44,33 @@ public class GroupService {
         }
         /** course found and group set not empty **/
         else {
-            /** get already stored groups of course **/
-            final List<Group> storedDbGroups = course.getGroups();
-            System.out.println(storedDbGroups);
 
-            /** if course doesn't have groups, save all groups from RequestBody**/
-            if (null == storedDbGroups) {
-                groupRepository.save(groups);
-                /** associate groups with course **/
-                course.setGroups(groups);
-                /** save course with new associated groups **/
-                courseRepo.save(course);
-            }
-            /** if course has already associatd groups **/
-            else {
+            for (Group group: groups){
 
-                for (Group newGroup: groups){
-                    boolean matchFound = false;
+                Query query = new Query();
+                query.addCriteria(Criteria.where("id").is(group.getId()));
 
-                    for (Group storedGroup: storedDbGroups){
-                        if (newGroup.equals(storedGroup)){
-                            matchFound = true;
-                            Query query = new Query();
-                            query.addCriteria(Criteria.where("id").is(newGroup.getId()));
+                Group savedGroup = mongo.findOne(query, Group.class);
 
-                            Update update = new Update();
+                if (savedGroup != null){
+                    savedGroup.setAttemptnumber(group.getAttemptnumber());
+                    savedGroup.setRepository(group.getRepository());
+                    savedGroup.setStatus(group.getStatus());
+                    savedGroup.setTimecreated(group.getTimecreated());
+                    savedGroup.setTimemodified(group.getTimemodified());
+                    groupRepository.save(savedGroup);
+                } else {
 
-                            update.set("attemptnumber", newGroup.getAttemptnumber());
-                            update.set("repository", newGroup.getRepository());
-                            update.set("status", newGroup.getStatus());
-                            update.set("timecreated", newGroup.getTimecreated());
-                            update.set("timemodified", newGroup.getTimemodified());
-                            update.set("pmd", storedGroup.getPmd());
-                            update.set("checkstyle", storedGroup.getCheckstyle());
+                    groupRepository.save(group);
 
-                            mongo.upsert(query, update, Group.class, "group");
-                        }
-
+                    if (course.getGroups() == null){
+                        List<Group> initGroupList = new ArrayList<>();
+                        initGroupList.add(group);
+                        course.setGroups(initGroupList);
+                    } else {
+                        course.getGroups().add(group);
                     }
-
-                    if (!matchFound){
-                        groupRepository.save(newGroup);
-                        course.getGroups().add(newGroup);
-                        courseRepo.save(course);
-                    }
+                    courseRepo.save(course);
                 }
             }
             responseEntity = new ResponseEntity(HttpStatus.OK);
