@@ -252,7 +252,8 @@ public class CustomScheduler {
                 result.put("checkstyle", checkstyleObj);
                 result.put("pmd", pmdObj);
                 result.put("id", status.getRepoUserInformationMap().get(checkstyleObj.getString(REPOSITORY)));
-                result.put("duration", (System.currentTimeMillis() - status.getStartTimeList().get(i)));
+                long duration = (System.currentTimeMillis() - status.getStartTimeList().get(i));
+                result.put("duration", duration);
                 result.put(REPOSITORY, checkstyleObj.getString(REPOSITORY));
                 ValidationData data = new ValidationData();
                 data.setRepository(checkstyleObj.getString(REPOSITORY));
@@ -272,7 +273,7 @@ public class CustomScheduler {
                 toDelete.add(i);
                 databaseService.saveCheckstleResult(checkstyleObj.toString());
                 databaseService.savePmdResult(pmdObj.toString());
-                //TODO databaseService.updateExecutionTimeOfGroup(executiontime);
+                databaseService.updateExecutionTimeOfGroup(duration, status.getRepoUserInformationMap().get(checkstyleObj.getString(REPOSITORY)));
 
                 LOG.info("Task finished - numberOfRunnigntasks before: " + status.getNumberOfRunningTasks());
                 status.decreaseNumberOfRunningTasks();
