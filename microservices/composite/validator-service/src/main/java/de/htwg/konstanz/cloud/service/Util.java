@@ -126,7 +126,7 @@ class Util {
                 .withSecurityGroupIds(securityGroup);
         RunInstancesResult result = ec2.runInstances(runInstancesRequest);
         for (Instance instance : result.getReservation().getInstances()) {
-            //TODO createDefaultAlarm(instance.getInstanceId());
+            createDefaultAlarm(instance.getInstanceId());
         }
         return result;
     }
@@ -182,13 +182,13 @@ class Util {
                 .withAlarmName(instanceId)
                 .withStatistic(Statistic.Average)
                 .withThreshold(40.00)
-                .withPeriod(600)
+                .withPeriod(60)
                 .withMetricName("CPUUtilization")
                 .withNamespace("AWS/EC2")
                 .withComparisonOperator(ComparisonOperator.LessThanOrEqualToThreshold)
                 .withDimensions(dimension)
                 .withAlarmActions("arn:aws:automate:eu-central-1:ec2:terminate")
-                .withEvaluationPeriods(1)
+                .withEvaluationPeriods(10)
                 .withActionsEnabled(true));
     }
 
