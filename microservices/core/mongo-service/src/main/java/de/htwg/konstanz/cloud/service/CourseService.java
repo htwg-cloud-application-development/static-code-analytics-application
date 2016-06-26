@@ -37,8 +37,6 @@ public class CourseService {
     @RequestMapping(path = "/{userId}", method = RequestMethod.POST, consumes = "application/json")
     public ResponseEntity create(@RequestBody final Course course, @PathVariable final String userId) {
 
-        //TODO darf alte course entries nicht überschreiben
-
         ResponseEntity responseEntity;
         //check if user exits
         final User user = userRepo.findOne(userId);

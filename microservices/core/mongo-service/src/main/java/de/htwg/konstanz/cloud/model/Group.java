@@ -7,12 +7,12 @@ import org.springframework.data.mongodb.core.mapping.DBRef;
 import org.springframework.data.mongodb.core.mapping.Document;
 
 @Data
-@EqualsAndHashCode(of = {"userId"})
+@EqualsAndHashCode(of = {"id"})
 @Document
 public class Group {
 
     @Id
-    private String userId;
+    private String id;
 
     private String attemptnumber;
 
