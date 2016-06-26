@@ -60,6 +60,7 @@ public class CustomScheduler {
         // init status object
         Status status = new Status();
         status.setNumberOfOpenTasks(groups.length());
+        status.setNumberOfTasks(groups.length());
 
         for (int i = 0; i < groups.length(); i++) {
             JSONObject jsonObject = (JSONObject) groups.get(i);
