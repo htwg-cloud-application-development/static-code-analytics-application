@@ -98,7 +98,7 @@ public class DatabaseService {
     }
 
     public String getLastCpdResult(String userId) throws InstantiationException {
-        return callDatabaseRoute("/courses/" + userId + "/findLastCpdResult");
+        return callDatabaseRoute("/cpdresults/courses/" + userId + "/findLastCpdResult");
     }
 
     private String callDatabaseRoute(String serviceRoute) throws InstantiationException {
