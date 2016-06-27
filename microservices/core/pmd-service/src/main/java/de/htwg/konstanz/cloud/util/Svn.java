@@ -26,11 +26,24 @@ public class Svn {
 
     private String sFileSeparator = "";
 
+    /**
+     * Logic to Store the SVN-Repo locally with default Pass
+     * They are stored in the config file
+     * @param svnLink - SVN Server ip address
+     */
     public String downloadSvnRepo(String svnLink) throws IOException, BadLocationException {
         //Default TargetPath
         return downloadSvnRepo(svnLink, null);
     }
 
+    /**
+     * Logic to Store the SVN-Repo locally
+     * @param svnLink - HTTP-Link to SVN-Repository
+     * @param sPcdString - CPD-Path
+     * @return - Path to the Local Checkout
+     * @throws IOException - throw for the handling in PMDService
+     * @throws BadLocationException - throw for the handling in PMDService
+     */
     public String downloadSvnRepo(String svnLink, String sPcdString) throws IOException, BadLocationException {
         OperatingSystemCheck oOperatingSystemCheck = new OperatingSystemCheck();
         sFileSeparator = oOperatingSystemCheck.getOperatingSystemSeparator();
@@ -73,6 +86,12 @@ public class Svn {
         return local;
     }
 
+    /**
+     * Generates the authString from the given VPN Credentials
+     * @param name - VPN Username
+     * @param pass - VPN Pass
+     * @return -  authString
+     */
     private String genAuthString(String name, String pass) {
         // HTTP Authentication
         String authString = name + ":" + pass;
@@ -81,6 +100,14 @@ public class Svn {
         return new String(authEncBytes);
     }
 
+    /**
+     * Method to checkout an given Repository recursivly
+     * @param mainUrl - current HTTP-Link
+     * @param authStringEnc - VPN Credentials
+     * @param localPath - current local-Path
+     * @throws IOException - throw for the handling in PMDService
+     * @throws BadLocationException - throw for the handling in PMDService
+     */
     private void svnCheckout(String mainUrl, String authStringEnc, String localPath)
             throws IOException, BadLocationException {
         // Generate and open the URL Connection
@@ -130,6 +157,11 @@ public class Svn {
         }
     }
 
+    /**
+     * Adjust the collected iterator
+     * @param iter - current HTTP-Link
+     * @return - Iterator of current HTML Document
+     */
     private List<String> iterToList(HTMLDocument.Iterator iter) {
         List<String> list = new ArrayList<>();
         // Get Headstructure of Svn and store it into List
@@ -146,6 +178,13 @@ public class Svn {
         return list;
     }
 
+    /**
+     * Adjust the collected iterator
+     * @param urlString - HTTP-Link to File
+     * @param dest - Localdestination
+     * @param authStringEnc - Credentials
+     * @throws IOException - throw for the handling in PMDService
+     */
     private void downloadFile(String urlString, String dest,
                               String authStringEnc) throws IOException {
         // Authenticate

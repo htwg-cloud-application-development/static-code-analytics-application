@@ -27,6 +27,11 @@ public class Util {
 
     private final String sFileSeparator = oOperatingSystemCheck.getOperatingSystemSeparator();
 
+    /**
+     * checks if there is a local src directory
+     * @param sLocalDirectory - local src directory that should be checked by this method
+     * @return - the local directory as a File object
+     */
     public File checkLocalSrcDir(String sLocalDirectory) {
         File mainDir;/* Check if local /src-dir exists */
 
@@ -41,6 +46,12 @@ public class Util {
         return mainDir;
     }
 
+    /**
+     * find all java files in the local directory and put them into a big list
+     * @param path - local directory were the method shall crawl for java files
+     * @param javaFiles - existig javaFiles
+     * @return - String list of all java files that were founded
+     */
     public List<String> getAllJavaFiles(String path, List<String> javaFiles) {
         //Crawler
         File root = new File(path);
@@ -66,6 +77,11 @@ public class Util {
         return javaFiles;
     }
 
+    /**
+     * execution of commands within the command line interface, java provides an own runtime for it
+     * @param sPmdCommand command to execute as string
+     * @return status code of execution
+     */
     public int execCommand(String sPmdCommand) {
         int nReturnCode = 0;
         Process proc = null;
@@ -92,6 +108,11 @@ public class Util {
         return nReturnCode;
     }
 
+    /**
+     * checks the json result to avoide null pointer exceptions
+     * @param oJsonResult - generated json result
+     * @return - valid or invalid string
+     */
     public String checkJsonResult(JSONObject oJsonResult) {
         String sResult;
         if (null == oJsonResult) {
@@ -104,6 +125,10 @@ public class Util {
         return sResult;
     }
 
+    /** trys to parse a String into an int
+     * @param input - String that should be checked
+     * @return - if its no possible the function returns an default value of zero
+     */
     private int isParsable(String input) {
         int nValue;
 
@@ -116,6 +141,12 @@ public class Util {
         return nValue;
     }
 
+    /**
+     * checks if the string parameter is empty
+     * @param eElement - xml element that will be checked
+     * @param sAttributeName - Attribute of the xml element the function wants to evaluate
+     * @return - returns an empty string or the attribute
+     */
     String getNonEmptyElement(Element eElement, String sAttributeName) {
         if (!eElement.getAttribute(sAttributeName).isEmpty()) {
             return eElement.getAttribute(sAttributeName);
@@ -123,10 +154,21 @@ public class Util {
         return "";
     }
 
+    /**
+     * parse a string into an int
+     * @param eElement - xml element that will be checked
+     * @param sAttribute - Attribute of the xml element the function wants to evaluate
+     * @return - returns 0 (empty) or the attribute
+     */
     public int getParsableElement(Element eElement, String sAttribute) {
         return isParsable(eElement.getAttribute(sAttribute));
     }
 
+    /**
+     * this method removes some unnecessary parts of the filepath
+     * @param sFilePath - FilePath that should be minimized
+     * @return - fixed FilePath
+     */
     String removeUnnecessaryPathParts(String sFilePath) {
         String[] sFilePathSplitArray = sFilePath.split(oOperatingSystemCheck.getOperatingSystemSeparator());
         String sShortenPath = "";
@@ -142,6 +184,11 @@ public class Util {
         return sShortenPath;
     }
 
+    /**
+     * this method creates a Directory
+     * @param sDirectoy - DirPath that should be created
+     * @return - created Directory
+     */
     public File createDirectory(String sDirectoy) {
         File dir = new File(sDirectoy);
 
@@ -152,6 +199,11 @@ public class Util {
         return dir;
     }
 
+    /**
+     * this method checks the Local PMD
+     * @return - created Directory
+     * @throws IOException - throw for the handling in PMDService
+     */
     public void checkLocalPmd() throws IOException {
         Zip oZip = new Zip();
         final String sPmdDir = "pmd-bin-5.4.2.zip";

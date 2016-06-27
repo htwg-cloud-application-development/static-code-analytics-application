@@ -22,12 +22,26 @@ public class Git {
 
     private final OperatingSystemCheck oOperatingSystemCheck = new OperatingSystemCheck();
 
+    /**
+     * Collects the last Commit of the Repo
+     * @param git - current git-Object
+     * @return - Committimestamp
+     * @throws IOException - throw for the handling in CheckstyleService
+     * @throws GitAPIException - throw for the handling in CheckstyleService
+     */
     private String getLastCommit(org.eclipse.jgit.api.Git git) throws IOException, GitAPIException {
         //Get Last Commit of Git Repo
         Iterable<RevCommit> revCommits = git.log().call();
         return String.valueOf(revCommits.iterator().next().getCommitTime());
     }
 
+    /**
+     * Download Git-Repo to an Localpath
+     * @param gitRepo - HTTP-Link to Git-Repo
+     * @return - Array with localPath and Committimestamp
+     * @throws IOException - throw for the handling in CheckstyleService
+     * @throws GitAPIException - throw for the handling in CheckstyleService
+     */
     public String[] downloadGitRepo(String gitRepo) throws GitAPIException, IOException {
         /* Checkout Git-Repo */
         org.eclipse.jgit.api.Git git = null;
@@ -57,6 +71,11 @@ public class Git {
         return returnValue;
     }
 
+    /**
+     * Validates the given repoURI
+     * @param repoUri - HTTP-Link to Git-Repo
+     * @return - validation
+     */
     private boolean isValidRepository(URIish repoUri) {
         if (repoUri.isRemote()) {
             return isValidRemoteRepository(repoUri);
@@ -65,6 +84,11 @@ public class Git {
         }
     }
 
+    /**
+     * Validates the given Local-Repository
+     * @param repoUri - HTTP-Link to Git-Repo
+     * @return - validation
+     */
     private boolean isValidLocalRepository(URIish repoUri) {
         boolean result;
 
@@ -77,6 +101,11 @@ public class Git {
         return result;
     }
 
+    /**
+     * Validates the given Remote-Repository
+     * @param repoUri - HTTP-Link to Git-Repo
+     * @return - validation
+     */
     private boolean isValidRemoteRepository(URIish repoUri) {
         boolean result;
         /*  Check Repository URI */
@@ -94,6 +123,11 @@ public class Git {
         return result;
     }
 
+    /**
+     * Validates the given ssh-Repository
+     * @param repoUri - HTTP-Link to Git-Repo
+     * @return - validation
+     */
     private boolean sshValidation(URIish repoUri) {
         boolean result;/* SSH-Validation */
         RemoteSession ssh = null;
@@ -136,6 +170,11 @@ public class Git {
         return result;
     }
 
+    /**
+     * HTTP-Validation
+     * @param repoUri - HTTP-Link to Git-Repo
+     * @return - validation
+     */
     private boolean httpValidation(URIish repoUri) {
         boolean result;
         String path = repoUri.getPath();

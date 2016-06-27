@@ -26,6 +26,13 @@ public class Svn {
 
     private String sFileSeparator = "";
 
+    /**
+     * Logic to Store the SVN-Repo locally
+     * @param svnLink - HTTP-Link to SVN-Repository
+     * @return - Path to the Local Checkout
+     * @throws IOException - throw for the handling in CheckstyleService
+     * @throws BadLocationException - throw for the handling in CheckstyleService
+     */
     public String downloadSvnRepo(String svnLink) throws IOException, BadLocationException {
         OperatingSystemCheck oOperatingSystemCheck = new OperatingSystemCheck();
         sFileSeparator = oOperatingSystemCheck.getOperatingSystemSeparator();
@@ -64,6 +71,13 @@ public class Svn {
         return local;
     }
 
+
+    /**
+     * Generates the authString from the given VPN Credentials
+     * @param name - VPN Username
+     * @param pass - VPN Pass
+     * @return -  authString
+     */
     private String genAuthString(String name, String pass) {
         // HTTP Authentication
         String authString = name + ":" + pass;
@@ -72,6 +86,12 @@ public class Svn {
         return new String(authEncBytes);
     }
 
+    /**
+     * Method to checkout an given Repository recursivly
+     * @param mainUrl - current HTTP-Link
+     * @param authStringEnc - VPN Credentials
+     * @param localPath - current local-Path
+     */
     private void svnCheckout(String mainUrl, String authStringEnc, String localPath) throws IOException, BadLocationException {
         // Generate and open the URL Connection
         URL url = new URL(mainUrl);
@@ -120,6 +140,11 @@ public class Svn {
         }
     }
 
+    /**
+     * Adjust the collected iterator
+     * @param iter - current HTTP-Link
+     * @return - Iterator of current HTML Document
+     */
     private List<String> iterToList(HTMLDocument.Iterator iter) {
         List<String> list = new ArrayList<>();
         // Get Headstructure of Svn and store it into List
@@ -136,6 +161,12 @@ public class Svn {
         return list;
     }
 
+    /**
+     * Adjust the collected iterator
+     * @param urlString - HTTP-Link to File
+     * @param dest - Localdestination
+     * @param authStringEnc - Credentials
+     */
     private void downloadFile(String urlString, String dest,
                               String authStringEnc) throws IOException {
         // Authenticate

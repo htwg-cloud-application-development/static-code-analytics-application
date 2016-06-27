@@ -17,19 +17,41 @@ import java.net.URL;
 import java.net.URLConnection;
 
 public class Git {
+
     private static final Logger LOG = LoggerFactory.getLogger(Git.class);
 
+    /**
+     * Collects the last Commit of the Repo
+     * @param git - current git-Object
+     * @return - Committimestamp
+     * @throws IOException - throw for the handling in PMDService
+     * @throws GitAPIException - throw for the handling in PMDService
+     */
     private String getLastCommit(org.eclipse.jgit.api.Git git) throws IOException, GitAPIException {
         //Get Last Commit of Git Repo
         Iterable<RevCommit> revCommits = git.log().call();
         return String.valueOf(revCommits.iterator().next().getCommitTime());
     }
 
+    /**
+     * Download Git-Repo with default localpath
+     * @param gitRepo - HTTP-Link to Git-Repo
+     * @return - Array with localPath and Committimestamp
+     * @throws IOException - throw for the handling in PMDService
+     * @throws GitAPIException - throw for the handling in PMDService
+     */
     public String[] downloadGitRepo(String gitRepo) throws IOException, GitAPIException {
         //Second Parameter changes the local Target-Path
         return downloadGitRepo(gitRepo, null);
     }
 
+    /**
+     * Download Git-Repo with CPD-localpath
+     * @param gitRepo - HTTP-Link to Git-Repo
+     * @return - Array with localPath and Committimestamp
+     * @throws IOException - throw for the handling in PMDService
+     * @throws GitAPIException - throw for the handling in PMDService
+     */
     public String[] downloadGitRepo(String gitRepo, String sPcdString) throws GitAPIException, IOException {
         // Checkout Git-Repo
         OperatingSystemCheck oOperatingSystemCheck = new OperatingSystemCheck();
@@ -67,6 +89,11 @@ public class Git {
         return returnValue;
     }
 
+    /**
+     * Validates the given repoURI
+     * @param repoUri - HTTP-Link to Git-Repo
+     * @return - validation
+     */
     private boolean isValidRepository(URIish repoUri) {
         //Logic to Validate the Repository-URI
         if (repoUri.isRemote()) {
@@ -76,6 +103,11 @@ public class Git {
         }
     }
 
+    /**
+     * Validates the given Local-Repository
+     * @param repoUri - HTTP-Link to Git-Repo
+     * @return - validation
+     */
     private boolean isValidLocalRepository(URIish repoUri) {
         //Check Repository-URI
         boolean result;
@@ -87,6 +119,11 @@ public class Git {
         return result;
     }
 
+    /**
+     * Validates the given Remote-Repository
+     * @param repoUri - HTTP-Link to Git-Repo
+     * @return - validation
+     */
     private boolean isValidRemoteRepository(URIish repoUri) {
         boolean result;
         /*  Check Repository URI with different schemes. more schems can be added in future */
@@ -103,6 +140,11 @@ public class Git {
         return result;
     }
 
+    /**
+     * Validates the given ssh-Repository
+     * @param repoUri - HTTP-Link to Git-Repo
+     * @return - validation
+     */
     private boolean sshValidation(URIish repoUri) {
         boolean result;/* SSH-Validation */
         RemoteSession ssh = null;
@@ -145,6 +187,11 @@ public class Git {
         return result;
     }
 
+    /**
+     * HTTP-Validation
+     * @param repoUri - HTTP-Link to Git-Repo
+     * @return - validation
+     */
     private boolean httpValidation(URIish repoUri) {
         boolean result;
         String path = repoUri.getPath();

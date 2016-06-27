@@ -78,7 +78,7 @@ public class Util {
     /**
      * find all java files in the local directory and put them into a big list
      * @param path - local directory were the method shall crawl for java files
-     * @param javaFiles -
+     * @param javaFiles - existig javaFiles
      * @return - String list of all java files that were founded
      */
     public List<String> getAllJavaFiles(String path, List<String> javaFiles) {
