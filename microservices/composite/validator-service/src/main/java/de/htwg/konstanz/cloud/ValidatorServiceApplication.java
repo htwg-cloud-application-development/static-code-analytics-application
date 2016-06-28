@@ -23,7 +23,11 @@ public class ValidatorServiceApplication {
         SpringApplication.run(ValidatorServiceApplication.class, args);
     }
 
-    // swagger dashboard "/swagger-ui.html"
+    /**
+     * Swagger
+     *
+     * @return swagger dashboard "/swagger-ui.html"
+     */
     @Bean
     public Docket newsApi() {
         return new Docket(DocumentationType.SWAGGER_2)
@@ -34,6 +38,11 @@ public class ValidatorServiceApplication {
                 .build();
     }
 
+    /**
+     * Information for swagger ui
+     *
+     * @return Information for swagger ui
+     */
     private ApiInfo apiInfo() {
         return new ApiInfoBuilder()
                 .title("Validator Service")

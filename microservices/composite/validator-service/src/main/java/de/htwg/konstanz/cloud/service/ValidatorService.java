@@ -177,6 +177,12 @@ public class ValidatorService {
         }
     }
 
+    /**
+     * Route to executes duplication validation.
+     *
+     * @param courseId id of course to validate.
+     * @return result of duplicate code for course with id.
+     */
     @RequestMapping(value = "/courses/{courseId}/validate/duplication", method = RequestMethod.POST)
     public ResponseEntity<String> validateDuplication(@PathVariable String courseId) {
         try {
@@ -212,6 +218,12 @@ public class ValidatorService {
     }
 
 
+    /**
+     * Route to execute pmd and checkstyle validation without save in database. Most purpose are testing.
+     *
+     * @param data json object with attribute 'repositoryUrl'
+     * @return validation json result as string
+     */
     @RequestMapping(value = "/validate", method = RequestMethod.POST, consumes = APPLICATION_JSON, produces = APPLICATION_JSON)
     public ResponseEntity<String> validateCodeDublication(@RequestBody ValidationData data) {
         try {
