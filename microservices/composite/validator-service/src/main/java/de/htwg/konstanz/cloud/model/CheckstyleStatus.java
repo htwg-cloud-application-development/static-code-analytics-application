@@ -21,14 +21,27 @@ public class CheckstyleStatus {
 
     private List<Future<String>> checkstyleTaskList = new ArrayList<>();
 
+    /**
+     * Check if instance is blcoked, because of use in another validation.
+     * @param uri to service instance
+     * @return true if instance blocked.
+     */
     public boolean containsBlockedCheckstyleInstance(URI uri) {
         return blockedCheckstyleInstancesList.containsKey(uri);
     }
 
+    /**
+     * Validate if instances of checkstyle available
+     * @return true if instances available
+     */
     public boolean noInstanceAvailable() {
         return (availableCheckstyleInstancesList.isEmpty());
     }
 
+    /**
+     * Number of available instances.
+     * @return number of available instances.
+     */
     public boolean isServiceAvailable() {
         return availableCheckstyleInstances > 0;
     }
