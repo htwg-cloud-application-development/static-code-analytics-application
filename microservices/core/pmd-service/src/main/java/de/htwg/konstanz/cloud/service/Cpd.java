@@ -43,10 +43,27 @@ public class Cpd {
 
     private String sFileSeparator = "";
 
+    /**
+     * Constructor to initialize the Svn server ip for Cpd.
+     * It is stored in the config file
+     * @param svnServerIp - SVN Server ip address
+     */
     public Cpd(String svnServerIp) {
         this.svnServerIp = svnServerIp;
     }
 
+    /**
+     * Connection point for incoming post request
+     * @param gitRepository - given git repository from post request
+     * @return - Problems or Valid Json
+     * @throws IOException - throw for the handling in CpdService
+     * @throws ParserConfigurationException - throw for the handling in CpdService
+     * @throws SAXException - throw for the handling in CpdService
+     * @throws BadLocationException - throw for the handling in CpdService
+     * @throws GitAPIException - throw for the handling in CpdService
+     * @throws NullPointerException - throw for the handling in CpdService
+     * @throws InterruptedException - throw for the handling in CpdService
+     */
     String startIt(List<String> gitRepository) throws IOException, ParserConfigurationException,
             SAXException, BadLocationException, GitAPIException, NullPointerException, InterruptedException {
         long lStartTime = System.currentTimeMillis();
@@ -65,6 +82,19 @@ public class Cpd {
         return oUtil.checkJsonResult(oJsonResult);
     }
 
+    /**
+     * checks if the given list of repositories belongs to git or svn. After the checkout of the repository
+     * this method executes the analysis of Cpd
+     * @param sRepoUrl - within POST request given list of repositories url (svn or git)
+     * @param lStartTime - start time of the service execution
+     * @return  - generated JSON file with all duplication who figured out in Cpd
+     * @throws IOException - throw for the handling in CpdService
+     * @throws BadLocationException - throw for the handling in CpdService
+     * @throws GitAPIException - throw for the handling in CpdService
+     * @throws ParserConfigurationException - throw for the handling in CpdService
+     * @throws SAXException - throw for the handling in CpdService
+     * @throws InterruptedException - throw for the handling in CpdService
+     */
     private JSONObject determineVersionControlSystem(List<String> sRepoUrl, long lStartTime)
             throws IOException, BadLocationException, GitAPIException, ParserConfigurationException,
                                                                     SAXException, InterruptedException {
@@ -118,6 +148,16 @@ public class Cpd {
         return oJson;
     }
 
+    /**
+     * Create Cpd output file in XML format. Depends on OS, which Command Line will be use.
+     * @param sRepoString - String of Directory where all downloaded Repositories are stored
+     * @param lStartTime - start time of the service execution
+     * @return Json Object with all dupliactions found with Cpd
+     * @throws IOException - throw for the handling in CpdService
+     * @throws ParserConfigurationException - throw for the handling in CpdService
+     * @throws SAXException - throw for the handling in CpdService
+     * @throws InterruptedException - throw for the handling in CpdService
+     */
     private JSONObject runCpd(String sRepoString, long lStartTime) throws ParserConfigurationException,
             SAXException, IOException, InterruptedException {
         OperatingSystemCheck oOperatingSystemCheck = new OperatingSystemCheck();
@@ -157,7 +197,7 @@ public class Cpd {
             LOG.info("Process Return Code: " + nReturnCode);
         }
 
-        /* Checkstyle Informationen eintragen */
+        /* Cpd Informationen eintragen */
         storeCpdInformation(sMainPath + sFileSeparator + "CpdCheck_" + sOutputFileName, sRepoString);
 
         if (!lDuplications.isEmpty()) {
@@ -169,6 +209,15 @@ public class Cpd {
         return oJson;
     }
 
+    /**
+     * Uses the XML output file from Cpd to create dupliaction in form of duplication model
+     * and add them to a List
+     * @param sXmlPath - String of XML file path which contains Cpd duplications results
+     * @param sMainPath - String of Directory where all downloaded Repositories are stored
+     * @throws IOException - throw for the handling in CpdService
+     * @throws ParserConfigurationException - throw for the handling in CpdService
+     * @throws SAXException - throw for the handling in CpdService
+     */
     private void storeCpdInformation(String sXmlPath, String sMainPath)
             throws ParserConfigurationException, SAXException, IOException {
         InputStream oInputStream = new FileInputStream(sXmlPath);
@@ -226,6 +275,12 @@ public class Cpd {
         }
     }
 
+    /**
+     * Create the Json with the stored data in the duplication list
+     * @param sMainDir - String of Directory where all downloaded Repositories are stored
+     * @param lStartTime - start time of the service execution
+     * @return - JsonObject with stored Information in the duplication list
+     */
     private JSONObject buildJson(String sMainDir, long lStartTime) {
         JSONObject oJsonRoot = new JSONObject();
         int nDuplicationCounter = 0;
