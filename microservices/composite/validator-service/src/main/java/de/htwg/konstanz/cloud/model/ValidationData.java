@@ -12,6 +12,10 @@ public class ValidationData {
     @NotNull
     private String repository;
 
+    /**
+     * Override to String method to get json as String.
+     * @return JSON object as string.
+     */
     @Override
     public String toString(){
         JSONObject json = new JSONObject();
