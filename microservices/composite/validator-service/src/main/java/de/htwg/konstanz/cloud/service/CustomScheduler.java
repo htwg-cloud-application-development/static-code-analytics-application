@@ -42,9 +42,11 @@ public class CustomScheduler {
     @Autowired
     private LoadBalancerClient loadBalancer;
 
+    // Default duration time of start proccess of new instance
     @Value("${app.aws.init.instance.duration:90000}")
     private int initInstancetDuration;
 
+    // Used if more than 4 instances should be starts
     @Value("${app.aws.init.instance.max:5}")
     private int maxNumberOfInstancesGreaterFour;
 
@@ -54,6 +56,12 @@ public class CustomScheduler {
     @Autowired
     private SchedulerHelper helper;
 
+    /**
+     * Method to execute the validation of a course.
+     *
+     * @param groups A list of repositories to validate with checkstyle and pmd.
+     * @return validation result of all tasks.
+     */
     ArrayList<JSONObject> runValidationSchedulerOnAws(JSONArray groups) throws JSONException, InstantiationException,
             ExecutionException, InterruptedException, NoSuchFieldException {
 
@@ -90,13 +98,19 @@ public class CustomScheduler {
         return startScheduling(status);
     }
 
+    /**
+     * Private Method to start the validation of all repositories.
+     *
+     * @param status Status object which holds all needet information for scheduling.
+     * @return json result
+     */
     private ArrayList<JSONObject> startScheduling(Status status) throws NoSuchFieldException,
             JSONException, InterruptedException, ExecutionException, InstantiationException {
 
         AmazonEC2 ec2 = new AmazonEC2Client(new EnvironmentVariableCredentialsProvider());
         ec2.setRegion(com.amazonaws.regions.Region.getRegion(Regions.EU_CENTRAL_1));
 
-        int numberOfInstancesToStart = magicCalculateForNumberOfIstances(status.getNumberOfTasks(),
+        int numberOfInstancesToStart = magicCalculateForNumberOfInstances(status.getNumberOfTasks(),
                 status.getFullExecutionTime());
         startInstances(numberOfInstancesToStart, ec2);
 
@@ -140,6 +154,13 @@ public class CustomScheduler {
         return status.getResultList();
     }
 
+    /**
+     * Check if new services active and start execution.
+     *
+     * @param status           Holds needet Information of running and blocked tasks.
+     * @param checkstyleStatus Contains information about checkstyle instances.
+     * @param pmdStatus        Contains information about pmd instances
+     */
     private void startValidationIfServicesActive(Status status, CheckstyleStatus checkstyleStatus, PmdStatus pmdStatus) {
         LOG.info("availableCheckstyleInstances: " + checkstyleStatus.getAvailableCheckstyleInstances());
         LOG.info("availablePmdInstances: " + pmdStatus.getAvailablePmdInstances());
@@ -161,7 +182,7 @@ public class CustomScheduler {
                     isExecute = true;
                 }
             } else {
-                executeFromAvailableInstances(status, checkstyleStatus, pmdStatus, task);
+                executeFromAvailableInstances(checkstyleStatus, pmdStatus, task);
                 isExecute = true;
             }
 
@@ -179,8 +200,18 @@ public class CustomScheduler {
         }
     }
 
+    /**
+     * Executes a task within a new available instance.
+     *
+     * @param status              Holds information about scheduling.
+     * @param checkstyleStatus    Hold information about checkstyle instances.
+     * @param pmdStatus           Hold information about pmd instances.
+     * @param task                Task (repository) to execute.
+     * @param checkstyleIinstance new available checkstyle instances.
+     * @param pmdInstance         new available pmd instances.
+     */
     private void executeWithNewInstances(Status status, CheckstyleStatus checkstyleStatus, PmdStatus pmdStatus,
-                                            JSONObject task, ServiceInstance checkstyleIinstance, ServiceInstance pmdInstance) {
+                                         JSONObject task, ServiceInstance checkstyleIinstance, ServiceInstance pmdInstance) {
 
         ValidationData validationData = new ValidationData();
         try {
@@ -199,8 +230,16 @@ public class CustomScheduler {
         pmdStatus.getPmdTaskList().add(pmdFuture);
     }
 
-    private void executeFromAvailableInstances(Status status, CheckstyleStatus checkstyleStatus, PmdStatus pmdStatus,
-                                                  JSONObject task) {
+
+    /**
+     * Executes a task from available instance.
+     *
+     * @param checkstyleStatus Hold information about checkstyle instances.
+     * @param pmdStatus        Hold information about pmd instances.
+     * @param task             Task (repository) to execute.
+     */
+    private void executeFromAvailableInstances(CheckstyleStatus checkstyleStatus, PmdStatus pmdStatus,
+                                               JSONObject task) {
         ValidationData validationData = new ValidationData();
         try {
             validationData.setRepository(task.getString("repository"));
@@ -231,6 +270,13 @@ public class CustomScheduler {
         }
     }
 
+    /**
+     * Check all running tasks if its finished, update status variables and save results into database.
+     *
+     * @param status           Task (repository) to execute.
+     * @param checkstyleStatus Hold information about checkstyle instances.
+     * @param pmdStatus        Hold information about pmd instances.
+     */
     private void checkRunningTasks(Status status, CheckstyleStatus checkstyleStatus, PmdStatus pmdStatus)
             throws JSONException, InterruptedException, ExecutionException, InstantiationException {
         ArrayList<Integer> toDelete = new ArrayList<>();
@@ -289,7 +335,12 @@ public class CustomScheduler {
         }
     }
 
-
+    /**
+     * Start checkstyle and pmd instance on aws.
+     *
+     * @param numberOfInstances number of instances to start of each type.
+     * @param ec2               EC2 object to execute aws functions.
+     */
     private void startInstances(int numberOfInstances, AmazonEC2 ec2) throws NoSuchFieldException {
         if (util.getNumberOfActiveCheckstyleInstances(ec2) < numberOfInstances) {
             util.runNewCheckstyleInstance(ec2, numberOfInstances, numberOfInstances);
@@ -300,8 +351,14 @@ public class CustomScheduler {
     }
 
 
-    // magic calculation
-    private int magicCalculateForNumberOfIstances(int numberOfExecutions, int fullExecutionTime) {
+    /**
+     * Magic calculation
+     *
+     * @param numberOfExecutions number of tasks to execute.
+     * @param fullExecutionTime  execution time of all repositories.
+     * @return number of instances to start.
+     */
+    private int magicCalculateForNumberOfInstances(int numberOfExecutions, int fullExecutionTime) {
         int numberOfInstances;
 
         LOG.info("initInstanceDuration: " + initInstancetDuration);
