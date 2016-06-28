@@ -54,10 +54,13 @@ class Util {
     private String pmdKeyName;
 
 
-    <T> ResponseEntity<T> createResponse(T body, HttpStatus httpStatus) {
-        return new ResponseEntity<>(body, httpStatus);
-    }
-
+    /**
+     * Helper Method to create error response.
+     *
+     * @param errorMessage Error message
+     * @param status       HTTP status
+     * @return error response entity
+     */
     ResponseEntity<String> createErrorResponse(String errorMessage, HttpStatus status) {
         LOG.error(errorMessage);
         HashMap<String, String> errorResponse = new HashMap<>();
@@ -66,6 +69,26 @@ class Util {
         return createResponse(errorResponseObject.toString(), status);
     }
 
+    /**
+     * Helper method for response.
+     *
+     * @param body       body of repsonse
+     * @param httpStatus http status
+     * @param <T>        type
+     * @return response entity
+     */
+    <T> ResponseEntity<T> createResponse(T body, HttpStatus httpStatus) {
+        return new ResponseEntity<>(body, httpStatus);
+    }
+
+    /**
+     * Helper Method to run new checkstyle aws instance.
+     *
+     * @param ec2      EC2 Object
+     * @param minCount Number of min. instances to start.
+     * @param maxCount Number of max. instances to start.
+     * @return aws result with infromation about created instances.
+     */
     RunInstancesResult runNewCheckstyleInstance(AmazonEC2 ec2, int minCount, int maxCount) throws NoSuchFieldException {
         if (null == securityGroup && null == checkstyleImageId
                 && null == checkstyleInstanceType && null == checkstyleKeyName) {
@@ -82,6 +105,14 @@ class Util {
         }
     }
 
+    /**
+     * Helper Method to run new pmd aws instance.
+     *
+     * @param ec2      EC2 Object
+     * @param minCount Number of min. instances to start.
+     * @param maxCount Number of max. instances to start.
+     * @return aws result with infromation about created instances.
+     */
     RunInstancesResult runNewPmdInstance(AmazonEC2 ec2, int minCount, int maxCount) throws NoSuchFieldException {
         if (null == securityGroup && null == pmdImageId
                 && null == pmdKeyName && null == pmdInstanceType) {
@@ -97,6 +128,18 @@ class Util {
         }
     }
 
+    /**
+     * Method to execute aws api to create new instances.
+     *
+     * @param ec2           EC2 Object
+     * @param minCountParam Min number of instances to start.
+     * @param maxCountParam max number of instances to start.
+     * @param imageId       image id from aws (read from config file)
+     * @param keyName       key name from aws (read from config file)
+     * @param instanceType  instance type from aws (read from config file)
+     * @param securityGroup security group to use (read from config file)
+     * @return information about created instances
+     */
     private RunInstancesResult runInstance(AmazonEC2 ec2, int minCountParam, int maxCountParam, String imageId,
                                            String keyName, String instanceType, String securityGroup) {
         int maxCount;
@@ -131,6 +174,12 @@ class Util {
         return result;
     }
 
+    /**
+     * Helper method to get all active instances running on aws.
+     *
+     * @param ec2 EC2 Object
+     * @return number of running aws instances.
+     */
     private List<Instance> getAllActiveInstances(AmazonEC2 ec2) {
         return getAllInstances(ec2)
                 .stream()
@@ -138,6 +187,12 @@ class Util {
                 .collect(Collectors.toList());
     }
 
+    /**
+     * Helper method to get all instances running on aws.
+     *
+     * @param ec2 EC2 Object
+     * @return number of running aws instances.
+     */
     private List<Instance> getAllInstances(AmazonEC2 ec2) {
         List<Reservation> reservations = ec2.describeInstances().getReservations();
         List<Instance> instances = new ArrayList<>();
@@ -148,14 +203,33 @@ class Util {
         return instances;
     }
 
+    /**
+     * Get number of active checkstyle instances.
+     *
+     * @param ec2 EC2 Object
+     * @return number of active checkstyle instances
+     */
     int getNumberOfActiveCheckstyleInstances(AmazonEC2 ec2) throws NoSuchFieldException {
         return getNumberOfActiveInstances(ec2, checkstyleImageId);
     }
 
+    /**
+     * Get number of active pmd instances
+     *
+     * @param ec2 ec2 object
+     * @return number of active pmd instances
+     */
     int getNumberOfActivePmdInstances(AmazonEC2 ec2) throws NoSuchFieldException {
         return getNumberOfActiveInstances(ec2, pmdImageId);
     }
 
+    /**
+     * number of active instances
+     *
+     * @param ec2
+     * @param imageId
+     * @return number of active instances
+     */
     private int getNumberOfActiveInstances(AmazonEC2 ec2, String imageId) throws NoSuchFieldException {
         if (null == imageId) {
             throw new NoSuchFieldException("Missing Config Parameter [ImageId]");
@@ -170,6 +244,11 @@ class Util {
         return numberOfInstances;
     }
 
+    /**
+     * Helper method to create default aws alarm for specific instance.
+     *
+     * @param instanceId id of instance to add alarm.
+     */
     private void createDefaultAlarm(String instanceId) {
         AmazonCloudWatchClient cloudWatch = new AmazonCloudWatchClient();
         cloudWatch.setEndpoint("monitoring.eu-central-1.amazonaws.com");
